@@ -1,0 +1,88 @@
+import Mathlib
+import RussoYM.Assumptions
+import RussoYM.ProductDeviationInterface
+
+set_option linter.style.whitespace false
+set_option linter.style.longLine false
+set_option linter.style.emptyLine false
+
+namespace RussoYM
+
+/-!
+# Theorem Index
+
+This file collects the current top-level theorem endpoints of the RussoYM
+Lean formalization.
+
+It is intentionally light: it does not add new analytic assumptions, and it
+does not attempt the still-open analytic Yang--Mills work.
+
+It records the current formalized endpoints:
+
+1. FRT finite-filter operational gap.
+2. Conditional raw YM fine-gap criterion.
+3. Product-deviation interface.
+-/
+
+/-
+Endpoint 1: FRT finite-filter operational gap.
+
+This theorem is a named alias for:
+
+  FRTFiniteFilterAssumptions.imply_operational_gap
+-/
+theorem theorem_index_frt_operational_gap
+    {E Q D K N C epsMin epsMax delta : Real}
+    (h : FRTFiniteFilterAssumptions E Q D K N C epsMin epsMax delta) :
+    ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E
+      ∧ 0 < ((K / C) * (epsMin / epsMax)^2) * delta^2
+      ∧ 0 < E := by
+  exact FRTFiniteFilterAssumptions.imply_operational_gap h
+
+/-
+Endpoint 2: conditional raw YM positive fine-gap criterion.
+
+This theorem is a named alias for:
+
+  RawYMAnalyticAssumptions.imply_exists_positive_fine_gap
+-/
+theorem theorem_index_raw_fine_gap
+    {y R u : Nat -> Real}
+    {betaLog theta Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (h :
+      RawYMAnalyticAssumptions
+        y R u betaLog theta Ccl r Cloc lambdaPhys cUV ell Clift omega) :
+    exists n : Nat,
+      0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
+  exact RawYMAnalyticAssumptions.imply_exists_positive_fine_gap h
+
+/-
+Endpoint 3: abstract product-deviation interface.
+
+This theorem is a named alias for:
+
+  ProductDeviationAssumptions.imply_product_deviation
+-/
+theorem theorem_index_product_deviation
+    {dProd sumDev sumSq m : Real}
+    (h : ProductDeviationAssumptions dProd sumDev sumSq m) :
+    dProd^2 <= m * sumSq := by
+  exact ProductDeviationAssumptions.imply_product_deviation h
+
+/-
+Endpoint 4: normed product-deviation interface.
+
+This theorem is a named alias for:
+
+  NormProductDeviationAssumptions.imply_norm_product_deviation
+-/
+theorem theorem_index_norm_product_deviation
+    {V : Type*}
+    [SeminormedAddCommGroup V]
+    {z : V}
+    {sumDev sumSq m : Real}
+    (h : NormProductDeviationAssumptions z sumDev sumSq m) :
+    ‖z‖^2 <= m * sumSq := by
+  exact NormProductDeviationAssumptions.imply_norm_product_deviation h
+
+end RussoYM
