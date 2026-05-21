@@ -10,3 +10,4 @@ import RussoYM.FillingBound
 import RussoYM.Threshold
 import RussoYM.MassGapCriterion
 import RussoYM.Assumptions
+import RussoYM.ProductDeviationInterface
