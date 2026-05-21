@@ -119,4 +119,68 @@ theorem norm_add_sq_le_two
     exact norm_add_le x y
   exact norm_sq_bound_from_triangle htri
 
+/-
+Two-factor product deviation estimate in a normed ring.
+
+The identity is
+
+  1 - a*b = (1 - a) + a*(1 - b).
+
+If `||a|| <= 1`, then
+
+  ||1 - a*b|| <= ||1 - a|| + ||1 - b||.
+-/
+theorem norm_one_sub_mul_le
+    {R : Type*}
+    [NormedRing R]
+    (a b : R)
+    (ha : ‖a‖ <= 1) :
+    ‖1 - a * b‖ <= ‖1 - a‖ + ‖1 - b‖ := by
+  have hdecomp : 1 - a * b = (1 - a) + a * (1 - b) := by
+    noncomm_ring
+  calc
+    ‖1 - a * b‖ = ‖(1 - a) + a * (1 - b)‖ := by
+      rw [hdecomp]
+    _ <= ‖1 - a‖ + ‖a * (1 - b)‖ := by
+      exact norm_add_le (1 - a) (a * (1 - b))
+    _ <= ‖1 - a‖ + ‖1 - b‖ := by
+      have hmul : ‖a * (1 - b)‖ <= ‖a‖ * ‖1 - b‖ := by
+        exact norm_mul_le a (1 - b)
+      have hmul2 : ‖a‖ * ‖1 - b‖ <= 1 * ‖1 - b‖ := by
+        exact mul_le_mul_of_nonneg_right ha (norm_nonneg (1 - b))
+      nlinarith
+
+/-
+Squared two-factor product deviation estimate.
+
+If `||a|| <= 1`, then
+
+  ||1 - a*b||^2 <= 2 * (||1 - a||^2 + ||1 - b||^2).
+-/
+theorem two_factor_product_deviation_norm_sq
+    {R : Type*}
+    [NormedRing R]
+    (a b : R)
+    (ha : ‖a‖ <= 1) :
+    ‖1 - a * b‖^2 <= 2 * (‖1 - a‖^2 + ‖1 - b‖^2) := by
+  have htri : ‖1 - a * b‖ <= ‖1 - a‖ + ‖1 - b‖ := by
+    exact norm_one_sub_mul_le a b ha
+  exact norm_sq_bound_from_triangle htri
+
+/-
+Unit-norm version.
+
+If `||a|| = 1`, then the same product deviation estimate holds.
+This is the version closest to the unitary/holonomy case.
+-/
+theorem two_factor_product_deviation_norm_sq_of_norm_eq_one
+    {R : Type*}
+    [NormedRing R]
+    (a b : R)
+    (ha : ‖a‖ = 1) :
+    ‖1 - a * b‖^2 <= 2 * (‖1 - a‖^2 + ‖1 - b‖^2) := by
+  have ha_le : ‖a‖ <= 1 := by
+    exact le_of_eq ha
+  exact two_factor_product_deviation_norm_sq a b ha_le
+
 end RussoYM
