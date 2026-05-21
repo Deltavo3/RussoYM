@@ -319,4 +319,39 @@ theorem finite_filter_energy_positive_with_geometry_rewritten
     exact mul_pos hcoeff_pos hdelta2_pos
   exact lt_of_lt_of_le hlower_pos hbound
 
+/-
+The exact rewritten FRT gap constant is positive.
+
+If
+
+  K > 0,
+  C > 0,
+  epsMin > 0,
+  epsMax > 0,
+  delta > 0,
+
+then
+
+  ((K / C) * (epsMin / epsMax)^2) * delta^2 > 0.
+-/
+theorem rewritten_frt_gap_constant_positive
+    {K C epsMin epsMax delta : Real}
+    (hK : 0 < K)
+    (hC : 0 < C)
+    (hmin : 0 < epsMin)
+    (hmax : 0 < epsMax)
+    (hdelta : 0 < delta) :
+    0 < ((K / C) * (epsMin / epsMax)^2) * delta^2 := by
+  have hKdiv_pos : 0 < K / C := by
+    exact div_pos hK hC
+  have hratio_pos : 0 < epsMin / epsMax := by
+    exact div_pos hmin hmax
+  have hratio_sq_pos : 0 < (epsMin / epsMax)^2 := by
+    exact sq_pos_of_pos hratio_pos
+  have hcoeff_pos : 0 < (K / C) * (epsMin / epsMax)^2 := by
+    exact mul_pos hKdiv_pos hratio_sq_pos
+  have hdelta_sq_pos : 0 < delta^2 := by
+    exact sq_pos_of_pos hdelta
+  exact mul_pos hcoeff_pos hdelta_sq_pos
+
 end RussoYM
