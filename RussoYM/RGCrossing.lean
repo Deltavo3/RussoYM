@@ -259,4 +259,90 @@ theorem controlled_rg_coupling_crosses
     exact controlled_rg_crosses_below y R hEq hR hcross
   exact coupling_crosses_from_inverse hupos hxstab (hRel n) hy_lt
 
+/-
+Existence of a finite crossing step.
+
+If `step > 0`, then for any initial value `y0` and any threshold,
+there exists a natural number `n` such that
+
+  y0 - n * step < threshold.
+-/
+theorem exists_finite_step_crossing
+    {y0 threshold step : Real}
+    (hstep : 0 < step) :
+    exists n : Nat, y0 - (n : Real) * step < threshold := by
+  obtain ⟨n, hn⟩ := exists_nat_gt ((y0 - threshold) / step)
+  use n
+  have hmul :
+      ((y0 - threshold) / step) * step < (n : Real) * step := by
+    exact mul_lt_mul_of_pos_right hn hstep
+  have hleft : ((y0 - threshold) / step) * step = y0 - threshold := by
+    field_simp [ne_of_gt hstep]
+  rw [hleft] at hmul
+  linarith
+
+/-
+If inverse coupling decreases by at least a fixed positive step every time,
+then it eventually falls below any threshold.
+-/
+theorem inverse_coupling_eventually_below
+    (y : Nat -> Real)
+    {step threshold : Real}
+    (hstep_pos : 0 < step)
+    (hstep : forall n, y (Nat.succ n) <= y n - step) :
+    exists n : Nat, y n < threshold := by
+  obtain ⟨n, hn⟩ :=
+    exists_finite_step_crossing (y0 := y 0) (threshold := threshold) hstep_pos
+  use n
+  exact inverse_coupling_crosses_below y hstep hn
+
+/-
+Controlled RG eventually drives inverse coupling below any threshold,
+provided the controlled step size is positive.
+-/
+theorem controlled_rg_eventually_below
+    (y R : Nat -> Real)
+    {betaLog theta threshold : Real}
+    (hEq : forall n, y (Nat.succ n) = y n - betaLog + R n)
+    (hR : forall n, R n <= theta * betaLog)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog) :
+    exists n : Nat, y n < threshold := by
+  have hstep_pos : 0 < (1 - theta) * betaLog := by
+    have hone : 0 < 1 - theta := by
+      linarith
+    exact mul_pos hone hBeta
+  have hstep :
+      forall n, y (Nat.succ n) <= y n - ((1 - theta) * betaLog) := by
+    intro n
+    exact controlled_rg_step_bound (hEq n) (hR n)
+  exact inverse_coupling_eventually_below y hstep_pos hstep
+
+/-
+Controlled RG eventually crosses the coupling threshold.
+
+If `y n = 1 / u n`, all `u n` are positive, and the controlled RG
+hypotheses hold, then eventually
+
+  xstab < u n.
+-/
+theorem controlled_rg_eventually_coupling_crosses
+    (y R u : Nat -> Real)
+    {betaLog theta xstab : Real}
+    (hEq : forall n, y (Nat.succ n) = y n - betaLog + R n)
+    (hR : forall n, R n <= theta * betaLog)
+    (hRel : forall n, y n = 1 / u n)
+    (hupos : forall n, 0 < u n)
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog) :
+    exists n : Nat, xstab < u n := by
+  obtain ⟨n, hn⟩ :=
+    controlled_rg_eventually_below
+      y R
+      (threshold := 1 / xstab)
+      hEq hR hTheta hBeta
+  use n
+  exact coupling_crosses_from_inverse (hupos n) hxstab (hRel n) hn
+
 end RussoYM
