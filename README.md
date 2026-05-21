@@ -8,286 +8,407 @@ The goal of this Lean project is to verify the algebraic closure steps that conn
 
 ---
 
+## Current headline theorems
+
+### FRT finite-filter operational gap
+
+The main FRT-side theorem is:
+
+```lean
+frt_finite_filter_operational_gap
+```
+
+It proves the paper-style finite-filter bound:
+
+```text
+D^2 <= N * Q
+K * Q <= E
+N <= C * (epsMax / epsMin)^2
+delta <= D
+```
+
+implies:
+
+```text
+((K / C) * (epsMin / epsMax)^2) * delta^2 <= E
+```
+
+and, under strict positivity of the constants, also proves:
+
+```text
+0 < ((K / C) * (epsMin / epsMax)^2) * delta^2
+0 < E
+```
+
+This is the formalized FRT operational finite-information gap result.
+
+---
+
+### Conditional raw YM mass-gap criterion
+
+The main raw-YM-side wrapper theorem is:
+
+```lean
+exists_positive_fine_gap_from_controlled_rg
+```
+
+It packages the conditional route:
+
+```text
+controlled RG crossing
++ square-root strong-coupling threshold
++ positive UV gap
++ small mixing
+=> exists a positive fine-lattice gap lower bound
+```
+
+This does not prove the analytic RG or continuum pieces. It proves the algebraic closure once those assumptions are supplied.
+
+---
+
 ## File map
 
 ### `RussoYM/AlgebraCore.lean`
 
-This file proves the core algebraic lemmas.
+Core algebraic lemmas.
 
-Main results:
+Important results:
 
-- `coercivity_implication_mul`
+```lean
+coercivity_implication_mul
+coercivity_implication_div
+finite_information_gap
+electric_support_gap
+strong_coupling_from_quadratic
+block_stability_condition
+block_gap_positive_from_quadratic
+frt_gap_from_coercivity
+```
 
-  From:
+This file proves the basic implications:
 
-  ```text
-  D^2 <= N * Q
-  K * Q <= E
-  ```
+```text
+D^2 <= N * Q
+K * Q <= E
+```
 
-  proves:
+gives:
 
-  ```text
-  K * D^2 <= N * E
-  ```
+```text
+(K / N) * D^2 <= E
+```
 
-- `coercivity_implication_div`
+and with finite-information separation:
 
-  From:
+```text
+D >= delta
+```
 
-  ```text
-  D^2 <= N * Q
-  K * Q <= E
-  N > 0
-  ```
-
-  proves:
-
-  ```text
-  (K / N) * D^2 <= E
-  ```
-
-- `finite_information_gap`
-
-  From:
-
-  ```text
-  E >= mu * D^2
-  D >= delta
-  ```
-
-  proves:
-
-  ```text
-  E >= mu * delta^2
-  ```
-
-- `electric_support_gap`
-
-  Abstract Gauss-law support lemma: if every non-vacuum excitation has at least `m_min` active edges, and each active edge costs at least `lambdaG`, then:
-
-  ```text
-  energy >= lambdaG * m_min
-  ```
-
-- `strong_coupling_from_quadratic`
-
-  Converts the quadratic strong-coupling condition into the block stability inequality.
-
-- `block_stability_condition`
-
-  YM-style wrapper for the strong-coupling block stability condition.
-
-- `block_gap_positive_from_quadratic`
-
-  Proves that the block-gap lower bound is positive under the quadratic stability condition.
-
-- `frt_gap_from_coercivity`
-
-  Combines coercivity and finite-information separation to obtain the FRT finite-information gap lower bound.
+gives a positive non-vacuum lower bound.
 
 ---
 
-### `RussoYM/ProofSkeleton.lean`
+### `RussoYM/FillingBound.lean`
 
-This file connects the algebraic block gap, UV gap, and mixing assumptions.
+Finite-filter filling-bound algebra.
 
-Main results:
+Important results:
 
-- `decoupled_gap_positive`
+```lean
+finite_filter_gap_mul
+finite_filter_gap_div
+finite_filter_gap_with_geometry_div
+geometry_coefficient_rewrite
+finite_filter_gap_with_geometry_rewritten
+rewritten_frt_gap_constant_positive
+frt_finite_filter_operational_gap
+```
 
-  If the block gap and UV gap are positive, then the decoupled gap is positive.
+This file proves the finite-filter coefficient:
 
-- `gap_lifting_lower_bound_positive`
+```text
+K / (C * (epsMax / epsMin)^2)
+=
+(K / C) * (epsMin / epsMax)^2
+```
 
-  If the mixing term is smaller than the decoupled gap, then the lifted fine-lattice gap lower bound is positive.
+and packages the final FRT operational gap theorem.
 
-- `gap_lifting_with_uv_scale`
+---
 
-  Specializes the UV gap to the form:
+### `RussoYM/Threshold.lean`
 
-  ```text
-  cUV / ell
-  ```
+Square-root strong-coupling threshold algebra.
 
-- `raw_gap_algebraic_closure`
+Important results:
 
-  Combines:
+```lean
+quadratic_positive_from_sqrt_threshold
+strong_coupling_from_sqrt_threshold
+block_gap_positive_from_sqrt_threshold
+```
 
-  ```text
-  strong-coupling block positivity
-  UV positivity
-  small mixing
-  ```
+This file proves that the threshold condition:
 
-  to prove a positive fine-lattice gap lower bound.
+```text
+x > (C*r + sqrt((C*r)^2 + 4*lambda*C*Cloc)) / (2*lambda)
+```
+
+implies:
+
+```text
+C * (Cloc / x^2 + r / x) < lambda
+```
+
+and therefore:
+
+```text
+0 < x * (lambda - C * (Cloc / x^2 + r / x))
+```
+
+This is the algebraic strong-coupling block-gap threshold.
 
 ---
 
 ### `RussoYM/RGCrossing.lean`
 
-This file formalizes the algebra behind controlled RG crossing.
+Controlled RG crossing algebra.
 
-It does **not** prove Yang--Mills RG control. It only proves that if the inverse coupling decreases by a controlled amount, then the coupling eventually crosses a threshold.
+Important results:
 
-Main results:
+```lean
+controlled_rg_step_bound
+controlled_rg_inverse_decreases
+controlled_rg_linear_bound
+controlled_rg_crosses_below
+coupling_crosses_from_inverse
+controlled_rg_coupling_crosses
+controlled_rg_eventually_below
+controlled_rg_eventually_coupling_crosses
+```
 
-- `inverse_coupling_strict_decrease`
+This file proves that if inverse coupling obeys:
 
-  If:
+```text
+y_{n+1} = y_n - betaLog + R_n
+R_n <= theta * betaLog
+theta < 1
+betaLog > 0
+```
 
-  ```text
-  yNext <= y - step
-  step > 0
-  ```
+then inverse coupling eventually drops below any threshold, and therefore the physical coupling eventually crosses the corresponding threshold.
 
-  then:
+---
 
-  ```text
-  yNext < y
-  ```
+### `RussoYM/ProofSkeleton.lean`
 
-- `controlled_rg_step_bound`
+Gap-lifting algebra.
 
-  If:
+Important results:
 
-  ```text
-  yNext = y - betaLog + R
-  R <= theta * betaLog
-  ```
+```lean
+decoupled_gap_positive
+gap_lifting_lower_bound_positive
+gap_lifting_with_uv_scale
+raw_gap_algebraic_closure
+```
 
-  then:
+This file proves:
 
-  ```text
-  yNext <= y - (1 - theta) * betaLog
-  ```
-
-- `controlled_rg_inverse_decreases`
-
-  If `theta < 1` and `betaLog > 0`, then inverse coupling strictly decreases.
-
-- `inverse_coupling_linear_bound`
-
-  If every step decreases inverse coupling by at least `step`, then:
-
-  ```text
-  y n <= y 0 - n * step
-  ```
-
-- `controlled_rg_linear_bound`
-
-  Controlled RG version of the finite-step linear bound.
-
-- `controlled_rg_crosses_below`
-
-  If the linear bound lies below a threshold, then the actual inverse coupling lies below that threshold.
-
-- `coupling_crosses_from_inverse`
-
-  If:
-
-  ```text
-  y = 1 / u
-  y < 1 / x
-  u > 0
-  x > 0
-  ```
-
-  then:
-
-  ```text
-  x < u
-  ```
-
-- `controlled_rg_coupling_crosses`
-
-  Converts controlled inverse-coupling crossing into actual coupling threshold crossing.
+```text
+positive block gap
++ positive UV gap
++ small mixing
+=> positive fine-lattice gap lower bound
+```
 
 ---
 
 ### `RussoYM/RawClosure.lean`
 
-This file connects controlled RG crossing to the raw gap algebraic closure.
+Raw YM closure skeleton.
 
-Main result:
+Important results:
 
-- `raw_gap_from_controlled_rg_and_stability`
+```lean
+raw_gap_from_controlled_rg_and_stability
+exists_raw_gap_from_eventual_rg
+raw_gap_from_controlled_rg_and_sqrt_threshold
+exists_raw_gap_from_eventual_rg_and_sqrt_threshold
+```
 
-  If controlled RG crossing reaches the stability threshold, and crossing implies the strong-coupling quadratic condition, then the fine-lattice gap lower bound is positive.
+This file connects controlled RG crossing to the strong-coupling block gap and then to the fine-lattice gap.
 
-This is the current formal Lean skeleton of the conditional raw YM route.
+The strongest current theorem here uses the actual square-root threshold formula.
+
+---
+
+### `RussoYM/MassGapCriterion.lean`
+
+Named criterion wrapper.
+
+Important definitions:
+
+```lean
+xstabSqrt
+blockGapLower
+fineGapLower
+```
+
+Important theorem:
+
+```lean
+exists_positive_fine_gap_from_controlled_rg
+```
+
+This is the clean named wrapper for the conditional raw YM algebraic route.
 
 ---
 
 ### `RussoYM/OperationalGap.lean`
 
-This file proves positivity of the FRT operational finite-information gap constant.
+Positivity of the FRT operational gap constant.
 
-Main results:
+Important results:
 
-- `frt_gap_constant_positive`
+```lean
+frt_gap_constant_positive
+frt_energy_positive_from_coercivity
+```
 
-  If:
+This proves that if:
 
-  ```text
-  K > 0
-  N > 0
-  delta > 0
-  ```
+```text
+K > 0
+N > 0
+delta > 0
+```
 
-  then:
+then:
 
-  ```text
-  (K / N) * delta^2 > 0
-  ```
+```text
+(K / N) * delta^2 > 0
+```
 
-- `frt_energy_positive_from_coercivity`
-
-  Combines coercivity and finite-information separation to prove:
-
-  ```text
-  E > 0
-  ```
-
-  for non-vacuum finite-information sectors.
+and hence the finite-information energy lower bound is strictly positive.
 
 ---
 
-## Current formalized chain
+### `RussoYM/FRTConstants.lean`
 
-The Lean project currently verifies:
+Constant-comparison lemmas.
 
-```text
-finite-filter coercivity
-+ finite-information separation
-=> positive FRT operational gap
+Important results:
+
+```lean
+weaken_quadratic_coefficient
+weaken_quadratic_coefficient_auto
+finite_information_gap_with_weaker_constant
+weaker_gap_constant_positive
+energy_positive_from_weaker_constant
 ```
 
-and:
+This file handles weakening a coefficient:
 
 ```text
-controlled RG crossing algebra
-+ strong-coupling block stability algebra
-+ UV gap assumption
-+ small mixing assumption
+mu0 <= mu
+E >= mu * D^2
+```
+
+implies:
+
+```text
+E >= mu0 * D^2
+```
+
+---
+
+### `RussoYM/ProductDeviation.lean`
+
+Product-deviation estimates.
+
+Important results:
+
+```lean
+square_sum_two_le
+two_factor_deviation_bound
+norm_add_sq_le_two
+two_factor_product_deviation_norm_sq
+three_factor_product_deviation_norm_sq
+four_factor_product_deviation_norm_sq
+product_deviation_from_triangle_and_cauchy
+norm_product_deviation_from_triangle_and_cauchy
+```
+
+This file currently proves the two-, three-, and four-factor versions of the normed product-deviation estimate.
+
+The general finite-product theorem is not yet complete.
+
+---
+
+## Current verified chains
+
+### FRT operational chain
+
+Lean verifies:
+
+```text
+D^2 <= N * Q
+K * Q <= E
+N <= C * (epsMax / epsMin)^2
+D >= delta
+```
+
+implies:
+
+```text
+((K / C) * (epsMin / epsMax)^2) * delta^2 <= E
+```
+
+and if the constants are strictly positive:
+
+```text
+0 < E
+```
+
+---
+
+### Conditional raw YM algebraic chain
+
+Lean verifies:
+
+```text
+controlled RG crossing
+=> coupling crosses xstab
+=> square-root threshold condition
+=> positive block-gap lower bound
+=> gap lifting with UV positivity and small mixing
 => positive fine-lattice gap lower bound
+```
+
+The final named wrapper is:
+
+```lean
+exists_positive_fine_gap_from_controlled_rg
 ```
 
 ---
 
 ## What remains unproved analytically
 
-The project currently assumes, but does not prove:
+The Lean project currently assumes, but does not prove:
 
 1. gauge-covariant RG decomposition,
 2. controlled Yang--Mills RG crossing,
 3. quasi-local block diagonalization,
 4. UV Poincare gap,
-5. continuum convergence preserving the gap.
+5. gap lifting as an analytic local-Hamiltonian theorem,
+6. continuum convergence preserving the gap,
+7. the full general finite-product/holonomy deviation theorem.
 
-These are the real analytic/nonperturbative Yang--Mills obligations.
+These are the remaining analytic/nonperturbative obligations.
 
-The Lean project is currently verifying the algebraic closure once those assumptions are supplied.
+The Lean project currently verifies the algebraic closure once those assumptions are supplied.
 
 ---
 
@@ -303,4 +424,16 @@ Expected output:
 
 ```text
 Build completed successfully
+```
+
+Check repo state:
+
+```powershell
+git status
+```
+
+Expected output:
+
+```text
+nothing to commit, working tree clean
 ```
