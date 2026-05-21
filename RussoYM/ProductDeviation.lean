@@ -84,4 +84,39 @@ theorem two_factor_deviation_bound_clean
     exact two_factor_deviation_bound hdAB_nonneg hdA_nonneg hdB_nonneg htri
   nlinarith
 
+/-
+Normed-space version of the two-term square estimate.
+
+If a vector `z` has norm bounded by `||x|| + ||y||`, then
+
+  ||z||^2 <= 2 * (||x||^2 + ||y||^2).
+-/
+theorem norm_sq_bound_from_triangle
+    {V : Type*}
+    [SeminormedAddCommGroup V]
+    {z x y : V}
+    (htri : ‖z‖ <= ‖x‖ + ‖y‖) :
+    ‖z‖^2 <= 2 * (‖x‖^2 + ‖y‖^2) := by
+  exact two_factor_deviation_bound
+    (norm_nonneg z)
+    (norm_nonneg x)
+    (norm_nonneg y)
+    htri
+
+/-
+Two-term norm square estimate.
+
+For any two vectors in a seminormed additive commutative group,
+
+  ||x + y||^2 <= 2 * (||x||^2 + ||y||^2).
+-/
+theorem norm_add_sq_le_two
+    {V : Type*}
+    [SeminormedAddCommGroup V]
+    (x y : V) :
+    ‖x + y‖^2 <= 2 * (‖x‖^2 + ‖y‖^2) := by
+  have htri : ‖x + y‖ <= ‖x‖ + ‖y‖ := by
+    exact norm_add_le x y
+  exact norm_sq_bound_from_triangle htri
+
 end RussoYM
