@@ -68,4 +68,56 @@ theorem raw_gap_from_controlled_rg_and_stability
     exact hquad_from_cross hcoupling
   exact raw_gap_algebraic_closure hupos hquad hcUV hell hsmall
 
+/-
+Eventual raw gap closure.
+
+Controlled RG eventually crosses the coupling threshold.
+If crossing the threshold implies the strong-coupling quadratic block condition,
+and the UV/mixing assumptions hold for that crossing step, then there exists
+a step `n` where the fine-lattice gap lower bound is positive.
+-/
+theorem exists_raw_gap_from_eventual_rg
+    (y R u : Nat -> Real)
+    {betaLog theta xstab Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hupos : forall k, 0 < u k)
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog)
+    (hquad_from_cross :
+      forall k,
+        xstab < u k ->
+          Ccl * Cloc + Ccl * r * (u k) < lambdaPhys * (u k)^2)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      forall k,
+        xstab < u k ->
+          Clift * omega <
+            min
+              ((u k) * (lambdaPhys - Ccl * (Cloc / (u k)^2 + r / (u k))))
+              (cUV / ell)) :
+    exists n : Nat,
+      0 <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell)
+        - Clift * omega := by
+  obtain ⟨n, hcross⟩ :=
+    controlled_rg_eventually_coupling_crosses
+      y R u hEq hR hRel hupos hxstab hTheta hBeta
+  use n
+  have hquad :
+      Ccl * Cloc + Ccl * r * (u n) < lambdaPhys * (u n)^2 := by
+    exact hquad_from_cross n hcross
+  have hsmall_n :
+      Clift * omega <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell) := by
+    exact hsmall n hcross
+  exact raw_gap_algebraic_closure (hupos n) hquad hcUV hell hsmall_n
+
 end RussoYM
