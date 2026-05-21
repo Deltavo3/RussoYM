@@ -4,3 +4,4 @@ import RussoYM.ProofSkeleton
 import RussoYM.RGCrossing
 import RussoYM.RawClosure
 import RussoYM.OperationalGap
+import RussoYM.ProductDeviation
