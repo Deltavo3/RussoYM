@@ -354,4 +354,51 @@ theorem rewritten_frt_gap_constant_positive
     exact sq_pos_of_pos hdelta
   exact mul_pos hcoeff_pos hdelta_sq_pos
 
+/-
+Final named FRT finite-filter operational gap theorem.
+
+This is the paper-style statement:
+
+If
+
+  D^2 <= N * Q,
+  K * Q <= E,
+  N <= C * (epsMax / epsMin)^2,
+  delta <= D,
+
+then
+
+  ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E.
+
+Under strict positivity of the constants, the lower-bound constant is positive,
+so `E > 0`.
+-/
+theorem frt_finite_filter_operational_gap
+    {E Q D K N C epsMin epsMax delta : Real}
+    (hE : K * Q <= E)
+    (hD : D^2 <= N * Q)
+    (hK : 0 < K)
+    (hN : 0 <= N)
+    (hQ : 0 <= Q)
+    (hC : 0 < C)
+    (hmin : 0 < epsMin)
+    (hmax : 0 < epsMax)
+    (hNbound : N <= C * (epsMax / epsMin)^2)
+    (hdelta : delta <= D)
+    (hdelta_pos : 0 < delta) :
+    ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E
+      ∧ 0 < ((K / C) * (epsMin / epsMax)^2) * delta^2
+      ∧ 0 < E := by
+  have hbound :
+      ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E := by
+    exact finite_filter_gap_with_geometry_rewritten
+      hE hD (le_of_lt hK) hN hQ hC hmin hmax hNbound hdelta
+      (le_of_lt hdelta_pos)
+  have hgap_pos :
+      0 < ((K / C) * (epsMin / epsMax)^2) * delta^2 := by
+    exact rewritten_frt_gap_constant_positive hK hC hmin hmax hdelta_pos
+  have hE_pos : 0 < E := by
+    exact lt_of_lt_of_le hgap_pos hbound
+  exact ⟨hbound, hgap_pos, hE_pos⟩
+
 end RussoYM
