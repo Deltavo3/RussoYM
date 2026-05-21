@@ -179,4 +179,69 @@ theorem raw_gap_from_controlled_rg_and_sqrt_threshold
     exact block_gap_positive_from_sqrt_threshold hCcl hCloc hlambda hupos hthreshold
   exact gap_lifting_with_uv_scale hBlock hcUV hell hsmall
 
+/-
+Eventual raw gap closure using the actual square-root stability threshold.
+
+Controlled RG eventually crosses the square-root threshold
+
+  xstab =
+    (Ccl*r + sqrt((Ccl*r)^2 + 4*lambdaPhys*Ccl*Cloc))
+      / (2*lambdaPhys).
+
+At that crossing step, the block-gap lower bound is positive. If the UV gap
+is positive and the mixing is small at that step, then there exists a step
+where the fine-lattice gap lower bound is positive.
+-/
+theorem exists_raw_gap_from_eventual_rg_and_sqrt_threshold
+    (y R u : Nat -> Real)
+    {betaLog theta xstab Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hupos : forall k, 0 < u k)
+    (hxstab_def :
+      xstab =
+        (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
+          / (2 * lambdaPhys))
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog)
+    (hCcl : 0 < Ccl)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambdaPhys)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      forall k,
+        xstab < u k ->
+          Clift * omega <
+            min
+              ((u k) * (lambdaPhys - Ccl * (Cloc / (u k)^2 + r / (u k))))
+              (cUV / ell)) :
+    exists n : Nat,
+      0 <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell)
+        - Clift * omega := by
+  obtain ⟨n, hcross⟩ :=
+    controlled_rg_eventually_coupling_crosses
+      y R u hEq hR hRel hupos hxstab hTheta hBeta
+  use n
+  have hthreshold :
+      (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
+          / (2 * lambdaPhys) < u n := by
+    simpa [hxstab_def] using hcross
+  have hBlock :
+      0 < (u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))) := by
+    exact block_gap_positive_from_sqrt_threshold
+      hCcl hCloc hlambda (hupos n) hthreshold
+  have hsmall_n :
+      Clift * omega <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell) := by
+    exact hsmall n hcross
+  exact gap_lifting_with_uv_scale hBlock hcUV hell hsmall_n
+
 end RussoYM
