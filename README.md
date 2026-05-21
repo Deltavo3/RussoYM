@@ -10,6 +10,16 @@ The goal of this Lean project is to verify the algebraic closure steps that conn
 
 ## Current headline theorems
 
+### `RussoYM/Assumptions.lean`
+
+This file separates proved algebra from unproved analytic assumptions.
+
+Important structures:
+
+```lean
+FRTFiniteFilterAssumptions
+RawYMAnalyticAssumptions
+
 ### FRT finite-filter operational gap
 
 The main FRT-side theorem is:
