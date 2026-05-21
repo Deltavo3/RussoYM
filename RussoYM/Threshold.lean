@@ -143,4 +143,30 @@ theorem strong_coupling_from_sqrt_threshold
     exact quadratic_positive_from_sqrt_threshold hC hCloc hlambda hcross
   exact strong_coupling_from_quadratic hx hquad
 
+/-
+Square-root threshold implies positive block-gap lower bound.
+
+This is the direct algebraic theorem matching the strong-coupling block gap:
+
+  Delta >= x * (lambda - C * (Cloc / x^2 + r / x))
+
+where `x = g_l^2`.
+
+If `x` lies above the square-root stability threshold, then the lower bound is
+strictly positive.
+-/
+theorem block_gap_positive_from_sqrt_threshold
+    {C r Cloc lambda x : Real}
+    (hC : 0 < C)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambda)
+    (hx : 0 < x)
+    (hcross :
+      (C * r + Real.sqrt ((C * r)^2 + 4 * lambda * C * Cloc))
+        / (2 * lambda) < x) :
+    0 < x * (lambda - C * (Cloc / x^2 + r / x)) := by
+  have hstab : C * (Cloc / x^2 + r / x) < lambda := by
+    exact strong_coupling_from_sqrt_threshold hC hCloc hlambda hx hcross
+  exact block_gap_positive_from_stability hx hstab
+
 end RussoYM
