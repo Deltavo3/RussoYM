@@ -3,6 +3,7 @@ import RussoYM.AlgebraCore
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
+set_option linter.style.emptyLine false
 
 namespace RussoYM
 
