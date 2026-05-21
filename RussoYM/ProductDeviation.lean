@@ -255,16 +255,19 @@ theorem norm_one_sub_mul3_le
       ‖a * b‖ <= ‖a‖ * ‖b‖ := hmul
       _ <= 1 := by
         simpa using hprod
+
   have hfirst : ‖1 - (a * b) * c‖ <= ‖1 - a * b‖ + ‖1 - c‖ := by
     exact norm_one_sub_mul_le (a * b) c hab
+
   have hsecond : ‖1 - a * b‖ <= ‖1 - a‖ + ‖1 - b‖ := by
     exact norm_one_sub_mul_le a b ha
+
   calc
     ‖1 - a * b * c‖ = ‖1 - (a * b) * c‖ := by
       rfl
     _ <= ‖1 - a * b‖ + ‖1 - c‖ := hfirst
     _ <= (‖1 - a‖ + ‖1 - b‖) + ‖1 - c‖ := by
-      exact add_le_add_right hsecond ‖1 - c‖
+      linarith
     _ = ‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖ := by
       ring
 
