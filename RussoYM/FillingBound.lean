@@ -219,4 +219,104 @@ theorem finite_filter_energy_positive_with_geometry
     exact mul_pos hcoeff_pos hdelta2_pos
   exact lt_of_lt_of_le hlower_pos hbound
 
+/-
+Rewrite the geometric filling coefficient.
+
+This proves the algebraic identity
+
+  K / (C * (epsMax / epsMin)^2)
+    =
+  (K / C) * (epsMin / epsMax)^2.
+
+This is the form used in the FRT finite-filter gap estimate.
+-/
+theorem geometry_coefficient_rewrite
+    {K C epsMin epsMax : Real}
+    (hC : C ≠ 0)
+    (hmin : epsMin ≠ 0)
+    (hmax : epsMax ≠ 0) :
+    K / (C * (epsMax / epsMin)^2)
+      =
+    (K / C) * (epsMin / epsMax)^2 := by
+  field_simp [hC, hmin, hmax]
+
+/-
+Finite-filter gap with the coefficient rewritten in the usual FRT form.
+
+Instead of
+
+  (K / (C * (epsMax / epsMin)^2)) * delta^2 <= E,
+
+this proves
+
+  ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E.
+-/
+theorem finite_filter_gap_with_geometry_rewritten
+    {E Q D K N C epsMin epsMax delta : Real}
+    (hE : K * Q <= E)
+    (hD : D^2 <= N * Q)
+    (hK : 0 <= K)
+    (hN : 0 <= N)
+    (hQ : 0 <= Q)
+    (hC : 0 < C)
+    (hmin : 0 < epsMin)
+    (hmax : 0 < epsMax)
+    (hNbound : N <= C * (epsMax / epsMin)^2)
+    (hdelta : delta <= D)
+    (hdelta_nonneg : 0 <= delta) :
+    ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E := by
+  have hmain :
+      (K / (C * (epsMax / epsMin)^2)) * delta^2 <= E := by
+    exact finite_filter_gap_with_geometry_div
+      hE hD hK hN hQ hC hmin hmax hNbound hdelta hdelta_nonneg
+  have hrewrite :
+      K / (C * (epsMax / epsMin)^2)
+        =
+      (K / C) * (epsMin / epsMax)^2 := by
+    exact geometry_coefficient_rewrite
+      (K := K)
+      (C := C)
+      (epsMin := epsMin)
+      (epsMax := epsMax)
+      (ne_of_gt hC)
+      (ne_of_gt hmin)
+      (ne_of_gt hmax)
+  rw [hrewrite] at hmain
+  exact hmain
+
+/-
+Positive energy in the rewritten FRT coefficient form.
+-/
+theorem finite_filter_energy_positive_with_geometry_rewritten
+    {E Q D K N C epsMin epsMax delta : Real}
+    (hE : K * Q <= E)
+    (hD : D^2 <= N * Q)
+    (hK : 0 < K)
+    (hN : 0 <= N)
+    (hQ : 0 <= Q)
+    (hC : 0 < C)
+    (hmin : 0 < epsMin)
+    (hmax : 0 < epsMax)
+    (hNbound : N <= C * (epsMax / epsMin)^2)
+    (hdelta : delta <= D)
+    (hdelta_pos : 0 < delta) :
+    0 < E := by
+  have hbound :
+      ((K / C) * (epsMin / epsMax)^2) * delta^2 <= E := by
+    exact finite_filter_gap_with_geometry_rewritten
+      hE hD (le_of_lt hK) hN hQ hC hmin hmax hNbound hdelta
+      (le_of_lt hdelta_pos)
+  have hKdiv_pos : 0 < K / C := by
+    exact div_pos hK hC
+  have hratio_pos : 0 < epsMin / epsMax := by
+    exact div_pos hmin hmax
+  have hcoeff_pos : 0 < (K / C) * (epsMin / epsMax)^2 := by
+    exact mul_pos hKdiv_pos (sq_pos_of_pos hratio_pos)
+  have hdelta2_pos : 0 < delta^2 := by
+    exact sq_pos_of_pos hdelta_pos
+  have hlower_pos :
+      0 < ((K / C) * (epsMin / epsMax)^2) * delta^2 := by
+    exact mul_pos hcoeff_pos hdelta2_pos
+  exact lt_of_lt_of_le hlower_pos hbound
+
 end RussoYM
