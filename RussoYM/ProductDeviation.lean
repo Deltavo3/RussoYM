@@ -318,4 +318,129 @@ theorem three_factor_product_deviation_norm_sq_of_norm_eq_one
     exact le_of_eq hb
   exact three_factor_product_deviation_norm_sq a b c ha_le hb_le
 
+/-
+Four-term real square estimate.
+
+For real numbers `a`, `b`, `c`, and `d`,
+
+  (a + b + c + d)^2 <= 4 * (a^2 + b^2 + c^2 + d^2).
+-/
+theorem square_sum_four_le
+    (a b c d : Real) :
+    (a + b + c + d)^2 <= 4 * (a^2 + b^2 + c^2 + d^2) := by
+  nlinarith [
+    sq_nonneg (a - b),
+    sq_nonneg (a - c),
+    sq_nonneg (a - d),
+    sq_nonneg (b - c),
+    sq_nonneg (b - d),
+    sq_nonneg (c - d)
+  ]
+
+/-
+Four-factor deviation bound in abstract real form.
+
+If
+
+  dABCD <= dA + dB + dC + dD,
+
+and all deviations are nonnegative, then
+
+  dABCD^2 <= 4 * (dA^2 + dB^2 + dC^2 + dD^2).
+-/
+theorem four_factor_deviation_bound
+    {dABCD dA dB dC dD : Real}
+    (hdABCD_nonneg : 0 <= dABCD)
+    (hdA_nonneg : 0 <= dA)
+    (hdB_nonneg : 0 <= dB)
+    (hdC_nonneg : 0 <= dC)
+    (hdD_nonneg : 0 <= dD)
+    (htri : dABCD <= dA + dB + dC + dD) :
+    dABCD^2 <= 4 * (dA^2 + dB^2 + dC^2 + dD^2) := by
+  have hsum_nonneg : 0 <= dA + dB + dC + dD := by
+    linarith
+  have hsquare_mono : dABCD^2 <= (dA + dB + dC + dD)^2 := by
+    nlinarith
+  have hsquare_bound :
+      (dA + dB + dC + dD)^2 <=
+        4 * (dA^2 + dB^2 + dC^2 + dD^2) := by
+    exact square_sum_four_le dA dB dC dD
+  exact le_trans hsquare_mono hsquare_bound
+
+/-
+Four-factor product deviation estimate in a normed ring.
+
+If `||a|| <= 1`, `||b|| <= 1`, and `||c|| <= 1`, then
+
+  ||1 - a*b*c*d|| <= ||1-a|| + ||1-b|| + ||1-c|| + ||1-d||.
+-/
+theorem norm_one_sub_mul4_le
+    {R : Type*}
+    [NormedRing R]
+    (a b c d : R)
+    (ha : ‖a‖ <= 1)
+    (hb : ‖b‖ <= 1)
+    (hc : ‖c‖ <= 1) :
+    ‖1 - a * b * c * d‖ <= ‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖ + ‖1 - d‖ := by
+  have hab : ‖a * b‖ <= 1 := by
+    have hmul : ‖a * b‖ <= ‖a‖ * ‖b‖ := by
+      exact norm_mul_le a b
+    have hprod : ‖a‖ * ‖b‖ <= 1 * 1 := by
+      exact mul_le_mul ha hb (norm_nonneg b) (by norm_num)
+    calc
+      ‖a * b‖ <= ‖a‖ * ‖b‖ := hmul
+      _ <= 1 := by
+        simpa using hprod
+  have habc : ‖(a * b) * c‖ <= 1 := by
+    have hmul : ‖(a * b) * c‖ <= ‖a * b‖ * ‖c‖ := by
+      exact norm_mul_le (a * b) c
+    have hprod : ‖a * b‖ * ‖c‖ <= 1 * 1 := by
+      exact mul_le_mul hab hc (norm_nonneg c) (by norm_num)
+    calc
+      ‖(a * b) * c‖ <= ‖a * b‖ * ‖c‖ := hmul
+      _ <= 1 := by
+        simpa using hprod
+  have hfirst :
+      ‖1 - ((a * b) * c) * d‖ <= ‖1 - (a * b) * c‖ + ‖1 - d‖ := by
+    exact norm_one_sub_mul_le ((a * b) * c) d habc
+  have hsecond :
+      ‖1 - a * b * c‖ <= ‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖ := by
+    exact norm_one_sub_mul3_le a b c ha hb
+  calc
+    ‖1 - a * b * c * d‖ = ‖1 - ((a * b) * c) * d‖ := by
+      rfl
+    _ <= ‖1 - (a * b) * c‖ + ‖1 - d‖ := hfirst
+    _ <= (‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖) + ‖1 - d‖ := by
+      linarith
+    _ = ‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖ + ‖1 - d‖ := by
+      ring
+
+/-
+Squared four-factor product deviation estimate.
+
+If `||a|| <= 1`, `||b|| <= 1`, and `||c|| <= 1`, then
+
+  ||1 - a*b*c*d||^2
+    <= 4 * (||1-a||^2 + ||1-b||^2 + ||1-c||^2 + ||1-d||^2).
+-/
+theorem four_factor_product_deviation_norm_sq
+    {R : Type*}
+    [NormedRing R]
+    (a b c d : R)
+    (ha : ‖a‖ <= 1)
+    (hb : ‖b‖ <= 1)
+    (hc : ‖c‖ <= 1) :
+    ‖1 - a * b * c * d‖^2
+      <= 4 * (‖1 - a‖^2 + ‖1 - b‖^2 + ‖1 - c‖^2 + ‖1 - d‖^2) := by
+  have htri :
+      ‖1 - a * b * c * d‖ <= ‖1 - a‖ + ‖1 - b‖ + ‖1 - c‖ + ‖1 - d‖ := by
+    exact norm_one_sub_mul4_le a b c d ha hb hc
+  exact four_factor_deviation_bound
+    (norm_nonneg (1 - a * b * c * d))
+    (norm_nonneg (1 - a))
+    (norm_nonneg (1 - b))
+    (norm_nonneg (1 - c))
+    (norm_nonneg (1 - d))
+    htri
+
 end RussoYM
