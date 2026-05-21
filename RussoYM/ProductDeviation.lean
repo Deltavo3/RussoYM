@@ -443,4 +443,62 @@ theorem four_factor_product_deviation_norm_sq
     (norm_nonneg (1 - d))
     htri
 
+/-
+General product-deviation wrapper.
+
+If a product deviation is bounded by a total deviation sum,
+
+  dProd <= sumDev,
+
+and the total deviation sum satisfies a Cauchy-type estimate,
+
+  sumDev^2 <= m * sumSq,
+
+then
+
+  dProd^2 <= m * sumSq.
+
+This is the abstract algebraic form of the general product-deviation theorem.
+-/
+theorem product_deviation_from_triangle_and_cauchy
+    {dProd sumDev sumSq m : Real}
+    (hdProd_nonneg : 0 <= dProd)
+    (hsumDev_nonneg : 0 <= sumDev)
+    (htri : dProd <= sumDev)
+    (hcauchy : sumDev^2 <= m * sumSq) :
+    dProd^2 <= m * sumSq := by
+  have hsquare_mono : dProd^2 <= sumDev^2 := by
+    nlinarith
+  exact le_trans hsquare_mono hcauchy
+
+/-
+Normed version of the same wrapper.
+
+If
+
+  ||z|| <= sumDev
+
+and
+
+  sumDev^2 <= m * sumSq,
+
+then
+
+  ||z||^2 <= m * sumSq.
+-/
+theorem norm_product_deviation_from_triangle_and_cauchy
+    {V : Type*}
+    [SeminormedAddCommGroup V]
+    {z : V}
+    {sumDev sumSq m : Real}
+    (hsumDev_nonneg : 0 <= sumDev)
+    (htri : ‖z‖ <= sumDev)
+    (hcauchy : sumDev^2 <= m * sumSq) :
+    ‖z‖^2 <= m * sumSq := by
+  exact product_deviation_from_triangle_and_cauchy
+    (norm_nonneg z)
+    hsumDev_nonneg
+    htri
+    hcauchy
+
 end RussoYM
