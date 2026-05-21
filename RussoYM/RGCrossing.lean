@@ -193,4 +193,70 @@ theorem controlled_rg_decreases_each_step
   intro n
   exact controlled_rg_inverse_decreases (hEq n) (hR n) hTheta hBeta
 
+/-
+Inverse-coupling threshold conversion.
+
+If
+
+  y = 1 / u
+
+and
+
+  y < 1 / x
+
+with `u > 0` and `x > 0`, then
+
+  x < u.
+
+This is the algebraic bridge from
+
+  y_n < 1 / x_stab
+
+to
+
+  u_n > x_stab.
+-/
+theorem coupling_crosses_from_inverse
+    {u x y : Real}
+    (hu : 0 < u)
+    (hx : 0 < x)
+    (hy : y = 1 / u)
+    (hcross : y < 1 / x) :
+    x < u := by
+  rw [hy] at hcross
+  have hux_pos : 0 < u * x := by
+    exact mul_pos hu hx
+  have hmul : (1 / u) * (u * x) < (1 / x) * (u * x) := by
+    exact mul_lt_mul_of_pos_right hcross hux_pos
+  have hleft : (1 / u) * (u * x) = x := by
+    field_simp [ne_of_gt hu]
+  have hright : (1 / x) * (u * x) = u := by
+    field_simp [ne_of_gt hx]
+  rw [hleft, hright] at hmul
+  exact hmul
+
+/-
+Controlled RG reaches the coupling threshold.
+
+If the controlled RG linear bound puts inverse coupling below `1 / xstab`,
+and `y n = 1 / u n`, then the actual coupling satisfies
+
+  xstab < u n.
+-/
+theorem controlled_rg_coupling_crosses
+    (y R u : Nat -> Real)
+    {betaLog theta xstab : Real}
+    (hEq : forall n, y (Nat.succ n) = y n - betaLog + R n)
+    (hR : forall n, R n <= theta * betaLog)
+    (hRel : forall n, y n = 1 / u n)
+    (hxstab : 0 < xstab)
+    {n : Nat}
+    (hupos : 0 < u n)
+    (hcross :
+      y 0 - (n : Real) * ((1 - theta) * betaLog) < 1 / xstab) :
+    xstab < u n := by
+  have hy_lt : y n < 1 / xstab := by
+    exact controlled_rg_crosses_below y R hEq hR hcross
+  exact coupling_crosses_from_inverse hupos hxstab (hRel n) hy_lt
+
 end RussoYM
