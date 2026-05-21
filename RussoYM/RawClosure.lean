@@ -2,6 +2,7 @@ import Mathlib
 import RussoYM.AlgebraCore
 import RussoYM.ProofSkeleton
 import RussoYM.RGCrossing
+import RussoYM.Threshold
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -119,5 +120,63 @@ theorem exists_raw_gap_from_eventual_rg
           (cUV / ell) := by
     exact hsmall n hcross
   exact raw_gap_algebraic_closure (hupos n) hquad hcUV hell hsmall_n
+
+/-
+Raw gap closure using the actual square-root stability threshold.
+
+This removes the abstract bridge assumption
+
+  hquad_from_cross
+
+and instead uses the threshold formula directly:
+
+  xstab =
+    (Ccl*r + sqrt((Ccl*r)^2 + 4*lambdaPhys*Ccl*Cloc))
+      / (2*lambdaPhys).
+
+If controlled RG crosses this threshold, then the block-gap lower bound is
+positive, and the gap-lifting algebra gives a positive fine-lattice gap lower
+bound.
+-/
+theorem raw_gap_from_controlled_rg_and_sqrt_threshold
+    (y R u : Nat -> Real)
+    {betaLog theta xstab Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    {n : Nat}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hxstab_def :
+      xstab =
+        (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
+          / (2 * lambdaPhys))
+    (hxstab : 0 < xstab)
+    (hupos : 0 < u n)
+    (hcross :
+      y 0 - (n : Real) * ((1 - theta) * betaLog) < 1 / xstab)
+    (hCcl : 0 < Ccl)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambdaPhys)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      Clift * omega <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell)) :
+    0 <
+      min
+        ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+        (cUV / ell)
+      - Clift * omega := by
+  have hcoupling : xstab < u n := by
+    exact controlled_rg_coupling_crosses y R u hEq hR hRel hxstab hupos hcross
+  have hthreshold :
+      (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
+          / (2 * lambdaPhys) < u n := by
+    simpa [hxstab_def] using hcoupling
+  have hBlock :
+      0 < (u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))) := by
+    exact block_gap_positive_from_sqrt_threshold hCcl hCloc hlambda hupos hthreshold
+  exact gap_lifting_with_uv_scale hBlock hcUV hell hsmall
 
 end RussoYM
