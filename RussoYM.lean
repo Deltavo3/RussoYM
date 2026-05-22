@@ -16,3 +16,4 @@ import RussoYM.ListProductDeviation
 import RussoYM.LayerOneCriterion
 import RussoYM.LayerOneInterface
 import RussoYM.ContinuumGap
+import RussoYM.ClayCriterion
