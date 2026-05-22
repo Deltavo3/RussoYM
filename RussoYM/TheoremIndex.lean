@@ -3,6 +3,7 @@ import RussoYM.Assumptions
 import RussoYM.ProductDeviationInterface
 import RussoYM.ListProductDeviation
 import RussoYM.LayerOneCriterion
+import RussoYM.LayerOneInterface
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -120,5 +121,21 @@ theorem theorem_index_layer_one_uniform_fine_gap
         DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact LayerOneFineGapAssumptions.imply_uniform_fine_gap h
+
+/-
+Endpoint 7: Layer One assumptions interface.
+
+This theorem is a named alias for:
+
+  LayerOneAssumptions.imply_uniform_fine_gap
+-/
+theorem theorem_index_layer_one_assumptions_uniform_fine_gap
+    {DeltaFine Delta0 dBlock dUV Cmix eps ell : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneAssumptions
+        DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact LayerOneAssumptions.imply_uniform_fine_gap h
 
 end RussoYM
