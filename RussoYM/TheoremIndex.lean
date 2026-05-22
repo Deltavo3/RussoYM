@@ -9,6 +9,7 @@ import RussoYM.ClayCriterion
 import RussoYM.LayerOneRedLemmas
 import RussoYM.LayerOneMaster
 import RussoYM.RGCrossing
+import RussoYM.RawClosure
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -249,5 +250,50 @@ theorem theorem_index_controlled_rg_margin_crossing
   exact
     controlled_rg_eventually_margin_coupling_crosses
       y R u hEq hR hRel hupos hsigma hxstab hTheta hBeta
+
+/-
+Endpoint 13: raw closure from RG margin crossing and square-root threshold.
+
+This theorem is a named alias for:
+
+  exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
+-/
+theorem theorem_index_raw_gap_from_margin_rg_and_sqrt_threshold
+    (y R u : Nat -> Real)
+    {betaLog theta sigma xstab Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hupos : forall k, 0 < u k)
+    (hsigma : 0 < sigma)
+    (hxstab_def :
+      xstab =
+        (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
+          / (2 * lambdaPhys))
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog)
+    (hCcl : 0 < Ccl)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambdaPhys)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      forall k,
+        (1 + sigma) * xstab < u k ->
+          Clift * omega <
+            min
+              ((u k) * (lambdaPhys - Ccl * (Cloc / (u k)^2 + r / (u k))))
+              (cUV / ell)) :
+    exists n : Nat,
+      0 <
+        min
+          ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+          (cUV / ell)
+        - Clift * omega := by
+  exact
+    exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
+      y R u hEq hR hRel hupos hsigma hxstab_def hxstab
+      hTheta hBeta hCcl hCloc hlambda hcUV hell hsmall
 
 end RussoYM
