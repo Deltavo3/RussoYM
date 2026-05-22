@@ -64,7 +64,7 @@ theorem controlled_rg_step_bound
     y - betaLog + R <= y - betaLog + theta * betaLog := hmain
     _ = y - (1 - theta) * betaLog := hrewrite
 
-/-lake build
+/-
 Controlled RG one-step strict decrease.
 
 If the remainder is controlled by
