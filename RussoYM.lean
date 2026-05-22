@@ -13,3 +13,4 @@ import RussoYM.Assumptions
 import RussoYM.ProductDeviationInterface
 import RussoYM.TheoremIndex
 import RussoYM.ListProductDeviation
+import RussoYM.LayerOneCriterion
