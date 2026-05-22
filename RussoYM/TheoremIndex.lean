@@ -6,6 +6,7 @@ import RussoYM.LayerOneCriterion
 import RussoYM.LayerOneInterface
 import RussoYM.ContinuumGap
 import RussoYM.ClayCriterion
+import RussoYM.LayerOneRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -168,5 +169,29 @@ theorem theorem_index_clay_ym_gap
         DeltaYM DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
     Delta0 <= DeltaFine ∧ 0 < DeltaFine ∧ Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
   exact ClayYMGapAssumptions.imply_clay_gap h
+
+  /-
+Endpoint 10: Layer One red-lemma registry.
+
+This theorem is a named alias for:
+
+  LayerOneRedLemmaAssumptions.imply_all_red_lemmas
+-/
+theorem theorem_index_layer_one_red_lemmas
+    {curvatureFormCoercivity : Prop}
+    {rgRemainderEstimates : Prop}
+    {multiscaleMixingSuppression : Prop}
+    {gapPreservingContinuumConstruction : Prop}
+    (h :
+      LayerOneRedLemmaAssumptions
+        curvatureFormCoercivity
+        rgRemainderEstimates
+        multiscaleMixingSuppression
+        gapPreservingContinuumConstruction) :
+    curvatureFormCoercivity
+      ∧ rgRemainderEstimates
+      ∧ multiscaleMixingSuppression
+      ∧ gapPreservingContinuumConstruction := by
+  exact LayerOneRedLemmaAssumptions.imply_all_red_lemmas h
 
 end RussoYM
