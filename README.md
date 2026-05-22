@@ -471,19 +471,23 @@ exists_positive_fine_gap_from_controlled_rg
 
 ## What remains unproved analytically
 
-The Lean project currently assumes, but does not prove:
+The Lean project currently assumes, but does not prove, the main analytic red
+lemmas required for the Clay-compatible Layer 1 route:
 
-1. gauge-covariant RG decomposition,
-2. controlled Yang--Mills RG crossing,
-3. quasi-local block diagonalization,
-4. UV Poincare gap,
-5. gap lifting as an analytic local-Hamiltonian theorem,
-6. continuum convergence preserving the gap,
-7. the full general finite-product/holonomy deviation theorem.
+1. uniform curvature form/coercivity,
+2. uniform RG remainder estimates,
+3. uniform multiscale mixing suppression,
+4. gap-preserving continuum construction.
 
-These are the remaining analytic/nonperturbative obligations.
+Additional refinements still outside the current Lean algebra include:
 
-The Lean project currently verifies the algebraic closure once those assumptions are supplied.
+5. gauge-covariant RG decomposition,
+6. controlled nonperturbative Yang--Mills RG crossing,
+7. holonomy-specific/product-deviation analytic estimates beyond the current
+   finite-list algebraic theorem.
+
+The Lean project currently verifies the algebraic closure once those assumptions
+are supplied.
 
 ---
 
