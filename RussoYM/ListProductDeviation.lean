@@ -38,7 +38,7 @@ theorem list_prod_norm_le_one
   induction xs with
   | nil =>
     intro h
-    simpa using (le_of_eq (norm_one : ‖(1 : R)‖ = 1))
+    simp using (le_of_eq (norm_one : ‖(1 : R)‖ = 1))
   | cons a xs ih =>
       intro h
       have ha : ‖a‖ <= 1 := by
