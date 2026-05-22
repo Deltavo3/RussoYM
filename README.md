@@ -19,14 +19,9 @@ Important structures:
 ```lean
 FRTFiniteFilterAssumptions
 RawYMAnalyticAssumptions
+```
 
 ### FRT finite-filter operational gap
-
-The main FRT-side theorem is:
-
-```lean
-frt_finite_filter_operational_gap
-```
 
 It proves the paper-style finite-filter bound:
 
@@ -124,6 +119,7 @@ lemmas. It records the algebraic implication:
 LayerOneAssumptions
 + ContinuumGapAssumptions
 => DeltaYM > 0
+```
 
 ### `RussoYM/AlgebraCore.lean`
 
