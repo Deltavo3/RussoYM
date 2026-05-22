@@ -109,8 +109,16 @@ Relevant Lean files:
     a positive continuum Yang--Mills gap.
 
 - `RussoYM/TheoremIndex.lean`
-  - exposes the public endpoint:
-    `theorem_index_clay_ym_gap`.
+  - exposes the public endpoints:
+    `theorem_index_clay_ym_gap`,
+    `theorem_index_layer_one_red_lemmas`,
+    and `theorem_index_layer_one_master_endpoint`.
+
+- `RussoYM/LayerOneMaster.lean`
+  - combines the final Clay-compatible algebraic endpoint with the red-lemma
+    registry. Its master endpoint records:
+    red lemmas + Clay YM gap assumptions imply continuum gap positivity and
+    preserve the named analytic obligations.
 
 The final endpoint is conditional. It does not claim to prove the analytic red
 lemmas. It records the algebraic implication:
@@ -420,6 +428,8 @@ under the standard assumption:
 The public theorem-index endpoint is:
 
 theorem_index_list_product_triangle_interface
+
+
 
 ## Current verified chains
 
