@@ -246,7 +246,12 @@ coupling_crosses_from_inverse
 controlled_rg_coupling_crosses
 controlled_rg_eventually_below
 controlled_rg_eventually_coupling_crosses
+controlled_rg_eventually_margin_coupling_crosses
 ```
+
+This file also proves a margin-crossing endpoint: if `sigma > 0` and
+`xstab > 0`, controlled RG eventually drives the coupling above
+`(1 + sigma) * xstab`.
 
 This file proves that if inverse coupling obeys:
 
