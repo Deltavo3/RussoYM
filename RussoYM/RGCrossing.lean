@@ -345,4 +345,34 @@ theorem controlled_rg_eventually_coupling_crosses
   use n
   exact coupling_crosses_from_inverse (hupos n) hxstab (hRel n) hn
 
+/-
+Controlled RG eventually crosses a positive margin above the coupling threshold.
+
+If the controlled RG hypotheses imply eventual crossing of every positive
+threshold, then in particular the coupling eventually crosses
+
+  (1 + sigma) * xstab
+
+whenever sigma and xstab are positive.
+-/
+theorem controlled_rg_eventually_margin_coupling_crosses
+    (y R u : Nat -> Real)
+    {betaLog theta sigma xstab : Real}
+    (hEq : forall n, y (Nat.succ n) = y n - betaLog + R n)
+    (hR : forall n, R n <= theta * betaLog)
+    (hRel : forall n, y n = 1 / u n)
+    (hupos : forall n, 0 < u n)
+    (hsigma : 0 < sigma)
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog) :
+    exists n : Nat, (1 + sigma) * xstab < u n := by
+  have htarget_pos : 0 < (1 + sigma) * xstab := by
+    have hone_pos : 0 < 1 + sigma := by
+      linarith
+    exact mul_pos hone_pos hxstab
+  exact
+    controlled_rg_eventually_coupling_crosses
+      y R u hEq hR hRel hupos htarget_pos hTheta hBeta
+
 end RussoYM
