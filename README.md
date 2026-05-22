@@ -78,6 +78,47 @@ This does not prove the analytic RG or continuum pieces. It proves the algebraic
 
 ## File map
 
+## Layer 1 Clay-Compatible Gap Criterion
+
+The current formalization now includes a Layer 1 endpoint for the Clay-compatible
+Yang--Mills gap program.
+
+The Layer 1 architecture separates the proof into:
+
+1. finite-regulator/fine-gap algebra,
+2. an interface packaging the Layer 1 assumptions,
+3. a continuum gap-preservation interface,
+4. a final Clay YM gap criterion.
+
+Relevant Lean files:
+
+- `RussoYM/LayerOneCriterion.lean`
+  - proves the algebraic fine-gap lifting endpoint:
+    block gap + UV gap + small mixing implies a positive fine gap.
+
+- `RussoYM/LayerOneInterface.lean`
+  - wraps the Layer 1 fine-gap assumptions into a named interface.
+
+- `RussoYM/ContinuumGap.lean`
+  - packages the continuum gap-preservation assumption:
+    a positive uniform finite-regulator gap survives the continuum limit.
+
+- `RussoYM/ClayCriterion.lean`
+  - combines the Layer 1 endpoint with continuum gap preservation to conclude
+    a positive continuum Yang--Mills gap.
+
+- `RussoYM/TheoremIndex.lean`
+  - exposes the public endpoint:
+    `theorem_index_clay_ym_gap`.
+
+The final endpoint is conditional. It does not claim to prove the analytic red
+lemmas. It records the algebraic implication:
+
+```text
+LayerOneAssumptions
++ ContinuumGapAssumptions
+=> DeltaYM > 0
+
 ### `RussoYM/AlgebraCore.lean`
 
 Core algebraic lemmas.
