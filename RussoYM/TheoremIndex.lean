@@ -8,6 +8,7 @@ import RussoYM.ContinuumGap
 import RussoYM.ClayCriterion
 import RussoYM.LayerOneRedLemmas
 import RussoYM.LayerOneMaster
+import RussoYM.RGCrossing
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -225,5 +226,28 @@ theorem theorem_index_layer_one_master_endpoint
       ∧ multiscaleMixingSuppression
       ∧ gapPreservingContinuumConstruction := by
   exact LayerOneMasterAssumptions.imply_master_endpoint h
+
+/-
+Endpoint 12: controlled RG margin crossing.
+
+This theorem is a named alias for:
+
+  controlled_rg_eventually_margin_coupling_crosses
+-/
+theorem theorem_index_controlled_rg_margin_crossing
+    (y R u : Nat -> Real)
+    {betaLog theta sigma xstab : Real}
+    (hEq : forall n, y (Nat.succ n) = y n - betaLog + R n)
+    (hR : forall n, R n <= theta * betaLog)
+    (hRel : forall n, y n = 1 / u n)
+    (hupos : forall n, 0 < u n)
+    (hsigma : 0 < sigma)
+    (hxstab : 0 < xstab)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog) :
+    exists n : Nat, (1 + sigma) * xstab < u n := by
+  exact
+    controlled_rg_eventually_margin_coupling_crosses
+      y R u hEq hR hRel hupos hsigma hxstab hTheta hBeta
 
 end RussoYM
