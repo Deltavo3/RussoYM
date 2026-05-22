@@ -393,11 +393,33 @@ product_deviation_from_triangle_and_cauchy
 norm_product_deviation_from_triangle_and_cauchy
 ```
 
-This file currently proves the two-, three-, and four-factor versions of the normed product-deviation estimate.
-
-The general finite-product theorem is not yet complete.
+This file proves the two-, three-, and four-factor versions of the normed product-deviation estimate, together with abstract triangle/Cauchy wrappers.
 
 ---
+
+### `RussoYM/ListProductDeviation.lean`
+
+Finite-list product-deviation estimates.
+
+Important results:
+
+```lean
+list_prod_norm_le_one
+norm_one_sub_list_prod_le_sum
+list_product_triangle_interface
+```
+
+This file proves the finite-list product-deviation endpoint:
+
+‖1 - xs.prod‖ ≤ (xs.map fun x => ‖1 - x‖).sum
+
+under the standard assumption:
+
+∀ x ∈ xs, ‖x‖ ≤ 1
+
+The public theorem-index endpoint is:
+
+theorem_index_list_product_triangle_interface
 
 ## Current verified chains
 
