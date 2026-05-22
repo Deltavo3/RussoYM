@@ -90,6 +90,12 @@ The Layer 1 architecture separates the proof into:
 3. a continuum gap-preservation interface,
 4. a final Clay YM gap criterion.
 
+- `RussoYM/LayerOneRedLemmas.lean`
+  - records the remaining analytic red lemmas as named formal assumptions:
+    uniform curvature form/coercivity, uniform RG remainder estimates,
+    uniform multiscale mixing suppression, and gap-preserving continuum
+    construction.
+
 Relevant Lean files:
 
 - `RussoYM/LayerOneCriterion.lean`
