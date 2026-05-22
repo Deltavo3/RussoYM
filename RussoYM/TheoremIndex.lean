@@ -4,6 +4,7 @@ import RussoYM.ProductDeviationInterface
 import RussoYM.ListProductDeviation
 import RussoYM.LayerOneCriterion
 import RussoYM.LayerOneInterface
+import RussoYM.ContinuumGap
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -137,5 +138,18 @@ theorem theorem_index_layer_one_assumptions_uniform_fine_gap
         DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact LayerOneAssumptions.imply_uniform_fine_gap h
+
+/-
+Endpoint 8: continuum gap preservation interface.
+
+This theorem is a named alias for:
+
+  ContinuumGapAssumptions.imply_continuum_gap
+-/
+theorem theorem_index_continuum_gap
+    {DeltaYM Delta0 : Real}
+    (h : ContinuumGapAssumptions DeltaYM Delta0) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ContinuumGapAssumptions.imply_continuum_gap h
 
 end RussoYM
