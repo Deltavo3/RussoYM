@@ -7,6 +7,7 @@ import RussoYM.LayerOneInterface
 import RussoYM.ContinuumGap
 import RussoYM.ClayCriterion
 import RussoYM.LayerOneRedLemmas
+import RussoYM.LayerOneMaster
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -193,5 +194,36 @@ theorem theorem_index_layer_one_red_lemmas
       ∧ multiscaleMixingSuppression
       ∧ gapPreservingContinuumConstruction := by
   exact LayerOneRedLemmaAssumptions.imply_all_red_lemmas h
+
+/-
+Endpoint 11: Layer One master registry.
+
+This theorem is a named alias for:
+
+  LayerOneMasterAssumptions.imply_master_endpoint
+-/
+theorem theorem_index_layer_one_master_endpoint
+    {curvatureFormCoercivity : Prop}
+    {rgRemainderEstimates : Prop}
+    {multiscaleMixingSuppression : Prop}
+    {gapPreservingContinuumConstruction : Prop}
+    {DeltaYM DeltaFine Delta0 dBlock dUV Cmix eps ell : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneMasterAssumptions
+        curvatureFormCoercivity
+        rgRemainderEstimates
+        multiscaleMixingSuppression
+        gapPreservingContinuumConstruction
+        DeltaYM DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
+    Delta0 <= DeltaFine
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM
+      ∧ curvatureFormCoercivity
+      ∧ rgRemainderEstimates
+      ∧ multiscaleMixingSuppression
+      ∧ gapPreservingContinuumConstruction := by
+  exact LayerOneMasterAssumptions.imply_master_endpoint h
 
 end RussoYM
