@@ -5,6 +5,7 @@ import RussoYM.ListProductDeviation
 import RussoYM.LayerOneCriterion
 import RussoYM.LayerOneInterface
 import RussoYM.ContinuumGap
+import RussoYM.ClayCriterion
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -151,5 +152,21 @@ theorem theorem_index_continuum_gap
     (h : ContinuumGapAssumptions DeltaYM Delta0) :
     Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
   exact ContinuumGapAssumptions.imply_continuum_gap h
+
+/-
+Endpoint 9: final Clay YM gap criterion.
+
+This theorem is a named alias for:
+
+  ClayYMGapAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_ym_gap
+    {DeltaYM DeltaFine Delta0 dBlock dUV Cmix eps ell : Real}
+    {kappa : Nat}
+    (h :
+      ClayYMGapAssumptions
+        DeltaYM DeltaFine Delta0 dBlock dUV Cmix eps ell kappa) :
+    Delta0 <= DeltaFine ∧ 0 < DeltaFine ∧ Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayYMGapAssumptions.imply_clay_gap h
 
 end RussoYM
