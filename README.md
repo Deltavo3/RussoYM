@@ -301,11 +301,13 @@ raw_gap_from_controlled_rg_and_stability
 exists_raw_gap_from_eventual_rg
 raw_gap_from_controlled_rg_and_sqrt_threshold
 exists_raw_gap_from_eventual_rg_and_sqrt_threshold
+exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
 ```
 
 This file connects controlled RG crossing to the strong-coupling block gap and then to the fine-lattice gap.
 
-The strongest current theorem here uses the actual square-root threshold formula.
+The strongest current theorem here uses the actual square-root threshold formula
+together with RG margin crossing above `(1 + sigma) * xstab`.
 
 ---
 
