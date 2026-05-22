@@ -12,3 +12,4 @@ import RussoYM.MassGapCriterion
 import RussoYM.Assumptions
 import RussoYM.ProductDeviationInterface
 import RussoYM.TheoremIndex
+import RussoYM.ListProductDeviation
