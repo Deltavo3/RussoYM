@@ -1,6 +1,7 @@
 import Mathlib
 import RussoYM.Assumptions
 import RussoYM.ProductDeviationInterface
+import RussoYM.ListProductDeviation
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -84,5 +85,23 @@ theorem theorem_index_norm_product_deviation
     (h : NormProductDeviationAssumptions z sumDev sumSq m) :
     ‖z‖^2 <= m * sumSq := by
   exact NormProductDeviationAssumptions.imply_norm_product_deviation h
+
+/-!
+## List product deviation endpoint
+
+This endpoint records the finite-list version of the product-deviation
+estimate. It packages the bound
+
+  ‖1 - xs.prod‖ ≤ ∑ x ∈ xs, ‖1 - x‖
+
+under the standard norm-control assumptions.
+-/
+
+theorem theorem_index_list_product_triangle_interface
+    {R : Type*} [NormedRing R] [NormOneClass R]
+    (xs : List R)
+    (hxs : ∀ x ∈ xs, ‖x‖ ≤ 1) :
+    ‖1 - xs.prod‖ ≤ (xs.map fun x => ‖1 - x‖).sum := by
+  exact list_product_triangle_interface xs hxs
 
 end RussoYM
