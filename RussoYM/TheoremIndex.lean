@@ -12,6 +12,7 @@ import RussoYM.RGCrossing
 import RussoYM.RawClosure
 import RussoYM.MassGapCriterion
 import RussoYM.MarginThreshold
+import RussoYM.ListProductDeviationInterface
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -446,5 +447,23 @@ theorem theorem_index_list_product_deviation_norm_sq
       <=
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact list_product_deviation_norm_sq xs hxs
+
+/-
+Endpoint 22: list product deviation assumptions interface.
+
+This theorem is a named alias for:
+
+  ListProductDeviationAssumptions.imply_norm_sq_deviation
+-/
+theorem theorem_index_list_product_deviation_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    (h : ListProductDeviationAssumptions xs) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact ListProductDeviationAssumptions.imply_norm_sq_deviation h
 
 end RussoYM
