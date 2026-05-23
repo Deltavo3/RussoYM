@@ -449,6 +449,7 @@ list_deviation_sum_nonneg
 list_product_deviation_norm_sq_from_cauchy
 list_cauchy_sum_sq_le_length_mul_sum_sq
 list_product_deviation_norm_sq
+list_product_deviation_norm_sq_of_norm_eq_one
 ```
 
 This file proves the finite-list product-deviation chain:
@@ -470,6 +471,12 @@ under the standard assumption:
 ∀ x ∈ xs, ‖x‖ ≤ 1
 ```
 
+There is also a unit-norm corollary for holonomy/unitary-type factors:
+
+```text
+∀ x ∈ xs, ‖x‖ = 1
+```
+
 It also proves the finite-list Cauchy estimate:
 
 ```text
@@ -483,6 +490,7 @@ theorem_index_list_product_triangle_interface
 theorem_index_list_product_deviation_norm_sq_from_cauchy
 theorem_index_list_cauchy_sum_sq_le_length_mul_sum_sq
 theorem_index_list_product_deviation_norm_sq
+theorem_index_list_product_deviation_norm_sq_of_norm_eq_one
 ```
 
 ### `RussoYM/ListProductDeviationInterface.lean`
