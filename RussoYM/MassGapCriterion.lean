@@ -106,4 +106,62 @@ theorem exists_positive_fine_gap_from_controlled_rg
         exact hsmall k hk)
   simpa [fineGapLower, blockGapLower] using hraw
 
+  /-
+Clean algebraic raw mass-gap criterion with RG margin crossing.
+
+If controlled RG eventually crosses the margin target
+
+  (1 + sigma) * xstab,
+
+where `xstab` is the square-root threshold, and the UV/mixing assumptions hold
+at margin-crossing steps, then there exists some RG step where the fine-gap
+lower bound is positive.
+-/
+theorem exists_positive_fine_gap_from_controlled_margin_rg
+    (y R u : Nat -> Real)
+    {betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hupos : forall k, 0 < u k)
+    (hsigma : 0 < sigma)
+    (hxstab_pos : 0 < xstabSqrt Ccl r Cloc lambdaPhys)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog)
+    (hCcl : 0 < Ccl)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambdaPhys)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      forall k,
+        (1 + sigma) * xstabSqrt Ccl r Cloc lambdaPhys < u k ->
+          Clift * omega <
+            min
+              (blockGapLower (u k) Ccl r Cloc lambdaPhys)
+              (cUV / ell)) :
+    exists n : Nat,
+      0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
+  have hraw :
+      exists n : Nat,
+        0 <
+          min
+            ((u n) * (lambdaPhys - Ccl * (Cloc / (u n)^2 + r / (u n))))
+            (cUV / ell)
+          - Clift * omega := by
+    exact exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
+      y R u
+      (xstab := xstabSqrt Ccl r Cloc lambdaPhys)
+      hEq hR hRel hupos
+      hsigma
+      (by rfl)
+      hxstab_pos
+      hTheta hBeta
+      hCcl hCloc hlambda
+      hcUV hell
+      (by
+        intro k hk
+        exact hsmall k hk)
+  simpa [fineGapLower, blockGapLower] using hraw
+
 end RussoYM
