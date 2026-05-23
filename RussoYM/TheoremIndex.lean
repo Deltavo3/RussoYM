@@ -417,4 +417,34 @@ theorem theorem_index_list_product_deviation_norm_sq_from_cauchy
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact list_product_deviation_norm_sq_from_cauchy xs hxs hcauchy
 
+/-
+Endpoint 20: finite-list Cauchy estimate.
+
+This theorem is a named alias for:
+
+  list_cauchy_sum_sq_le_length_mul_sum_sq
+-/
+theorem theorem_index_list_cauchy_sum_sq_le_length_mul_sum_sq
+    (xs : List Real) :
+    xs.sum^2 <= (xs.length : Real) * (xs.map (fun x => x^2)).sum := by
+  exact list_cauchy_sum_sq_le_length_mul_sum_sq xs
+
+/-
+Endpoint 21: full squared finite-list product-deviation theorem.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_sq
+-/
+theorem theorem_index_list_product_deviation_norm_sq
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ <= 1) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact list_product_deviation_norm_sq xs hxs
+
 end RussoYM
