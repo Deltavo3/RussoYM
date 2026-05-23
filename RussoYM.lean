@@ -20,3 +20,4 @@ import RussoYM.ClayCriterion
 import RussoYM.LayerOneRedLemmas
 import RussoYM.LayerOneMaster
 import RussoYM.MarginThreshold
+import RussoYM.ListProductDeviationInterface
