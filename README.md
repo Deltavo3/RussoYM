@@ -19,6 +19,7 @@ Important structures:
 ```lean
 FRTFiniteFilterAssumptions
 RawYMAnalyticAssumptions
+RawYMMarginAnalyticAssumptions
 ```
 
 ### FRT finite-filter operational gap
@@ -49,7 +50,15 @@ This is the formalized FRT operational finite-information gap result.
 
 ---
 
+
 ### Conditional raw YM mass-gap criterion
+
+The margin-version assumption interface is:
+
+```lean
+RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap
+```
+
 
 The main raw-YM-side wrapper theorem is:
 
