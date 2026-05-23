@@ -445,20 +445,37 @@ Important results:
 list_prod_norm_le_one
 norm_one_sub_list_prod_le_sum
 list_product_triangle_interface
+list_deviation_sum_nonneg
+list_product_deviation_norm_sq_from_cauchy
+list_cauchy_sum_sq_le_length_mul_sum_sq
+list_product_deviation_norm_sq
 ```
 
-This file proves the finite-list product-deviation endpoint:
+This file proves the finite-list product-deviation chain:
 
+```text
 ‖1 - xs.prod‖ ≤ (xs.map fun x => ‖1 - x‖).sum
+```
+
+and the full squared estimate:
+
+‖1 - xs.prod‖^2
+≤ xs.length * (xs.map fun x => ‖1 - x‖^2).sum
 
 under the standard assumption:
 
 ∀ x ∈ xs, ‖x‖ ≤ 1
 
-The public theorem-index endpoint is:
+It also proves the finite-list Cauchy estimate:
+
+xs.sum^2 ≤ xs.length * (xs.map fun x => x^2).sum
+
+The public theorem-index endpoints include:
 
 theorem_index_list_product_triangle_interface
-
+theorem_index_list_product_deviation_norm_sq_from_cauchy
+theorem_index_list_cauchy_sum_sq_le_length_mul_sum_sq
+theorem_index_list_product_deviation_norm_sq
 
 
 ## Current verified chains
