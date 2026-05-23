@@ -165,4 +165,82 @@ theorem list_product_deviation_norm_sq_from_cauchy
     htri
     hcauchy
 
+/-
+Finite-list Cauchy estimate.
+
+For a finite list of real numbers,
+
+  (sum xs)^2 <= xs.length * sum_i xs_i^2.
+-/
+theorem list_cauchy_sum_sq_le_length_mul_sum_sq
+    (xs : List Real) :
+    xs.sum^2 <= (xs.length : Real) * (xs.map (fun x => x^2)).sum := by
+  classical
+  let f : Fin xs.length -> Real := fun i => xs[i]
+  have h :
+      ((Finset.univ : Finset (Fin xs.length)).sum f)^2
+        <=
+      (Fintype.card (Fin xs.length) : Real) *
+        ((Finset.univ : Finset (Fin xs.length)).sum (fun i => (f i)^2)) := by
+    simpa using
+      (sq_sum_le_card_mul_sum_sq
+        (s := (Finset.univ : Finset (Fin xs.length)))
+        (f := f))
+  have hsum :
+      ((Finset.univ : Finset (Fin xs.length)).sum f) = xs.sum := by
+    calc
+      ((Finset.univ : Finset (Fin xs.length)).sum f)
+          = (List.ofFn f).sum := by
+            exact (List.sum_ofFn (f := f)).symm
+      _ = xs.sum := by
+            simp [f, List.ofFn_getElem]
+  have hlist_sq :
+      List.ofFn (fun i : Fin xs.length => (xs[i]) ^ 2)
+        =
+      xs.map (fun x => x^2) := by
+    simpa [List.length_map, List.getElem_map] using
+      (List.ofFn_getElem (xs := xs.map (fun x => x^2)))
+  have hsqsum :
+      ((Finset.univ : Finset (Fin xs.length)).sum (fun i => (f i)^2))
+        =
+      (xs.map (fun x => x^2)).sum := by
+    calc
+      ((Finset.univ : Finset (Fin xs.length)).sum (fun i => (f i)^2))
+          = (List.ofFn (fun i : Fin xs.length => (f i)^2)).sum := by
+            exact (List.sum_ofFn (f := fun i : Fin xs.length => (f i)^2)).symm
+      _ = (List.ofFn (fun i : Fin xs.length => (xs[i]) ^ 2)).sum := by
+            simp [f]
+      _ = (xs.map (fun x => x^2)).sum := by
+            rw [hlist_sq]
+  simpa [hsum, hsqsum, Fintype.card_fin] using h
+
+/-
+Full squared finite-list product-deviation estimate.
+
+This removes the separate Cauchy assumption by applying the finite-list Cauchy
+estimate to the deviation list.
+-/
+theorem list_product_deviation_norm_sq
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ <= 1) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  have hcauchy :
+      ((xs.map (fun a => ‖1 - a‖)).sum)^2
+        <=
+      ((xs.map (fun a => ‖1 - a‖)).length : Real) *
+        ((xs.map (fun a => ‖1 - a‖)).map (fun x => x^2)).sum := by
+    exact list_cauchy_sum_sq_le_length_mul_sum_sq
+      (xs.map (fun a => ‖1 - a‖))
+  have hcauchy' :
+      ((xs.map (fun a => ‖1 - a‖)).sum)^2
+        <=
+      (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+    simpa [List.length_map, List.map_map] using hcauchy
+  exact list_product_deviation_norm_sq_from_cauchy xs hxs hcauchy'
+
 end RussoYM
