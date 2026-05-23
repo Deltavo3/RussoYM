@@ -11,6 +11,7 @@ import RussoYM.LayerOneMaster
 import RussoYM.RGCrossing
 import RussoYM.RawClosure
 import RussoYM.MassGapCriterion
+import RussoYM.MarginThreshold
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -350,5 +351,34 @@ theorem theorem_index_margin_raw_ym_assumptions
     exists n : Nat,
       0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
   exact RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap h
+
+/-
+Endpoint 16: margin target lies above threshold.
+
+This theorem is a named alias for:
+
+  margin_target_above_threshold
+-/
+theorem theorem_index_margin_target_above_threshold
+    {sigma x : Real}
+    (hsigma : 0 < sigma)
+    (hx : 0 < x) :
+    x < (1 + sigma) * x := by
+  exact margin_target_above_threshold hsigma hx
+
+/-
+Endpoint 17: base threshold crossing from margin crossing.
+
+This theorem is a named alias for:
+
+  threshold_lt_of_margin_lt
+-/
+theorem theorem_index_threshold_lt_of_margin_lt
+    {sigma x u : Real}
+    (hsigma : 0 < sigma)
+    (hx : 0 < x)
+    (hmargin : (1 + sigma) * x < u) :
+    x < u := by
+  exact threshold_lt_of_margin_lt hsigma hx hmargin
 
 end RussoYM
