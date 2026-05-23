@@ -146,12 +146,96 @@ theorem RawYMAnalyticAssumptions.imply_exists_positive_fine_gap
     h.ell_positive
     h.small_mixing
 
-/-!
+/-
+Margin version of the raw YM analytic assumptions.
+
+This strengthens the crossing target from
+
+  xstab
+
+to
+
+  (1 + sigma) * xstab.
+
+The algebraic conclusion is supplied by
+`exists_positive_fine_gap_from_controlled_margin_rg`.
+-/
+structure RawYMMarginAnalyticAssumptions
+    (y R u : Nat -> Real)
+    (betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega : Real) where
+  rg_step :
+    forall k, y (Nat.succ k) = y k - betaLog + R k
+  rg_remainder :
+    forall k, R k <= theta * betaLog
+  inverse_relation :
+    forall k, y k = 1 / u k
+  coupling_positive :
+    forall k, 0 < u k
+  sigma_positive :
+    0 < sigma
+  threshold_positive :
+    0 < xstabSqrt Ccl r Cloc lambdaPhys
+  theta_lt_one :
+    theta < 1
+  betaLog_positive :
+    0 < betaLog
+  Ccl_positive :
+    0 < Ccl
+  Cloc_positive :
+    0 < Cloc
+  lambda_positive :
+    0 < lambdaPhys
+  cUV_positive :
+    0 < cUV
+  ell_positive :
+    0 < ell
+  small_mixing :
+    forall k,
+      (1 + sigma) * xstabSqrt Ccl r Cloc lambdaPhys < u k ->
+        Clift * omega <
+          min
+            (blockGapLower (u k) Ccl r Cloc lambdaPhys)
+            (cUV / ell)
+
+/-
+If the margin raw YM analytic assumptions hold, then there exists a positive
+fine-lattice gap lower bound at some RG step.
+-/
+theorem RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap
+    {y R u : Nat -> Real}
+    {betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (h :
+      RawYMMarginAnalyticAssumptions
+        y R u betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega) :
+    exists n : Nat,
+      0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
+  exact exists_positive_fine_gap_from_controlled_margin_rg
+    y R u
+    h.rg_step
+    h.rg_remainder
+    h.inverse_relation
+    h.coupling_positive
+    h.sigma_positive
+    h.threshold_positive
+    h.theta_lt_one
+    h.betaLog_positive
+    h.Ccl_positive
+    h.Cloc_positive
+    h.lambda_positive
+    h.cUV_positive
+    h.ell_positive
+    h.small_mixing
+
+/-
 ## Summary theorem names
 
-The two main assumption-interface theorems are:
+The main assumption-interface theorems are:
 
   FRTFiniteFilterAssumptions.imply_operational_gap
+
+,
+
+  RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap
 
 and
 
