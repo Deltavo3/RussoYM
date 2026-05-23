@@ -3,6 +3,7 @@ import RussoYM.AlgebraCore
 import RussoYM.ProofSkeleton
 import RussoYM.RGCrossing
 import RussoYM.Threshold
+import RussoYM.MarginThreshold
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -292,10 +293,8 @@ theorem exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
     controlled_rg_eventually_margin_coupling_crosses
       y R u hEq hR hRel hupos hsigma hxstab hTheta hBeta
   use n
-  have hxstab_lt_margin : xstab < (1 + sigma) * xstab := by
-    nlinarith [hsigma, hxstab]
   have hcoupling : xstab < u n := by
-    exact lt_trans hxstab_lt_margin hmargin
+    exact threshold_lt_of_margin_lt hsigma hxstab hmargin
   have hthreshold :
       (Ccl * r + Real.sqrt ((Ccl * r)^2 + 4 * lambdaPhys * Ccl * Cloc))
           / (2 * lambdaPhys) < u n := by
