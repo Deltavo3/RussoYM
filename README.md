@@ -485,6 +485,17 @@ theorem_index_list_cauchy_sum_sq_le_length_mul_sum_sq
 theorem_index_list_product_deviation_norm_sq
 ```
 
+### `RussoYM/ListProductDeviationInterface.lean`
+
+Interface wrapper for the full finite-list product-deviation theorem.
+
+Important structures and results:
+
+```lean
+ListProductDeviationAssumptions
+ListProductDeviationAssumptions.imply_norm_sq_deviation
+```
+
 ## Current verified chains
 
 ### FRT operational chain
