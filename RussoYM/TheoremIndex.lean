@@ -334,4 +334,21 @@ theorem theorem_index_margin_mass_gap_criterion
       y R u hEq hR hRel hupos hsigma hxstab_pos
       hTheta hBeta hCcl hCloc hlambda hcUV hell hsmall
 
+/-
+Endpoint 15: margin raw YM assumptions interface.
+
+This theorem is a named alias for:
+
+  RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap
+-/
+theorem theorem_index_margin_raw_ym_assumptions
+    {y R u : Nat -> Real}
+    {betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (h :
+      RawYMMarginAnalyticAssumptions
+        y R u betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega) :
+    exists n : Nat,
+      0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
+  exact RawYMMarginAnalyticAssumptions.imply_exists_positive_fine_gap h
+
 end RussoYM
