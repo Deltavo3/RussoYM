@@ -459,24 +459,31 @@ This file proves the finite-list product-deviation chain:
 
 and the full squared estimate:
 
+```text
 ‖1 - xs.prod‖^2
 ≤ xs.length * (xs.map fun x => ‖1 - x‖^2).sum
+```
 
 under the standard assumption:
 
+```text
 ∀ x ∈ xs, ‖x‖ ≤ 1
+```
 
 It also proves the finite-list Cauchy estimate:
 
+```text
 xs.sum^2 ≤ xs.length * (xs.map fun x => x^2).sum
+```
 
 The public theorem-index endpoints include:
 
+```lean
 theorem_index_list_product_triangle_interface
 theorem_index_list_product_deviation_norm_sq_from_cauchy
 theorem_index_list_cauchy_sum_sq_le_length_mul_sum_sq
 theorem_index_list_product_deviation_norm_sq
-
+```
 
 ## Current verified chains
 
