@@ -323,13 +323,16 @@ blockGapLower
 fineGapLower
 ```
 
-Important theorem:
+Important theorems:
 
 ```lean
 exists_positive_fine_gap_from_controlled_rg
+exists_positive_fine_gap_from_controlled_margin_rg
 ```
 
-This is the clean named wrapper for the conditional raw YM algebraic route.
+This is the clean named wrapper layer for the conditional raw YM algebraic route.
+It now includes both the ordinary square-root threshold crossing wrapper and the
+margin-crossing wrapper using `(1 + sigma) * xstab`.
 
 ---
 
