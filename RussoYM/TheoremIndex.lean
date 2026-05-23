@@ -381,4 +381,40 @@ theorem theorem_index_threshold_lt_of_margin_lt
     x < u := by
   exact threshold_lt_of_margin_lt hsigma hx hmargin
 
+/-
+Endpoint 18: list deviation sum nonnegativity.
+
+This theorem is a named alias for:
+
+  list_deviation_sum_nonneg
+-/
+theorem theorem_index_list_deviation_sum_nonneg
+    {R : Type*}
+    [NormedRing R]
+    (xs : List R) :
+    0 <= (xs.map (fun a => ‖1 - a‖)).sum := by
+  exact list_deviation_sum_nonneg xs
+
+/-
+Endpoint 19: squared list product deviation from finite Cauchy.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_sq_from_cauchy
+-/
+theorem theorem_index_list_product_deviation_norm_sq_from_cauchy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ <= 1)
+    (hcauchy :
+      ((xs.map (fun a => ‖1 - a‖)).sum)^2
+        <=
+      (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact list_product_deviation_norm_sq_from_cauchy xs hxs hcauchy
+
 end RussoYM
