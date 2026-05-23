@@ -243,4 +243,24 @@ theorem list_product_deviation_norm_sq
     simpa [List.length_map, List.map_map] using hcauchy
   exact list_product_deviation_norm_sq_from_cauchy xs hxs hcauchy'
 
+/-
+Unit-norm version of the full squared finite-list product-deviation theorem.
+
+If every factor has norm exactly one, then the norm-control hypothesis
+`‖a‖ <= 1` follows automatically.
+-/
+theorem list_product_deviation_norm_sq_of_norm_eq_one
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ = 1) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact list_product_deviation_norm_sq xs
+    (by
+      intro a ha
+      exact le_of_eq (hxs a ha))
+
 end RussoYM
