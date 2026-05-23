@@ -120,4 +120,49 @@ theorem list_product_triangle_interface
     ‖1 - xs.prod‖ <= (xs.map (fun a => ‖1 - a‖)).sum := by
   exact norm_one_sub_list_prod_le_sum xs hxs
 
+/-
+The deviation sum is nonnegative.
+-/
+theorem list_deviation_sum_nonneg
+    {R : Type*}
+    [NormedRing R]
+    (xs : List R) :
+    0 <= (xs.map (fun a => ‖1 - a‖)).sum := by
+  induction xs with
+  | nil =>
+      simp
+  | cons a xs ih =>
+      change 0 <= ‖1 - a‖ + (xs.map (fun b => ‖1 - b‖)).sum
+      exact add_nonneg (norm_nonneg (1 - a)) ih
+
+/-
+Squared finite-list product-deviation estimate from the finite Cauchy bound.
+
+This packages the already-proved triangle estimate with the abstract
+triangle/Cauchy wrapper from `ProductDeviation.lean`.
+-/
+theorem list_product_deviation_norm_sq_from_cauchy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ <= 1)
+    (hcauchy :
+      ((xs.map (fun a => ‖1 - a‖)).sum)^2
+        <=
+      (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  have hsum_nonneg :
+      0 <= (xs.map (fun a => ‖1 - a‖)).sum := by
+    exact list_deviation_sum_nonneg xs
+  have htri :
+      ‖1 - xs.prod‖ <= (xs.map (fun a => ‖1 - a‖)).sum := by
+    exact list_product_triangle_interface xs hxs
+  exact norm_product_deviation_from_triangle_and_cauchy
+    hsum_nonneg
+    htri
+    hcauchy
+
 end RussoYM
