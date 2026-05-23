@@ -10,6 +10,7 @@ import RussoYM.LayerOneRedLemmas
 import RussoYM.LayerOneMaster
 import RussoYM.RGCrossing
 import RussoYM.RawClosure
+import RussoYM.MassGapCriterion
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -294,6 +295,43 @@ theorem theorem_index_raw_gap_from_margin_rg_and_sqrt_threshold
   exact
     exists_raw_gap_from_eventual_margin_rg_and_sqrt_threshold
       y R u hEq hR hRel hupos hsigma hxstab_def hxstab
+      hTheta hBeta hCcl hCloc hlambda hcUV hell hsmall
+
+/-
+Endpoint 14: margin mass-gap criterion wrapper.
+
+This theorem is a named alias for:
+
+  exists_positive_fine_gap_from_controlled_margin_rg
+-/
+theorem theorem_index_margin_mass_gap_criterion
+    (y R u : Nat -> Real)
+    {betaLog theta sigma Ccl r Cloc lambdaPhys cUV ell Clift omega : Real}
+    (hEq : forall k, y (Nat.succ k) = y k - betaLog + R k)
+    (hR : forall k, R k <= theta * betaLog)
+    (hRel : forall k, y k = 1 / u k)
+    (hupos : forall k, 0 < u k)
+    (hsigma : 0 < sigma)
+    (hxstab_pos : 0 < xstabSqrt Ccl r Cloc lambdaPhys)
+    (hTheta : theta < 1)
+    (hBeta : 0 < betaLog)
+    (hCcl : 0 < Ccl)
+    (hCloc : 0 < Cloc)
+    (hlambda : 0 < lambdaPhys)
+    (hcUV : 0 < cUV)
+    (hell : 0 < ell)
+    (hsmall :
+      forall k,
+        (1 + sigma) * xstabSqrt Ccl r Cloc lambdaPhys < u k ->
+          Clift * omega <
+            min
+              (blockGapLower (u k) Ccl r Cloc lambdaPhys)
+              (cUV / ell)) :
+    exists n : Nat,
+      0 < fineGapLower (u n) Ccl r Cloc lambdaPhys cUV ell Clift omega := by
+  exact
+    exists_positive_fine_gap_from_controlled_margin_rg
+      y R u hEq hR hRel hupos hsigma hxstab_pos
       hTheta hBeta hCcl hCloc hlambda hcUV hell hsmall
 
 end RussoYM
