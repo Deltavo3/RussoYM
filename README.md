@@ -275,6 +275,17 @@ then inverse coupling eventually drops below any threshold, and therefore the ph
 
 ---
 
+### `RussoYM/MarginThreshold.lean`
+
+Margin-threshold algebra.
+
+Important results:
+
+```lean
+margin_target_above_threshold
+threshold_lt_of_margin_lt
+```
+
 ### `RussoYM/ProofSkeleton.lean`
 
 Gap-lifting algebra.
