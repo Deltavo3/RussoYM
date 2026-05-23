@@ -466,4 +466,22 @@ theorem theorem_index_list_product_deviation_assumptions
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact ListProductDeviationAssumptions.imply_norm_sq_deviation h
 
+/-
+Endpoint 23: unit-norm squared finite-list product-deviation theorem.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_sq_of_norm_eq_one
+-/
+theorem theorem_index_list_product_deviation_norm_sq_of_norm_eq_one
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    (hxs : forall a, a ∈ xs -> ‖a‖ = 1) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact list_product_deviation_norm_sq_of_norm_eq_one xs hxs
+
 end RussoYM
