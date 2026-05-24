@@ -683,4 +683,50 @@ theorem theorem_index_list_product_deviation_uniform_unit_assumptions_le_delta_o
   exact ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta_of_length_le
     h hlen haccum
 
+/-
+Endpoint 34: division-form bounded-length unit-norm list product bound.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_le_delta_of_uniform_unit_dev_length_le_and_eps_le_div
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_le_delta_of_length_le_and_eps_le_div
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps delta : Real}
+    {N : Nat}
+    (heps : 0 <= eps)
+    (hNpos : 0 < N)
+    (hlen : xs.length <= N)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps)
+    (heps_le : eps <= delta / (N : Real)) :
+    ‖1 - xs.prod‖ <= delta := by
+  exact list_product_deviation_norm_le_delta_of_uniform_unit_dev_length_le_and_eps_le_div
+    xs heps hNpos hlen hunit hdev heps_le
+
+/-
+Endpoint 35: division-form bounded-length unit-norm list product assumptions.
+
+This theorem is a named alias for:
+
+  ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta_of_length_le_and_eps_le_div
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_assumptions_le_delta_of_length_le_and_eps_le_div
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    {eps delta : Real}
+    {N : Nat}
+    (h : ListProductDeviationUniformUnitAssumptions xs eps)
+    (hNpos : 0 < N)
+    (hlen : xs.length <= N)
+    (heps_le : eps <= delta / (N : Real)) :
+    ‖1 - xs.prod‖ <= delta := by
+  exact ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta_of_length_le_and_eps_le_div
+    h hNpos hlen heps_le
+
 end RussoYM

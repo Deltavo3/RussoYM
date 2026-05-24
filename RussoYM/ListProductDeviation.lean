@@ -431,6 +431,38 @@ theorem list_product_deviation_norm_le_delta_of_uniform_unit_dev_and_length_le
   exact list_product_deviation_norm_le_delta_of_uniform_unit_dev
     xs heps hunit hdev (le_trans haccum_xs haccum)
 
+/-
+Division-form bounded-length target-error corollary for unit-norm finite
+products.
 
+If the list has length at most `N`, each factor has norm one, each single-factor
+deviation is at most `eps`, and `eps <= delta / N`, then the whole product
+deviation is at most `delta`.
+-/
+theorem list_product_deviation_norm_le_delta_of_uniform_unit_dev_length_le_and_eps_le_div
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps delta : Real}
+    {N : Nat}
+    (heps : 0 <= eps)
+    (hNpos : 0 < N)
+    (hlen : xs.length <= N)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps)
+    (heps_le : eps <= delta / (N : Real)) :
+    ‖1 - xs.prod‖ <= delta := by
+  have hNreal_pos : 0 < (N : Real) := by
+    exact_mod_cast hNpos
+  have haccum : (N : Real) * eps <= delta := by
+    have hmul :
+        (N : Real) * eps <= (N : Real) * (delta / (N : Real)) := by
+      exact mul_le_mul_of_nonneg_left heps_le (le_of_lt hNreal_pos)
+    have hright : (N : Real) * (delta / (N : Real)) = delta := by
+      field_simp [ne_of_gt hNreal_pos]
+    simpa [hright] using hmul
+  exact list_product_deviation_norm_le_delta_of_uniform_unit_dev_and_length_le
+    xs heps hlen hunit hdev haccum
 
 end RussoYM
