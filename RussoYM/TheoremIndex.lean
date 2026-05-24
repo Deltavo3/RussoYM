@@ -21,6 +21,7 @@ import RussoYM.UniformFiniteGapFromHolonomy
 import RussoYM.LayerOneFromHolonomy
 import RussoYM.ClayFromHolonomy
 import RussoYM.FiniteMixingSuppression
+import RussoYM.ContinuumPreservation
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1144,5 +1145,46 @@ theorem theorem_index_positive_continuum_gap_from_holonomy_with_mixing
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayFromHolonomyWithMixingAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 56: approximate continuum gap preservation.
+
+This theorem is a named alias for:
+
+  ApproxContinuumGapAssumptions.imply_continuum_gap
+-/
+theorem theorem_index_approx_continuum_gap
+    {DeltaYM Delta0 : Real}
+    (h : ApproxContinuumGapAssumptions DeltaYM Delta0) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ApproxContinuumGapAssumptions.imply_continuum_gap h
+
+/-
+Endpoint 57: uniform finite-to-continuum gap preservation.
+
+This theorem is a named alias for:
+
+  UniformFiniteToContinuumGapAssumptions.imply_continuum_gap
+-/
+theorem theorem_index_uniform_finite_to_continuum_gap
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : UniformFiniteToContinuumGapAssumptions DeltaYM Delta0 Gap) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact UniformFiniteToContinuumGapAssumptions.imply_continuum_gap h
+
+/-
+Endpoint 58: uniform finite-to-continuum assumptions interface.
+
+This theorem is a named alias for:
+
+  UniformFiniteToContinuumGapAssumptions.imply_continuum_gap_assumptions
+-/
+theorem theorem_index_uniform_finite_to_continuum_gap_assumptions
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : UniformFiniteToContinuumGapAssumptions DeltaYM Delta0 Gap) :
+    ContinuumGapAssumptions DeltaYM Delta0 := by
+  exact UniformFiniteToContinuumGapAssumptions.imply_continuum_gap_assumptions h
 
 end RussoYM
