@@ -138,6 +138,42 @@ LayerOneAssumptions
 => DeltaYM > 0
 ```
 
+### Direct holonomy/coercivity Clay route
+
+The project now includes a direct finite holonomy/coercivity route to the
+conditional Clay-compatible endpoint.
+
+Important files:
+
+```lean
+RussoYM/FiniteCoercivity.lean
+RussoYM/FiniteHolonomyCoercivity.lean
+RussoYM/FiniteGapFromHolonomy.lean
+RussoYM/UniformFiniteGapFromHolonomy.lean
+RussoYM/UniformHolonomyCoercivity.lean
+RussoYM/FiniteMixingSuppression.lean
+RussoYM/ContinuumPreservation.lean
+RussoYM/LayerOneFromHolonomy.lean
+RussoYM/ClayFromHolonomy.lean
+```
+The strongest current direct endpoint is:
+
+theorem_index_positive_continuum_gap_from_direct_holonomy_with_mixing_epsilon_continuum
+
+It verifies the algebraic chain:
+
+direct per-regulator holonomy/coercivity assumptions
++ finite mixing suppression
++ epsilon-style finite-to-continuum gap preservation
+=> positive continuum Yang--Mills gap
+
+Equivalently, Lean now verifies:
+
+UniformHolonomyCoercivityAssumptions
++ LayerOneMixingSuppressionAssumptions
++ epsilon-style continuum preservation
+=> 0 < DeltaYM
+
 ### `RussoYM/AlgebraCore.lean`
 
 Core algebraic lemmas.
