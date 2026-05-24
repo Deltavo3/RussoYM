@@ -23,6 +23,7 @@ import RussoYM.ClayFromHolonomy
 import RussoYM.FiniteMixingSuppression
 import RussoYM.ContinuumPreservation
 import RussoYM.UniformHolonomyCoercivity
+import RussoYM.UniformHolonomyRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1332,5 +1333,49 @@ theorem theorem_index_positive_continuum_gap_from_direct_holonomy_with_mixing_ep
     0 < DeltaYM := by
   exact
     ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 65: decomposed holonomy red lemmas imply direct uniform
+holonomy-coercivity assumptions.
+
+This theorem is a named alias for:
+
+  UniformHolonomyRedLemmaAssumptions.imply_uniform_holonomy_coercivity
+-/
+theorem theorem_index_uniform_holonomy_red_lemmas_to_coercivity
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      UniformHolonomyRedLemmaAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    UniformHolonomyCoercivityAssumptions
+      links Gap Energy curvatureNorm C mu delta := by
+  exact UniformHolonomyRedLemmaAssumptions.imply_uniform_holonomy_coercivity h
+
+/-
+Endpoint 66: decomposed holonomy red lemmas imply uniform positive finite gap.
+
+This theorem is a named alias for:
+
+  UniformHolonomyRedLemmaAssumptions.imply_uniform_positive_gap
+-/
+theorem theorem_index_uniform_holonomy_red_lemmas_positive_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      UniformHolonomyRedLemmaAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ 0 < mu * (delta / C)^2
+      ∧ forall n, 0 < Gap n := by
+  exact UniformHolonomyRedLemmaAssumptions.imply_uniform_positive_gap h
 
 end RussoYM
