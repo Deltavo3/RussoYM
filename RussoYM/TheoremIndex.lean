@@ -900,4 +900,24 @@ theorem theorem_index_finite_holonomy_coercivity_positive_energy_gap
       ∧ 0 < Energy := by
   exact FiniteHolonomyCoercivityAssumptions.imply_positive_energy_gap h
 
+/-
+Endpoint 45: concrete finite holonomy-path coercivity positive energy gap.
+
+This theorem is a named alias for:
+
+  FiniteHolonomyPathCoercivityAssumptions.imply_positive_energy_gap
+-/
+theorem theorem_index_finite_holonomy_path_coercivity_positive_energy_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {Energy curvatureNorm C mu delta : Real}
+    (h : FiniteHolonomyPathCoercivityAssumptions
+      links Energy curvatureNorm C mu delta) :
+    mu * (delta / C)^2 <= Energy
+      ∧ 0 < mu * (delta / C)^2
+      ∧ 0 < Energy := by
+  exact FiniteHolonomyPathCoercivityAssumptions.imply_positive_energy_gap h
+
 end RussoYM

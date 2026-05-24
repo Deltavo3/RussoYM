@@ -86,4 +86,68 @@ theorem FiniteHolonomyCoercivityAssumptions.imply_positive_energy_gap
         energy_coercive := h.energy_coercive }
   exact FiniteCoercivityNormAssumptions.imply_positive_energy_gap hnorm
 
+/--
+Finite holonomy-coercivity assumptions for an actual finite product/path.
+
+Here the holonomy deviation is the concrete quantity
+
+  ‖1 - links.prod‖.
+
+This is closer to the YM interpretation: a nontrivial finite holonomy sector
+has product separated from identity, and that product deviation is controlled
+by curvature size.
+-/
+structure FiniteHolonomyPathCoercivityAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : List R)
+    (Energy curvatureNorm C mu delta : Real) : Prop where
+  C_positive :
+    0 < C
+  mu_positive :
+    0 < mu
+  delta_positive :
+    0 < delta
+  holonomy_separation :
+    delta <= ‖1 - links.prod‖
+  holonomy_curvature_control :
+    ‖1 - links.prod‖ <= C * curvatureNorm
+  energy_coercive :
+    mu * curvatureNorm^2 <= Energy
+
+/--
+Concrete finite holonomy-coercivity endpoint.
+
+If the actual finite product is separated from identity and its deviation is
+controlled by curvature, then the energy has a positive lower bound.
+-/
+theorem FiniteHolonomyPathCoercivityAssumptions.imply_positive_energy_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {Energy curvatureNorm C mu delta : Real}
+    (h : FiniteHolonomyPathCoercivityAssumptions
+      links Energy curvatureNorm C mu delta) :
+    mu * (delta / C)^2 <= Energy
+      ∧ 0 < mu * (delta / C)^2
+      ∧ 0 < Energy := by
+  have hAbs :
+      FiniteHolonomyCoercivityAssumptions
+        Energy
+        ‖1 - links.prod‖
+        curvatureNorm
+        C
+        mu
+        delta := by
+    exact
+      { C_positive := h.C_positive
+        mu_positive := h.mu_positive
+        delta_positive := h.delta_positive
+        holonomy_separation := h.holonomy_separation
+        holonomy_curvature_control := h.holonomy_curvature_control
+        energy_coercive := h.energy_coercive }
+  exact FiniteHolonomyCoercivityAssumptions.imply_positive_energy_gap hAbs
+
 end RussoYM
