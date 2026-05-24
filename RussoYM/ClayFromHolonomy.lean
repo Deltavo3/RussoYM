@@ -3,6 +3,7 @@ import RussoYM.LayerOneFromHolonomy
 import RussoYM.ContinuumGap
 import RussoYM.ContinuumPreservation
 import RussoYM.UniformHolonomyCoercivity
+import RussoYM.UniformHolonomyRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -420,5 +421,98 @@ theorem ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_positi
     0 < DeltaYM := by
   exact
     (ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
+
+/--
+Clay-compatible assumptions from decomposed holonomy red lemmas, finite mixing
+suppression, and epsilon-style continuum preservation.
+
+This version replaces the direct combined `UniformHolonomyCoercivityAssumptions`
+with the separated red-lemma interface `UniformHolonomyRedLemmaAssumptions`.
+-/
+structure ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  holonomyRedLemmas :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingSuppression :
+    LayerOneMixingSuppressionAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+  approximate_continuum_upper :
+    forall eta : Real, 0 < eta -> exists n : Nat, Gap n - eta <= DeltaYM
+
+/--
+Clay endpoint from decomposed holonomy red lemmas, finite mixing suppression,
+and epsilon-style continuum preservation.
+-/
+theorem ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hDirect :
+      UniformHolonomyCoercivityAssumptions
+        links Gap Energy curvatureNorm C mu delta := by
+    exact UniformHolonomyRedLemmaAssumptions.imply_uniform_holonomy_coercivity
+      h.holonomyRedLemmas
+  have hDirectClay :
+      ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { directHolonomyCoercivity := hDirect
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingSuppression := h.mixingSuppression
+        hFine_lower := h.hFine_lower
+        approximate_continuum_upper := h.approximate_continuum_upper }
+  exact
+    ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap
+      hDirectClay
+
+/--
+Headline positive continuum gap endpoint from decomposed holonomy red lemmas,
+finite mixing suppression, and epsilon-style continuum preservation.
+-/
+theorem ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    (ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
 
 end RussoYM
