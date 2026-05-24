@@ -14,6 +14,7 @@ import RussoYM.MassGapCriterion
 import RussoYM.MarginThreshold
 import RussoYM.ListProductDeviationInterface
 import RussoYM.FiniteHolonomyEstimate
+import RussoYM.FiniteCoercivity
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -855,5 +856,18 @@ theorem theorem_index_finite_holonomy_scaled_div_assumptions
     (h : FiniteHolonomyScaledDivEstimateAssumptions links C eta delta N) :
     ‖1 - links.prod‖ <= delta := by
   exact FiniteHolonomyScaledDivEstimateAssumptions.imply_holonomy_deviation_bound h
+
+/-
+Endpoint 42: finite curvature/coercivity energy gap.
+
+This theorem is a named alias for:
+
+  FiniteCoercivityAssumptions.imply_positive_energy_gap
+-/
+theorem theorem_index_finite_coercivity_positive_energy_gap
+    {Energy curvatureSq mu delta : Real}
+    (h : FiniteCoercivityAssumptions Energy curvatureSq mu delta) :
+    mu * delta^2 <= Energy ∧ 0 < mu * delta^2 ∧ 0 < Energy := by
+  exact FiniteCoercivityAssumptions.imply_positive_energy_gap h
 
 end RussoYM
