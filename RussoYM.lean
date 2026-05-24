@@ -24,3 +24,4 @@ import RussoYM.ListProductDeviationInterface
 import RussoYM.FiniteHolonomyEstimate
 import RussoYM.FiniteCoercivity
 import RussoYM.FiniteHolonomyCoercivity
+import RussoYM.FiniteGapFromHolonomy
