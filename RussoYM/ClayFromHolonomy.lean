@@ -112,4 +112,92 @@ theorem ClayFromHolonomyAssumptions.imply_positive_continuum_gap
     0 < DeltaYM := by
   exact (ClayFromHolonomyAssumptions.imply_clay_gap h).2.2.2.2.2
 
+/--
+Clay-compatible assumptions driven by finite holonomy/coercivity and finite
+mixing suppression.
+
+This version uses `LayerOneFromHolonomyWithMixingAssumptions`, so the Layer One
+mixing-smallness condition is supplied by the finite mixing suppression module
+rather than assumed directly.
+-/
+structure ClayFromHolonomyWithMixingAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  layerOneFromHolonomyWithMixing :
+    LayerOneFromHolonomyWithMixingAssumptions
+      links Gap Energy curvatureNorm
+      DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa
+  continuum :
+    ContinuumGapAssumptions DeltaYM Delta0
+
+/--
+Clay-compatible endpoint from finite holonomy/coercivity and finite mixing
+suppression.
+
+The conclusion records:
+
+1. the uniform finite holonomy/coercivity lower bound,
+2. the Layer One positive fine-gap conclusion,
+3. the positive continuum Yang--Mills gap conclusion.
+-/
+theorem ClayFromHolonomyWithMixingAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyWithMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hLayer :
+      (forall n, mu * (delta / C)^2 <= Gap n)
+        ∧ Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine := by
+    exact LayerOneFromHolonomyWithMixingAssumptions.imply_layer_one_gap
+      h.layerOneFromHolonomyWithMixing
+  have hCont :
+      Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+    exact ContinuumGapAssumptions.imply_continuum_gap h.continuum
+  exact
+    ⟨hLayer.1,
+      hLayer.2.1,
+      hLayer.2.2.1,
+      hLayer.2.2.2,
+      hCont.1,
+      hCont.2⟩
+
+/--
+Headline continuum gap endpoint from finite holonomy/coercivity and finite
+mixing suppression.
+-/
+theorem ClayFromHolonomyWithMixingAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyWithMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact (ClayFromHolonomyWithMixingAssumptions.imply_clay_gap h).2.2.2.2.2
+
 end RussoYM
