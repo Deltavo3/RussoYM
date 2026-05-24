@@ -562,4 +562,41 @@ theorem theorem_index_list_product_deviation_uniform_unit_assumptions
     (xs.length : Real)^2 * eps^2 := by
   exact ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_sq_deviation h
 
+/-
+Endpoint 28: unsquared uniform unit-norm list product deviation bound.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_of_norm_eq_one_and_dev_le
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_norm_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    ‖1 - xs.prod‖ <= (xs.length : Real) * eps := by
+  exact list_product_deviation_norm_of_norm_eq_one_and_dev_le
+    xs heps hunit hdev
+
+/-
+Endpoint 29: unsquared uniform unit-norm list product deviation assumptions.
+
+This theorem is a named alias for:
+
+  ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_deviation
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_norm_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    {eps : Real}
+    (h : ListProductDeviationUniformUnitAssumptions xs eps) :
+    ‖1 - xs.prod‖ <= (xs.length : Real) * eps := by
+  exact ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_deviation h
+
 end RussoYM

@@ -347,4 +347,37 @@ theorem list_product_deviation_norm_sq_of_norm_eq_one_and_dev_le
     _ = (xs.length : Real)^2 * eps^2 := by
           ring
 
+/-
+Unsquared uniform-deviation corollary for unit-norm finite products.
+
+If all factors have norm one and each factor is within `eps` of `1`, then the
+whole product deviation is bounded by `xs.length * eps`.
+-/
+theorem list_product_deviation_norm_of_norm_eq_one_and_dev_le
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    ‖1 - xs.prod‖ <= (xs.length : Real) * eps := by
+  have hsq :
+      ‖1 - xs.prod‖^2 <= ((xs.length : Real)^2 * eps^2) := by
+    exact list_product_deviation_norm_sq_of_norm_eq_one_and_dev_le
+      xs heps hunit hdev
+  have hleft_nonneg : 0 <= ‖1 - xs.prod‖ := by
+    exact norm_nonneg (1 - xs.prod)
+  have hright_nonneg : 0 <= (xs.length : Real) * eps := by
+    exact mul_nonneg (Nat.cast_nonneg xs.length) heps
+  have hright_sq :
+      ((xs.length : Real)^2 * eps^2) = ((xs.length : Real) * eps)^2 := by
+    ring
+  rw [hright_sq] at hsq
+  have habs :
+      |‖1 - xs.prod‖| <= |(xs.length : Real) * eps| := by
+    exact sq_le_sq.mp hsq
+  simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
+
 end RussoYM
