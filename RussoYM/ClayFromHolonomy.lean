@@ -515,4 +515,243 @@ theorem ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_pos
   exact
     (ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
 
+/--
+Clay-compatible assumptions from direct uniform holonomy/coercivity,
+multiplicative finite mixing suppression, and epsilon-style continuum
+preservation.
+
+This version uses the more physical scale-separation estimate
+
+  eps <= rho * ell
+
+through `LayerOneMixingMultiplicativeScaleAssumptions`.
+-/
+structure ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  directHolonomyCoercivity :
+    UniformHolonomyCoercivityAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingSuppression :
+    LayerOneMixingMultiplicativeScaleAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+  approximate_continuum_upper :
+    forall eta : Real, 0 < eta -> exists n : Nat, Gap n - eta <= DeltaYM
+
+/--
+Clay endpoint from direct uniform holonomy/coercivity, multiplicative finite
+mixing suppression, and epsilon-style continuum preservation.
+-/
+theorem ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hUniformPack :
+      UniformFiniteGapFromHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta := by
+    exact UniformHolonomyCoercivityAssumptions.imply_uniform_finite_gap_assumptions
+      h.directHolonomyCoercivity
+
+  have hLayerAssumptions :
+      LayerOneFromHolonomyWithMultiplicativeMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { uniformHolonomyGap := hUniformPack
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingSuppression := h.mixingSuppression
+        hFine_lower := h.hFine_lower }
+
+  have hLayer :
+      (forall n, mu * (delta / C)^2 <= Gap n)
+        ∧ Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine := by
+    exact LayerOneFromHolonomyWithMultiplicativeMixingAssumptions.imply_layer_one_gap
+      hLayerAssumptions
+
+  have hUniform :
+      (forall n, mu * (delta / C)^2 <= Gap n)
+        ∧ 0 < mu * (delta / C)^2
+        ∧ forall n, 0 < Gap n := by
+    exact UniformFiniteGapFromHolonomyAssumptions.imply_uniform_positive_gap
+      hUniformPack
+
+  have hDelta0_le_block :
+      Delta0 <= mu * (delta / C)^2 := by
+    have hmin_nonneg :
+        0 <= min (mu * (delta / C)^2) dUV := by
+      exact le_of_lt (lt_min hUniform.2.1 h.hUV_pos)
+    have hhalf_le_min :
+        (1 / 2) * min (mu * (delta / C)^2) dUV
+          <= min (mu * (delta / C)^2) dUV := by
+      nlinarith
+    have hmin_le_block :
+        min (mu * (delta / C)^2) dUV <= mu * (delta / C)^2 := by
+      exact min_le_left _ _
+    rw [h.hDelta0_def]
+    exact le_trans hhalf_le_min hmin_le_block
+
+  have hFiniteLower : forall n, Delta0 <= Gap n := by
+    intro n
+    exact le_trans hDelta0_le_block (hUniform.1 n)
+
+  have hContAssumptions :
+      UniformFiniteToContinuumGapAssumptions DeltaYM Delta0 Gap := by
+    exact
+      { Delta0_positive := hLayer.2.2.1
+        finite_gap_lower := hFiniteLower
+        approximate_continuum_upper := h.approximate_continuum_upper }
+
+  have hCont :
+      Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+    exact UniformFiniteToContinuumGapAssumptions.imply_continuum_gap hContAssumptions
+
+  exact
+    ⟨hLayer.1,
+      hLayer.2.1,
+      hLayer.2.2.1,
+      hLayer.2.2.2,
+      hCont.1,
+      hCont.2⟩
+
+/--
+Headline positive continuum gap endpoint from direct uniform holonomy/coercivity,
+multiplicative finite mixing suppression, and epsilon-style continuum
+preservation.
+-/
+theorem ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    (ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
+
+/--
+Clay-compatible assumptions from decomposed holonomy red lemmas, multiplicative
+finite mixing suppression, and epsilon-style continuum preservation.
+-/
+structure ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  holonomyRedLemmas :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingSuppression :
+    LayerOneMixingMultiplicativeScaleAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+  approximate_continuum_upper :
+    forall eta : Real, 0 < eta -> exists n : Nat, Gap n - eta <= DeltaYM
+
+/--
+Clay endpoint from decomposed holonomy red lemmas, multiplicative finite mixing
+suppression, and epsilon-style continuum preservation.
+-/
+theorem ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hDirect :
+      UniformHolonomyCoercivityAssumptions
+        links Gap Energy curvatureNorm C mu delta := by
+    exact UniformHolonomyRedLemmaAssumptions.imply_uniform_holonomy_coercivity
+      h.holonomyRedLemmas
+  have hDirectClay :
+      ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { directHolonomyCoercivity := hDirect
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingSuppression := h.mixingSuppression
+        hFine_lower := h.hFine_lower
+        approximate_continuum_upper := h.approximate_continuum_upper }
+  exact
+    ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap
+      hDirectClay
+
+/--
+Headline positive continuum gap endpoint from decomposed holonomy red lemmas,
+multiplicative finite mixing suppression, and epsilon-style continuum
+preservation.
+-/
+theorem ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    (ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
+
 end RussoYM

@@ -1500,4 +1500,110 @@ theorem theorem_index_layer_one_from_holonomy_with_multiplicative_mixing_gap
       ∧ 0 < DeltaFine := by
   exact LayerOneFromHolonomyWithMultiplicativeMixingAssumptions.imply_layer_one_gap h
 
+/-
+Endpoint 73: Clay gap from direct holonomy/coercivity, multiplicative mixing,
+and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_direct_holonomy_with_multiplicative_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact
+    ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap h
+
+/-
+Endpoint 74: positive continuum YM gap from direct holonomy/coercivity,
+multiplicative mixing, and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_direct_holonomy_with_multiplicative_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    ClayFromDirectHolonomyWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 75: Clay gap from holonomy red lemmas, multiplicative mixing, and
+epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_holonomy_red_lemmas_with_multiplicative_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact
+    ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_clay_gap h
+
+/-
+Endpoint 76: positive continuum YM gap from holonomy red lemmas,
+multiplicative mixing, and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_holonomy_red_lemmas_with_multiplicative_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
