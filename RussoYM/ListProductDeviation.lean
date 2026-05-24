@@ -404,4 +404,33 @@ theorem list_product_deviation_norm_le_delta_of_uniform_unit_dev
       xs heps hunit hdev
   exact le_trans hbound haccum
 
+/-
+Bounded-length target-error corollary for unit-norm finite products.
+
+If the list has length at most `N`, each factor has norm one, each
+single-factor deviation is at most `eps`, and `N * eps <= delta`, then the
+whole product deviation is at most `delta`.
+-/
+theorem list_product_deviation_norm_le_delta_of_uniform_unit_dev_and_length_le
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps delta : Real}
+    {N : Nat}
+    (heps : 0 <= eps)
+    (hlen : xs.length <= N)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps)
+    (haccum : (N : Real) * eps <= delta) :
+    ‖1 - xs.prod‖ <= delta := by
+  have hlen_real : (xs.length : Real) <= (N : Real) := by
+    exact_mod_cast hlen
+  have haccum_xs : (xs.length : Real) * eps <= (N : Real) * eps := by
+    exact mul_le_mul_of_nonneg_right hlen_real heps
+  exact list_product_deviation_norm_le_delta_of_uniform_unit_dev
+    xs heps hunit hdev (le_trans haccum_xs haccum)
+
+
+
 end RussoYM
