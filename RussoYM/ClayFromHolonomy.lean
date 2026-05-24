@@ -2,6 +2,7 @@ import Mathlib
 import RussoYM.LayerOneFromHolonomy
 import RussoYM.ContinuumGap
 import RussoYM.ContinuumPreservation
+import RussoYM.UniformHolonomyCoercivity
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -321,5 +322,103 @@ theorem ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_con
     0 < DeltaYM := by
   exact
     (ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
+
+/--
+Clay-compatible assumptions from direct uniform holonomy/coercivity, finite
+mixing suppression, and epsilon-style continuum preservation.
+
+This version avoids requiring prepackaged `UniformFiniteGapFromHolonomyAssumptions`.
+Instead, it takes the direct per-regulator holonomy/coercivity assumptions.
+-/
+structure ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  directHolonomyCoercivity :
+    UniformHolonomyCoercivityAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingSuppression :
+    LayerOneMixingSuppressionAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+  approximate_continuum_upper :
+    forall eta : Real, 0 < eta -> exists n : Nat, Gap n - eta <= DeltaYM
+
+/--
+Clay-compatible endpoint from direct uniform holonomy/coercivity, finite mixing
+suppression, and epsilon-style continuum preservation.
+-/
+theorem ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hUniformPack :
+      UniformFiniteGapFromHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta := by
+    exact
+      UniformHolonomyCoercivityAssumptions.imply_uniform_finite_gap_assumptions
+        h.directHolonomyCoercivity
+  have hLayer :
+      LayerOneFromHolonomyWithMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { uniformHolonomyGap := hUniformPack
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingSuppression := h.mixingSuppression
+        hFine_lower := h.hFine_lower }
+  have hBase :
+      ClayFromHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { layerOneFromHolonomyWithMixing := hLayer
+        approximate_continuum_upper := h.approximate_continuum_upper }
+  exact ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap hBase
+
+/--
+Headline positive continuum gap endpoint from direct uniform holonomy/coercivity,
+finite mixing suppression, and epsilon-style continuum preservation.
+-/
+theorem ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    (ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap h).2.2.2.2.2
 
 end RussoYM

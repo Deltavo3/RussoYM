@@ -1281,4 +1281,56 @@ theorem theorem_index_uniform_holonomy_coercivity_positive_gap
       ∧ forall n, 0 < Gap n := by
   exact UniformHolonomyCoercivityAssumptions.imply_uniform_positive_gap h
 
+/-
+Endpoint 63: Clay gap from direct holonomy/coercivity, mixing, and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_direct_holonomy_with_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact
+    ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap h
+
+/-
+Endpoint 64: positive continuum YM gap from direct holonomy/coercivity, mixing,
+and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_direct_holonomy_with_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    ClayFromDirectHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
