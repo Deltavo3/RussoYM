@@ -163,4 +163,75 @@ theorem LayerOneFromHolonomyWithMixingAssumptions.imply_layer_one_gap
         hFine_lower := h.hFine_lower }
   exact LayerOneFromHolonomyAssumptions.imply_layer_one_gap hBase
 
+/--
+Layer One from holonomy/coercivity with mixing suppression supplied by the
+multiplicative scale-separation version of the finite mixing-suppression module.
+
+This replaces the direct ratio estimate
+
+  eps / ell <= rho
+
+with the more physical scale-separation estimate
+
+  eps <= rho * ell.
+-/
+structure LayerOneFromHolonomyWithMultiplicativeMixingAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  uniformHolonomyGap :
+    UniformFiniteGapFromHolonomyAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingSuppression :
+    LayerOneMixingMultiplicativeScaleAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+
+/--
+Layer One endpoint from holonomy/coercivity and multiplicative scale-separation
+mixing suppression.
+-/
+theorem LayerOneFromHolonomyWithMultiplicativeMixingAssumptions.imply_layer_one_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneFromHolonomyWithMultiplicativeMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine := by
+  have hMix :
+      2 * Cmix * (eps / ell)^kappa
+        <= (1 / 2) * min (mu * (delta / C)^2) dUV := by
+    exact LayerOneMixingMultiplicativeScaleAssumptions.imply_layer_one_mixing_small
+      h.mixingSuppression
+  have hBase :
+      LayerOneFromHolonomyAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa := by
+    exact
+      { uniformHolonomyGap := h.uniformHolonomyGap
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        hMix_small := hMix
+        hFine_lower := h.hFine_lower }
+  exact LayerOneFromHolonomyAssumptions.imply_layer_one_gap hBase
+
 end RussoYM

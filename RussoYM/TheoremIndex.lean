@@ -1474,4 +1474,30 @@ theorem theorem_index_layer_one_mixing_multiplicative_scale_suppression
     2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
   exact LayerOneMixingMultiplicativeScaleAssumptions.imply_layer_one_mixing_small h
 
+/-
+Endpoint 72: Layer One gap from holonomy-coercivity and multiplicative
+scale-separation mixing suppression.
+
+This theorem is a named alias for:
+
+  LayerOneFromHolonomyWithMultiplicativeMixingAssumptions.imply_layer_one_gap
+-/
+theorem theorem_index_layer_one_from_holonomy_with_multiplicative_mixing_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneFromHolonomyWithMultiplicativeMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine := by
+  exact LayerOneFromHolonomyWithMultiplicativeMixingAssumptions.imply_layer_one_gap h
+
 end RussoYM
