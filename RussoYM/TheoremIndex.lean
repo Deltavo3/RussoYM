@@ -599,4 +599,44 @@ theorem theorem_index_list_product_deviation_uniform_unit_norm_assumptions
     ‖1 - xs.prod‖ <= (xs.length : Real) * eps := by
   exact ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_deviation h
 
+/-
+Endpoint 30: target-error uniform unit-norm list product deviation bound.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_le_delta_of_uniform_unit_dev
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_le_delta
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps delta : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps)
+    (haccum : (xs.length : Real) * eps <= delta) :
+    ‖1 - xs.prod‖ <= delta := by
+  exact list_product_deviation_norm_le_delta_of_uniform_unit_dev
+    xs heps hunit hdev haccum
+
+/-
+Endpoint 31: target-error uniform unit-norm list product deviation assumptions.
+
+This theorem is a named alias for:
+
+  ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_assumptions_le_delta
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    {eps delta : Real}
+    (h : ListProductDeviationUniformUnitAssumptions xs eps)
+    (haccum : (xs.length : Real) * eps <= delta) :
+    ‖1 - xs.prod‖ <= delta := by
+  exact ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta
+    h haccum
+
 end RussoYM

@@ -380,4 +380,28 @@ theorem list_product_deviation_norm_of_norm_eq_one_and_dev_le
     exact sq_le_sq.mp hsq
   simpa [abs_of_nonneg hleft_nonneg, abs_of_nonneg hright_nonneg] using habs
 
+/-
+Target-error corollary for unit-norm finite products.
+
+If each factor has norm one, each single-factor deviation is at most `eps`,
+and the accumulated bound `xs.length * eps` is at most `delta`, then the whole
+product deviation is at most `delta`.
+-/
+theorem list_product_deviation_norm_le_delta_of_uniform_unit_dev
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps delta : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps)
+    (haccum : (xs.length : Real) * eps <= delta) :
+    ‖1 - xs.prod‖ <= delta := by
+  have hbound :
+      ‖1 - xs.prod‖ <= (xs.length : Real) * eps := by
+    exact list_product_deviation_norm_of_norm_eq_one_and_dev_le
+      xs heps hunit hdev
+  exact le_trans hbound haccum
+
 end RussoYM

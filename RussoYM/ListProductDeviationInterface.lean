@@ -126,4 +126,20 @@ theorem ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_deviation
   exact list_product_deviation_norm_of_norm_eq_one_and_dev_le
     xs h.eps_nonneg h.norm_eq_one h.deviation_le
 
+/--
+Target-error interface endpoint for the uniform unit-norm finite-list
+product-deviation bound.
+-/
+theorem ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    {eps delta : Real}
+    (h : ListProductDeviationUniformUnitAssumptions xs eps)
+    (haccum : (xs.length : Real) * eps <= delta) :
+    ‖1 - xs.prod‖ <= delta := by
+  exact list_product_deviation_norm_le_delta_of_uniform_unit_dev
+    xs h.eps_nonneg h.norm_eq_one h.deviation_le haccum
+
 end RussoYM
