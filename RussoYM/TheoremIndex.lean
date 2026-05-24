@@ -1187,4 +1187,55 @@ theorem theorem_index_uniform_finite_to_continuum_gap_assumptions
     ContinuumGapAssumptions DeltaYM Delta0 := by
   exact UniformFiniteToContinuumGapAssumptions.imply_continuum_gap_assumptions h
 
+/-
+Endpoint 59: Clay gap from holonomy, mixing, and epsilon continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_holonomy_with_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_clay_gap h
+
+/-
+Endpoint 60: positive continuum YM gap from holonomy, mixing, and epsilon
+continuum preservation.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_holonomy_with_mixing_epsilon_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyWithMixingEpsilonContinuumAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
