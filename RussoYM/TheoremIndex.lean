@@ -1070,4 +1070,29 @@ theorem theorem_index_layer_one_mixing_suppression
     2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
   exact LayerOneMixingSuppressionAssumptions.imply_layer_one_mixing_small h
 
+/-
+Endpoint 53: Layer One gap from holonomy-coercivity and finite mixing suppression.
+
+This theorem is a named alias for:
+
+  LayerOneFromHolonomyWithMixingAssumptions.imply_layer_one_gap
+-/
+theorem theorem_index_layer_one_from_holonomy_with_mixing_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneFromHolonomyWithMixingAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine := by
+  exact LayerOneFromHolonomyWithMixingAssumptions.imply_layer_one_gap h
+
 end RussoYM
