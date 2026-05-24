@@ -263,4 +263,88 @@ theorem list_product_deviation_norm_sq_of_norm_eq_one
       intro a ha
       exact le_of_eq (hxs a ha))
 
+/-
+If every single-factor deviation is bounded by `eps`, then the sum of squared
+deviations is bounded by `xs.length * eps^2`.
+-/
+theorem list_deviation_sq_sum_le_length_mul_sq_of_bound
+    {R : Type*}
+    [NormedRing R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    (xs.map (fun a => ‖1 - a‖^2)).sum
+      <=
+    (xs.length : Real) * eps^2 := by
+  induction xs with
+  | nil =>
+      simp
+  | cons a xs ih =>
+      have ha_dev : ‖1 - a‖ <= eps := by
+        exact hdev a (by simp)
+      have hxs_dev : forall b, b ∈ xs -> ‖1 - b‖ <= eps := by
+        intro b hb
+        exact hdev b (by simp [hb])
+      have ihxs :
+          (xs.map (fun b => ‖1 - b‖^2)).sum
+            <=
+          (xs.length : Real) * eps^2 := by
+        exact ih hxs_dev
+      have ha_sq : ‖1 - a‖^2 <= eps^2 := by
+        have hnonneg : 0 <= ‖1 - a‖ := by
+          exact norm_nonneg (1 - a)
+        have hprod : 0 <= (eps - ‖1 - a‖) * (eps + ‖1 - a‖) := by
+          exact mul_nonneg (sub_nonneg.mpr ha_dev) (add_nonneg heps hnonneg)
+        nlinarith
+      calc
+        ((a :: xs).map (fun b => ‖1 - b‖^2)).sum
+            = ‖1 - a‖^2 + (xs.map (fun b => ‖1 - b‖^2)).sum := by
+              simp
+        _ <= eps^2 + (xs.length : Real) * eps^2 := by
+              linarith
+        _ = ((Nat.succ xs.length : Nat) : Real) * eps^2 := by
+              rw [Nat.cast_succ]
+              ring
+        _ = ((a :: xs).length : Real) * eps^2 := by
+              simp
+
+/-
+Uniform-deviation corollary for unit-norm finite products.
+
+If all factors have norm one and each factor is within `eps` of `1`, then the
+whole product deviation is bounded by `xs.length^2 * eps^2`.
+-/
+theorem list_product_deviation_norm_sq_of_norm_eq_one_and_dev_le
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real)^2 * eps^2 := by
+  have hprod :
+      ‖1 - xs.prod‖^2
+        <=
+      (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+    exact list_product_deviation_norm_sq_of_norm_eq_one xs hunit
+  have hsum :
+      (xs.map (fun a => ‖1 - a‖^2)).sum
+        <=
+      (xs.length : Real) * eps^2 := by
+    exact list_deviation_sq_sum_le_length_mul_sq_of_bound xs heps hdev
+  have hlen_nonneg : 0 <= (xs.length : Real) := by
+    exact Nat.cast_nonneg xs.length
+  calc
+    ‖1 - xs.prod‖^2
+        <= (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := hprod
+    _ <= (xs.length : Real) * ((xs.length : Real) * eps^2) := by
+          exact mul_le_mul_of_nonneg_left hsum hlen_nonneg
+    _ = (xs.length : Real)^2 * eps^2 := by
+          ring
+
 end RussoYM
