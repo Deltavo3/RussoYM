@@ -18,6 +18,7 @@ import RussoYM.FiniteCoercivity
 import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
 import RussoYM.UniformFiniteGapFromHolonomy
+import RussoYM.LayerOneFromHolonomy
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -963,5 +964,30 @@ theorem theorem_index_uniform_finite_gap_from_holonomy
       ∧ 0 < mu * (delta / C)^2
       ∧ forall n, 0 < Gap n := by
   exact UniformFiniteGapFromHolonomyAssumptions.imply_uniform_positive_gap h
+
+/-
+Endpoint 48: Layer One gap from uniform holonomy-coercivity.
+
+This theorem is a named alias for:
+
+  LayerOneFromHolonomyAssumptions.imply_layer_one_gap
+-/
+theorem theorem_index_layer_one_from_holonomy_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      LayerOneFromHolonomyAssumptions
+        links Gap Energy curvatureNorm
+        DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine := by
+  exact LayerOneFromHolonomyAssumptions.imply_layer_one_gap h
 
 end RussoYM

@@ -26,3 +26,4 @@ import RussoYM.FiniteCoercivity
 import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
 import RussoYM.UniformFiniteGapFromHolonomy
+import RussoYM.LayerOneFromHolonomy
