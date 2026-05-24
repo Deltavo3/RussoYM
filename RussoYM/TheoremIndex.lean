@@ -502,4 +502,64 @@ theorem theorem_index_list_product_deviation_unit_assumptions
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact ListProductDeviationUnitAssumptions.imply_norm_sq_deviation h
 
+/-
+Endpoint 25: bounded sum of squared deviations.
+
+This theorem is a named alias for:
+
+  list_deviation_sq_sum_le_length_mul_sq_of_bound
+-/
+theorem theorem_index_list_deviation_sq_sum_le_length_mul_sq_of_bound
+    {R : Type*}
+    [NormedRing R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    (xs.map (fun a => ‖1 - a‖^2)).sum
+      <=
+    (xs.length : Real) * eps^2 := by
+  exact list_deviation_sq_sum_le_length_mul_sq_of_bound xs heps hdev
+
+/-
+Endpoint 26: uniform unit-norm list product deviation bound.
+
+This theorem is a named alias for:
+
+  list_product_deviation_norm_sq_of_norm_eq_one_and_dev_le
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R)
+    {eps : Real}
+    (heps : 0 <= eps)
+    (hunit : forall a, a ∈ xs -> ‖a‖ = 1)
+    (hdev : forall a, a ∈ xs -> ‖1 - a‖ <= eps) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real)^2 * eps^2 := by
+  exact list_product_deviation_norm_sq_of_norm_eq_one_and_dev_le
+    xs heps hunit hdev
+
+/-
+Endpoint 27: uniform unit-norm list product deviation assumptions interface.
+
+This theorem is a named alias for:
+
+  ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_sq_deviation
+-/
+theorem theorem_index_list_product_deviation_uniform_unit_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    {eps : Real}
+    (h : ListProductDeviationUniformUnitAssumptions xs eps) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real)^2 * eps^2 := by
+  exact ListProductDeviationUniformUnitAssumptions.imply_uniform_norm_sq_deviation h
+
 end RussoYM
