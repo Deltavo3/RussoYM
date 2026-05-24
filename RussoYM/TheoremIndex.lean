@@ -15,6 +15,7 @@ import RussoYM.MarginThreshold
 import RussoYM.ListProductDeviationInterface
 import RussoYM.FiniteHolonomyEstimate
 import RussoYM.FiniteCoercivity
+import RussoYM.FiniteHolonomyCoercivity
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -882,5 +883,21 @@ theorem theorem_index_finite_coercivity_norm_positive_energy_gap
     (h : FiniteCoercivityNormAssumptions Energy curvatureNorm mu delta) :
     mu * delta^2 <= Energy ∧ 0 < mu * delta^2 ∧ 0 < Energy := by
   exact FiniteCoercivityNormAssumptions.imply_positive_energy_gap h
+
+/-
+Endpoint 44: finite holonomy-coercivity positive energy gap.
+
+This theorem is a named alias for:
+
+  FiniteHolonomyCoercivityAssumptions.imply_positive_energy_gap
+-/
+theorem theorem_index_finite_holonomy_coercivity_positive_energy_gap
+    {Energy holDev curvatureNorm C mu delta : Real}
+    (h : FiniteHolonomyCoercivityAssumptions
+      Energy holDev curvatureNorm C mu delta) :
+    mu * (delta / C)^2 <= Energy
+      ∧ 0 < mu * (delta / C)^2
+      ∧ 0 < Energy := by
+  exact FiniteHolonomyCoercivityAssumptions.imply_positive_energy_gap h
 
 end RussoYM

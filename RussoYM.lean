@@ -23,3 +23,4 @@ import RussoYM.MarginThreshold
 import RussoYM.ListProductDeviationInterface
 import RussoYM.FiniteHolonomyEstimate
 import RussoYM.FiniteCoercivity
+import RussoYM.FiniteHolonomyCoercivity
