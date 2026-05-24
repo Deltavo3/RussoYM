@@ -48,4 +48,31 @@ theorem ListProductDeviationAssumptions.imply_norm_sq_deviation
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact list_product_deviation_norm_sq xs h.norm_le_one
 
+/--
+Finite-list unit-norm product-deviation assumptions.
+
+This is the holonomy/unitary-style interface: every factor has norm exactly one.
+-/
+structure ListProductDeviationUnitAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (xs : List R) : Prop where
+  norm_eq_one :
+    forall a, a ∈ xs -> ‖a‖ = 1
+
+/--
+Interface endpoint for the unit-norm squared finite-list product-deviation theorem.
+-/
+theorem ListProductDeviationUnitAssumptions.imply_norm_sq_deviation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    (h : ListProductDeviationUnitAssumptions xs) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact list_product_deviation_norm_sq_of_norm_eq_one xs h.norm_eq_one
+
 end RussoYM

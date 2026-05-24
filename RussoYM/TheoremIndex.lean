@@ -484,4 +484,22 @@ theorem theorem_index_list_product_deviation_norm_sq_of_norm_eq_one
     (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
   exact list_product_deviation_norm_sq_of_norm_eq_one xs hxs
 
+/-
+Endpoint 24: unit-norm list product deviation assumptions interface.
+
+This theorem is a named alias for:
+
+  ListProductDeviationUnitAssumptions.imply_norm_sq_deviation
+-/
+theorem theorem_index_list_product_deviation_unit_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {xs : List R}
+    (h : ListProductDeviationUnitAssumptions xs) :
+    ‖1 - xs.prod‖^2
+      <=
+    (xs.length : Real) * (xs.map (fun a => ‖1 - a‖^2)).sum := by
+  exact ListProductDeviationUnitAssumptions.imply_norm_sq_deviation h
+
 end RussoYM
