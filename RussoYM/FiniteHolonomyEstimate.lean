@@ -209,7 +209,6 @@ theorem finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
     have hright :
         C * (delta / ((N : Real) * C)) = delta / (N : Real) := by
       field_simp [ne_of_gt hCpos, ne_of_gt hNreal_pos]
-      ring
     simpa [hright] using hmul
   exact finite_holonomy_deviation_bound_of_scaled_link_error
     links
