@@ -13,6 +13,7 @@ import RussoYM.RawClosure
 import RussoYM.MassGapCriterion
 import RussoYM.MarginThreshold
 import RussoYM.ListProductDeviationInterface
+import RussoYM.FiniteHolonomyEstimate
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -727,6 +728,46 @@ theorem theorem_index_list_product_deviation_uniform_unit_assumptions_le_delta_o
     (heps_le : eps <= delta / (N : Real)) :
     ‖1 - xs.prod‖ <= delta := by
   exact ListProductDeviationUniformUnitAssumptions.imply_norm_deviation_le_delta_of_length_le_and_eps_le_div
+    h hNpos hlen heps_le
+
+/-
+Endpoint 36: finite holonomy deviation bound.
+
+This theorem is a named alias for:
+
+  FiniteHolonomyEstimateAssumptions.imply_holonomy_deviation_bound
+-/
+theorem theorem_index_finite_holonomy_deviation_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {eps delta : Real}
+    {N : Nat}
+    (h : FiniteHolonomyEstimateAssumptions links eps delta N) :
+    ‖1 - links.prod‖ <= delta := by
+  exact FiniteHolonomyEstimateAssumptions.imply_holonomy_deviation_bound h
+
+/-
+Endpoint 37: finite holonomy deviation from uniform unit assumptions.
+
+This theorem is a named alias for:
+
+  finite_holonomy_deviation_bound_from_uniform_unit_assumptions
+-/
+theorem theorem_index_finite_holonomy_deviation_bound_from_uniform_unit_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {eps delta : Real}
+    {N : Nat}
+    (h : ListProductDeviationUniformUnitAssumptions links eps)
+    (hNpos : 0 < N)
+    (hlen : links.length <= N)
+    (heps_le : eps <= delta / (N : Real)) :
+    ‖1 - links.prod‖ <= delta := by
+  exact finite_holonomy_deviation_bound_from_uniform_unit_assumptions
     h hNpos hlen heps_le
 
 end RussoYM
