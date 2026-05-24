@@ -20,6 +20,7 @@ import RussoYM.FiniteGapFromHolonomy
 import RussoYM.UniformFiniteGapFromHolonomy
 import RussoYM.LayerOneFromHolonomy
 import RussoYM.ClayFromHolonomy
+import RussoYM.FiniteMixingSuppression
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1039,5 +1040,34 @@ theorem theorem_index_positive_continuum_gap_from_holonomy
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayFromHolonomyAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 51: finite mixing suppression from scale separation.
+
+This theorem is a named alias for:
+
+  FiniteMixingSuppressionAssumptions.imply_mixing_small
+-/
+theorem theorem_index_finite_mixing_suppression
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (h : FiniteMixingSuppressionAssumptions Cmix eps ell rho target kappa) :
+    2 * Cmix * (eps / ell)^kappa <= target := by
+  exact FiniteMixingSuppressionAssumptions.imply_mixing_small h
+
+/-
+Endpoint 52: Layer One mixing suppression.
+
+This theorem is a named alias for:
+
+  LayerOneMixingSuppressionAssumptions.imply_layer_one_mixing_small
+-/
+theorem theorem_index_layer_one_mixing_suppression
+    {dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (h : LayerOneMixingSuppressionAssumptions
+      dBlock dUV Cmix eps ell rho kappa) :
+    2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
+  exact LayerOneMixingSuppressionAssumptions.imply_layer_one_mixing_small h
 
 end RussoYM
