@@ -66,4 +66,59 @@ theorem FiniteCoercivityAssumptions.imply_positive_energy_gap
     exact lt_of_lt_of_le hlower_pos hlower_le_energy
   exact ⟨hlower_le_energy, hlower_pos, henergy_pos⟩
 
+/--
+Finite curvature-norm coercivity assumptions.
+
+This version uses an actual curvature norm/size variable instead of an abstract
+squared curvature variable.
+-/
+structure FiniteCoercivityNormAssumptions
+    (Energy curvatureNorm mu delta : Real) : Prop where
+  mu_positive :
+    0 < mu
+  delta_positive :
+    0 < delta
+  curvature_separation :
+    delta <= curvatureNorm
+  energy_coercive :
+    mu * curvatureNorm^2 <= Energy
+
+/--
+Finite coercivity endpoint from norm separation.
+
+If curvature size is at least `delta`, and energy controls curvature size
+squared, then energy has a positive lower bound `mu * delta^2`.
+-/
+theorem FiniteCoercivityNormAssumptions.imply_positive_energy_gap
+    {Energy curvatureNorm mu delta : Real}
+    (h : FiniteCoercivityNormAssumptions Energy curvatureNorm mu delta) :
+    mu * delta^2 <= Energy ∧ 0 < mu * delta^2 ∧ 0 < Energy := by
+  have hdelta_nonneg : 0 <= delta := by
+    exact le_of_lt h.delta_positive
+  have hcurv_nonneg : 0 <= curvatureNorm := by
+    exact le_trans hdelta_nonneg h.curvature_separation
+  have hsq_sep : delta^2 <= curvatureNorm^2 := by
+    have hprod :
+        0 <= (curvatureNorm - delta) * (curvatureNorm + delta) := by
+      exact
+        mul_nonneg
+          (sub_nonneg.mpr h.curvature_separation)
+          (add_nonneg hcurv_nonneg hdelta_nonneg)
+    nlinarith
+  have hmu_nonneg : 0 <= mu := by
+    exact le_of_lt h.mu_positive
+  have hlower_le_curv :
+      mu * delta^2 <= mu * curvatureNorm^2 := by
+    exact mul_le_mul_of_nonneg_left hsq_sep hmu_nonneg
+  have hlower_le_energy :
+      mu * delta^2 <= Energy := by
+    exact le_trans hlower_le_curv h.energy_coercive
+  have hdelta_sq_pos : 0 < delta^2 := by
+    nlinarith [h.delta_positive]
+  have hlower_pos : 0 < mu * delta^2 := by
+    exact mul_pos h.mu_positive hdelta_sq_pos
+  have henergy_pos : 0 < Energy := by
+    exact lt_of_lt_of_le hlower_pos hlower_le_energy
+  exact ⟨hlower_le_energy, hlower_pos, henergy_pos⟩
+
 end RussoYM

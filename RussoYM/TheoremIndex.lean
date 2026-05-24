@@ -870,4 +870,17 @@ theorem theorem_index_finite_coercivity_positive_energy_gap
     mu * delta^2 <= Energy ∧ 0 < mu * delta^2 ∧ 0 < Energy := by
   exact FiniteCoercivityAssumptions.imply_positive_energy_gap h
 
+/-
+Endpoint 43: finite curvature-norm coercivity energy gap.
+
+This theorem is a named alias for:
+
+  FiniteCoercivityNormAssumptions.imply_positive_energy_gap
+-/
+theorem theorem_index_finite_coercivity_norm_positive_energy_gap
+    {Energy curvatureNorm mu delta : Real}
+    (h : FiniteCoercivityNormAssumptions Energy curvatureNorm mu delta) :
+    mu * delta^2 <= Energy ∧ 0 < mu * delta^2 ∧ 0 < Energy := by
+  exact FiniteCoercivityNormAssumptions.imply_positive_energy_gap h
+
 end RussoYM
