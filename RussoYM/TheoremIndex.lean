@@ -770,4 +770,47 @@ theorem theorem_index_finite_holonomy_deviation_bound_from_uniform_unit_assumpti
   exact finite_holonomy_deviation_bound_from_uniform_unit_assumptions
     h hNpos hlen heps_le
 
+/-
+Endpoint 38: finite holonomy deviation from scaled link error.
+
+This theorem is a named alias for:
+
+  finite_holonomy_deviation_bound_of_scaled_link_error
+-/
+theorem theorem_index_finite_holonomy_deviation_bound_of_scaled_link_error
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : List R)
+    {C eta delta : Real}
+    {N : Nat}
+    (hC : 0 <= C)
+    (heta : 0 <= eta)
+    (hNpos : 0 < N)
+    (hlen : links.length <= N)
+    (hunit : forall U, U ∈ links -> ‖U‖ = 1)
+    (hlink : forall U, U ∈ links -> ‖1 - U‖ <= C * eta)
+    (hbudget : C * eta <= delta / (N : Real)) :
+    ‖1 - links.prod‖ <= delta := by
+  exact finite_holonomy_deviation_bound_of_scaled_link_error
+    links hC heta hNpos hlen hunit hlink hbudget
+
+/-
+Endpoint 39: scaled finite holonomy assumptions interface.
+
+This theorem is a named alias for:
+
+  FiniteHolonomyScaledEstimateAssumptions.imply_holonomy_deviation_bound
+-/
+theorem theorem_index_finite_holonomy_scaled_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {C eta delta : Real}
+    {N : Nat}
+    (h : FiniteHolonomyScaledEstimateAssumptions links C eta delta N) :
+    ‖1 - links.prod‖ <= delta := by
+  exact FiniteHolonomyScaledEstimateAssumptions.imply_holonomy_deviation_bound h
+
 end RussoYM
