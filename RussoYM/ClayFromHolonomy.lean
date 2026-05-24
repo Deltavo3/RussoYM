@@ -91,4 +91,25 @@ theorem ClayFromHolonomyAssumptions.imply_clay_gap
       hCont.1,
       hCont.2⟩
 
+/--
+Headline continuum gap endpoint from finite holonomy/coercivity.
+
+This extracts only the positive continuum Yang--Mills gap conclusion from the
+full Clay-compatible holonomy/coercivity chain.
+-/
+theorem ClayFromHolonomyAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    0 < DeltaYM := by
+  exact (ClayFromHolonomyAssumptions.imply_clay_gap h).2.2.2.2.2
+
 end RussoYM

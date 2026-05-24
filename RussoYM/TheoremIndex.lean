@@ -1018,4 +1018,26 @@ theorem theorem_index_clay_gap_from_holonomy
       ∧ 0 < DeltaYM := by
   exact ClayFromHolonomyAssumptions.imply_clay_gap h
 
+/-
+Endpoint 50: positive continuum YM gap from finite holonomy-coercivity.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayFromHolonomyAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
