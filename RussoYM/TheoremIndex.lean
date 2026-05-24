@@ -813,4 +813,47 @@ theorem theorem_index_finite_holonomy_scaled_assumptions
     ‖1 - links.prod‖ <= delta := by
   exact FiniteHolonomyScaledEstimateAssumptions.imply_holonomy_deviation_bound h
 
+/-
+Endpoint 40: finite holonomy deviation from divided local error budget.
+
+This theorem is a named alias for:
+
+  finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+-/
+theorem theorem_index_finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : List R)
+    {C eta delta : Real}
+    {N : Nat}
+    (hCpos : 0 < C)
+    (heta : 0 <= eta)
+    (hNpos : 0 < N)
+    (hlen : links.length <= N)
+    (hunit : forall U, U ∈ links -> ‖U‖ = 1)
+    (hlink : forall U, U ∈ links -> ‖1 - U‖ <= C * eta)
+    (heta_budget : eta <= delta / ((N : Real) * C)) :
+    ‖1 - links.prod‖ <= delta := by
+  exact finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+    links hCpos heta hNpos hlen hunit hlink heta_budget
+
+/-
+Endpoint 41: divided-budget scaled finite holonomy assumptions interface.
+
+This theorem is a named alias for:
+
+  FiniteHolonomyScaledDivEstimateAssumptions.imply_holonomy_deviation_bound
+-/
+theorem theorem_index_finite_holonomy_scaled_div_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {C eta delta : Real}
+    {N : Nat}
+    (h : FiniteHolonomyScaledDivEstimateAssumptions links C eta delta N) :
+    ‖1 - links.prod‖ <= delta := by
+  exact FiniteHolonomyScaledDivEstimateAssumptions.imply_holonomy_deviation_bound h
+
 end RussoYM

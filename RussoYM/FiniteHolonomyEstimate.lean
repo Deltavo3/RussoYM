@@ -174,4 +174,98 @@ theorem FiniteHolonomyScaledEstimateAssumptions.imply_holonomy_deviation_bound
     h.scaled_link_deviation_bound
     h.scaled_error_budget
 
+/--
+Finite holonomy estimate with a divided local error budget.
+
+This is the analytic-friendly form:
+
+  ‖1 - U_link‖ <= C * eta
+  eta <= delta / (N * C)
+
+with `C > 0` and `N > 0`.
+-/
+theorem finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : List R)
+    {C eta delta : Real}
+    {N : Nat}
+    (hCpos : 0 < C)
+    (heta : 0 <= eta)
+    (hNpos : 0 < N)
+    (hlen : links.length <= N)
+    (hunit : forall U, U ∈ links -> ‖U‖ = 1)
+    (hlink :
+      forall U, U ∈ links -> ‖1 - U‖ <= C * eta)
+    (heta_budget : eta <= delta / ((N : Real) * C)) :
+    ‖1 - links.prod‖ <= delta := by
+  have hNreal_pos : 0 < (N : Real) := by
+    exact_mod_cast hNpos
+  have hbudget : C * eta <= delta / (N : Real) := by
+    have hmul :
+        C * eta <= C * (delta / ((N : Real) * C)) := by
+      exact mul_le_mul_of_nonneg_left heta_budget (le_of_lt hCpos)
+    have hright :
+        C * (delta / ((N : Real) * C)) = delta / (N : Real) := by
+      field_simp [ne_of_gt hCpos, ne_of_gt hNreal_pos]
+      ring
+    simpa [hright] using hmul
+  exact finite_holonomy_deviation_bound_of_scaled_link_error
+    links
+    (le_of_lt hCpos)
+    heta
+    hNpos
+    hlen
+    hunit
+    hlink
+    hbudget
+
+/--
+Assumption interface for the divided-budget scaled finite holonomy estimate.
+-/
+structure FiniteHolonomyScaledDivEstimateAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : List R)
+    (C eta delta : Real)
+    (N : Nat) : Prop where
+  C_positive :
+    0 < C
+  eta_nonneg :
+    0 <= eta
+  path_length_positive :
+    0 < N
+  path_length_bound :
+    links.length <= N
+  link_unit_norm :
+    forall U, U ∈ links -> ‖U‖ = 1
+  scaled_link_deviation_bound :
+    forall U, U ∈ links -> ‖1 - U‖ <= C * eta
+  divided_error_budget :
+    eta <= delta / ((N : Real) * C)
+
+/--
+Divided-budget scaled finite holonomy deviation endpoint.
+-/
+theorem FiniteHolonomyScaledDivEstimateAssumptions.imply_holonomy_deviation_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : List R}
+    {C eta delta : Real}
+    {N : Nat}
+    (h : FiniteHolonomyScaledDivEstimateAssumptions links C eta delta N) :
+    ‖1 - links.prod‖ <= delta := by
+  exact finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+    links
+    h.C_positive
+    h.eta_nonneg
+    h.path_length_positive
+    h.path_length_bound
+    h.link_unit_norm
+    h.scaled_link_deviation_bound
+    h.divided_error_budget
+
 end RussoYM
