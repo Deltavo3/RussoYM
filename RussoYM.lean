@@ -30,3 +30,4 @@ import RussoYM.LayerOneFromHolonomy
 import RussoYM.ClayFromHolonomy
 import RussoYM.FiniteMixingSuppression
 import RussoYM.ContinuumPreservation
+import RussoYM.UniformHolonomyCoercivity

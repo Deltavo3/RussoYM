@@ -22,6 +22,7 @@ import RussoYM.LayerOneFromHolonomy
 import RussoYM.ClayFromHolonomy
 import RussoYM.FiniteMixingSuppression
 import RussoYM.ContinuumPreservation
+import RussoYM.UniformHolonomyCoercivity
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1237,5 +1238,47 @@ theorem theorem_index_positive_continuum_gap_from_holonomy_with_mixing_epsilon_c
     0 < DeltaYM := by
   exact
     ClayFromHolonomyWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 61: direct uniform holonomy-coercivity assumptions imply packaged
+uniform finite-gap assumptions.
+
+This theorem is a named alias for:
+
+  UniformHolonomyCoercivityAssumptions.imply_uniform_finite_gap_assumptions
+-/
+theorem theorem_index_uniform_holonomy_coercivity_assumptions_to_uniform_finite_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h : UniformHolonomyCoercivityAssumptions
+      links Gap Energy curvatureNorm C mu delta) :
+    UniformFiniteGapFromHolonomyAssumptions
+      links Gap Energy curvatureNorm C mu delta := by
+  exact UniformHolonomyCoercivityAssumptions.imply_uniform_finite_gap_assumptions h
+
+/-
+Endpoint 62: direct uniform holonomy-coercivity positive finite gap.
+
+This theorem is a named alias for:
+
+  UniformHolonomyCoercivityAssumptions.imply_uniform_positive_gap
+-/
+theorem theorem_index_uniform_holonomy_coercivity_positive_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h : UniformHolonomyCoercivityAssumptions
+      links Gap Energy curvatureNorm C mu delta) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ 0 < mu * (delta / C)^2
+      ∧ forall n, 0 < Gap n := by
+  exact UniformHolonomyCoercivityAssumptions.imply_uniform_positive_gap h
 
 end RussoYM
