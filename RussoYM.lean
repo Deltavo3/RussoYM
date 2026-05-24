@@ -27,3 +27,4 @@ import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
 import RussoYM.UniformFiniteGapFromHolonomy
 import RussoYM.LayerOneFromHolonomy
+import RussoYM.ClayFromHolonomy

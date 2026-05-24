@@ -19,6 +19,7 @@ import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
 import RussoYM.UniformFiniteGapFromHolonomy
 import RussoYM.LayerOneFromHolonomy
+import RussoYM.ClayFromHolonomy
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -989,5 +990,32 @@ theorem theorem_index_layer_one_from_holonomy_gap
       ∧ 0 < Delta0
       ∧ 0 < DeltaFine := by
   exact LayerOneFromHolonomyAssumptions.imply_layer_one_gap h
+
+/-
+Endpoint 49: Clay gap from finite holonomy-coercivity.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayFromHolonomyAssumptions.imply_clay_gap h
 
 end RussoYM
