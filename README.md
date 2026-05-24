@@ -503,6 +503,21 @@ Important structures and results:
 ListProductDeviationAssumptions
 ListProductDeviationAssumptions.imply_norm_sq_deviation
 ```
+### `RussoYM/FiniteHolonomyEstimate.lean`
+
+Important results:
+
+```lean
+FiniteHolonomyEstimateAssumptions
+FiniteHolonomyEstimateAssumptions.imply_holonomy_deviation_bound
+finite_holonomy_deviation_bound_from_uniform_unit_assumptions
+finite_holonomy_deviation_bound_of_scaled_link_error
+FiniteHolonomyScaledEstimateAssumptions
+FiniteHolonomyScaledEstimateAssumptions.imply_holonomy_deviation_bound
+finite_holonomy_deviation_bound_of_scaled_link_error_eta_le_div
+FiniteHolonomyScaledDivEstimateAssumptions
+FiniteHolonomyScaledDivEstimateAssumptions.imply_holonomy_deviation_bound
+```
 
 ## Current verified chains
 
