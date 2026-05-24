@@ -17,6 +17,7 @@ import RussoYM.FiniteHolonomyEstimate
 import RussoYM.FiniteCoercivity
 import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
+import RussoYM.UniformFiniteGapFromHolonomy
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -940,5 +941,27 @@ theorem theorem_index_finite_gap_from_holonomy_positive_gap
       ∧ 0 < mu * (delta / C)^2
       ∧ 0 < Gap := by
   exact FiniteGapFromHolonomyAssumptions.imply_positive_finite_gap h
+
+/-
+Endpoint 47: uniform finite gap from holonomy-coercivity.
+
+This theorem is a named alias for:
+
+  UniformFiniteGapFromHolonomyAssumptions.imply_uniform_positive_gap
+-/
+theorem theorem_index_uniform_finite_gap_from_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      UniformFiniteGapFromHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ 0 < mu * (delta / C)^2
+      ∧ forall n, 0 < Gap n := by
+  exact UniformFiniteGapFromHolonomyAssumptions.imply_uniform_positive_gap h
 
 end RussoYM

@@ -25,3 +25,4 @@ import RussoYM.FiniteHolonomyEstimate
 import RussoYM.FiniteCoercivity
 import RussoYM.FiniteHolonomyCoercivity
 import RussoYM.FiniteGapFromHolonomy
+import RussoYM.UniformFiniteGapFromHolonomy
