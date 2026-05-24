@@ -150,4 +150,95 @@ theorem LayerOneMixingSuppressionAssumptions.imply_layer_one_mixing_small
     2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
   exact FiniteMixingSuppressionAssumptions.imply_mixing_small h.mixing
 
+/--
+Scale-ratio bound from the multiplicative scale-separation estimate.
+
+If `eps <= rho * ell` and `ell > 0`, then `eps / ell <= rho`.
+-/
+theorem ratio_le_of_eps_le_rho_mul_ell
+    {eps ell rho : Real}
+    (hell : 0 < ell)
+    (hsep : eps <= rho * ell) :
+    eps / ell <= rho := by
+  rw [div_le_iff₀ hell]
+  simpa [mul_comm] using hsep
+
+/--
+Finite mixing suppression from multiplicative scale separation.
+
+This replaces the direct ratio assumption
+
+  eps / ell <= rho
+
+with the more physical estimate
+
+  eps <= rho * ell.
+-/
+theorem finite_mixing_suppression_of_multiplicative_scale_separation
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (hCmix : 0 <= Cmix)
+    (heps : 0 <= eps)
+    (hell : 0 < ell)
+    (hsep : eps <= rho * ell)
+    (hbudget : 2 * Cmix * rho^kappa <= target) :
+    2 * Cmix * (eps / ell)^kappa <= target := by
+  have hratio_le : eps / ell <= rho := by
+    exact ratio_le_of_eps_le_rho_mul_ell hell hsep
+  exact finite_mixing_suppression_of_scale_separation
+    hCmix heps hell hratio_le hbudget
+
+/--
+Multiplicative scale-separation version of finite mixing suppression.
+-/
+structure FiniteMixingMultiplicativeScaleAssumptions
+    (Cmix eps ell rho target : Real)
+    (kappa : Nat) : Prop where
+  Cmix_nonneg :
+    0 <= Cmix
+  eps_nonneg :
+    0 <= eps
+  ell_positive :
+    0 < ell
+  scale_separation :
+    eps <= rho * ell
+  rho_budget :
+    2 * Cmix * rho^kappa <= target
+
+/--
+Endpoint for multiplicative scale-separation mixing suppression.
+-/
+theorem FiniteMixingMultiplicativeScaleAssumptions.imply_mixing_small
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (h : FiniteMixingMultiplicativeScaleAssumptions Cmix eps ell rho target kappa) :
+    2 * Cmix * (eps / ell)^kappa <= target := by
+  exact finite_mixing_suppression_of_multiplicative_scale_separation
+    h.Cmix_nonneg
+    h.eps_nonneg
+    h.ell_positive
+    h.scale_separation
+    h.rho_budget
+
+/--
+Layer-One-shaped multiplicative scale-separation mixing assumptions.
+-/
+structure LayerOneMixingMultiplicativeScaleAssumptions
+    (dBlock dUV Cmix eps ell rho : Real)
+    (kappa : Nat) : Prop where
+  mixing :
+    FiniteMixingMultiplicativeScaleAssumptions
+      Cmix eps ell rho ((1 / 2) * min dBlock dUV) kappa
+
+/--
+Layer-One-shaped endpoint from multiplicative scale separation.
+-/
+theorem LayerOneMixingMultiplicativeScaleAssumptions.imply_layer_one_mixing_small
+    {dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (h : LayerOneMixingMultiplicativeScaleAssumptions
+      dBlock dUV Cmix eps ell rho kappa) :
+    2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
+  exact FiniteMixingMultiplicativeScaleAssumptions.imply_mixing_small h.mixing
+
 end RussoYM

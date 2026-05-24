@@ -1431,4 +1431,47 @@ theorem theorem_index_positive_continuum_gap_from_holonomy_red_lemmas_with_mixin
   exact
     ClayFromHolonomyRedLemmasWithMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
 
+/-
+Endpoint 69: ratio bound from multiplicative scale separation.
+
+This theorem is a named alias for:
+
+  ratio_le_of_eps_le_rho_mul_ell
+-/
+theorem theorem_index_ratio_le_of_eps_le_rho_mul_ell
+    {eps ell rho : Real}
+    (hell : 0 < ell)
+    (hsep : eps <= rho * ell) :
+    eps / ell <= rho := by
+  exact ratio_le_of_eps_le_rho_mul_ell hell hsep
+
+/-
+Endpoint 70: finite mixing suppression from multiplicative scale separation.
+
+This theorem is a named alias for:
+
+  FiniteMixingMultiplicativeScaleAssumptions.imply_mixing_small
+-/
+theorem theorem_index_finite_mixing_multiplicative_scale_suppression
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (h : FiniteMixingMultiplicativeScaleAssumptions Cmix eps ell rho target kappa) :
+    2 * Cmix * (eps / ell)^kappa <= target := by
+  exact FiniteMixingMultiplicativeScaleAssumptions.imply_mixing_small h
+
+/-
+Endpoint 71: Layer One mixing suppression from multiplicative scale separation.
+
+This theorem is a named alias for:
+
+  LayerOneMixingMultiplicativeScaleAssumptions.imply_layer_one_mixing_small
+-/
+theorem theorem_index_layer_one_mixing_multiplicative_scale_suppression
+    {dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (h : LayerOneMixingMultiplicativeScaleAssumptions
+      dBlock dUV Cmix eps ell rho kappa) :
+    2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
+  exact LayerOneMixingMultiplicativeScaleAssumptions.imply_layer_one_mixing_small h
+
 end RussoYM
