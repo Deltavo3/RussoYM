@@ -54,6 +54,7 @@ import RussoYM.ClayDirectRedLemmaTheorem
 import RussoYM.ClayReducedScaleDirectTheorem
 import RussoYM.ClayMixingParameterCriterion
 import RussoYM.ClayMixingPowerCriterion
+import RussoYM.ClayMixingRatioCriterion
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3653,5 +3654,80 @@ theorem theorem_index_mixing_power_direct_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayMixingPowerDirectAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 187: nonnegative base ratio control implies power control.
+-/
+theorem theorem_index_nonnegative_ratio_control_to_power_control
+    {a b : Real}
+    (ha : 0 <= a)
+    (hab : a <= b)
+    (n : Nat) :
+    a^n <= b^n := by
+  exact real_pow_le_pow_of_nonneg_le ha hab n
+
+/-
+Endpoint 188: mixing ratio criterion implies the mixing power criterion.
+-/
+theorem theorem_index_mixing_ratio_to_power_criterion
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0MixingRatioCriterionAssumptions
+        Cmix eps ell q Delta0 kappa) :
+    Delta0MixingPowerCriterionAssumptions
+      Cmix eps ell q Delta0 kappa := by
+  exact Delta0MixingRatioCriterionAssumptions.to_power_criterion h
+
+/-
+Endpoint 189: mixing ratio criterion implies direct Delta0 mixing smallness.
+-/
+theorem theorem_index_mixing_ratio_to_delta0_mixing_smallness
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0MixingRatioCriterionAssumptions
+        Cmix eps ell q Delta0 kappa) :
+    Delta0MixingSmallnessAssumptions Cmix eps ell Delta0 kappa := by
+  exact Delta0MixingRatioCriterionAssumptions.to_delta0_mixing_smallness h
+
+/-
+Endpoint 190: mixing-ratio Clay assumptions imply strongest conditional mass-gap
+summary.
+-/
+theorem theorem_index_mixing_ratio_direct_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingRatioDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayMixingRatioDirectAssumptions.imply_mass_gap h
+
+/-
+Endpoint 191: mixing-ratio Clay assumptions imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_mixing_ratio_direct_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingRatioDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayMixingRatioDirectAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
