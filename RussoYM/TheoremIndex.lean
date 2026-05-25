@@ -27,6 +27,7 @@ import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
 import RussoYM.MixingRedLemmas
 import RussoYM.FineLowerRedLemmas
+import RussoYM.LayerOneScaleRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1881,5 +1882,67 @@ theorem theorem_index_positive_continuum_gap_from_complete_red_lemmas
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayFromCompleteRedLemmasAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 91: Layer-One scale red lemmas imply the scale normalization data.
+
+This theorem is a named alias for:
+
+  LayerOneScaleRedLemmaAssumptions.imply_scale_data
+-/
+theorem theorem_index_layer_one_scale_red_lemmas_to_scale_data
+    {Delta0 dBlock dUV : Real}
+    (h : LayerOneScaleRedLemmaAssumptions Delta0 dBlock dUV) :
+    0 < dUV ∧ Delta0 = (1 / 2) * min dBlock dUV := by
+  exact LayerOneScaleRedLemmaAssumptions.imply_scale_data h
+
+/-
+Endpoint 92: Clay gap from fully named red-lemma packets.
+
+This theorem is a named alias for:
+
+  ClayFromFullyNamedRedLemmasAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_fully_named_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromFullyNamedRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayFromFullyNamedRedLemmasAssumptions.imply_clay_gap h
+
+/-
+Endpoint 93: positive continuum YM gap from fully named red-lemma packets.
+
+This theorem is a named alias for:
+
+  ClayFromFullyNamedRedLemmasAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_fully_named_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromFullyNamedRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayFromFullyNamedRedLemmasAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
