@@ -46,6 +46,7 @@ import RussoYM.ClayDerivedContinuumAudit
 import RussoYM.ClayStrongestConditional
 import RussoYM.EpsilonContinuumSurvival
 import RussoYM.ClaySurvivalAudit
+import RussoYM.ClaySurvivalConsequences
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2938,5 +2939,82 @@ theorem theorem_index_strongest_conditional_mass_gap_from_survival_audit
     (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
       ∧ 0 < DeltaYM := by
   exact ClaySurvivalAudit.imply_strongest_conditional_mass_gap h
+
+/-
+Endpoint 149: survival audit implies Layer-One fine gap data.
+-/
+theorem theorem_index_survival_audit_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClaySurvivalAudit.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 150: survival audit implies continuum gap data.
+-/
+theorem theorem_index_survival_audit_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClaySurvivalAudit.imply_continuum_gap_data h
+
+/-
+Endpoint 151: survival audit implies both fine and continuum gap data.
+-/
+theorem theorem_index_survival_audit_to_fine_and_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM) := by
+  exact ClaySurvivalAudit.imply_fine_and_continuum_gap_data h
+
+/-
+Endpoint 152: survival audit implies the full strongest conditional gap data.
+-/
+theorem theorem_index_survival_audit_to_full_survival_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClaySurvivalAudit.imply_full_survival_gap_data h
 
 end RussoYM
