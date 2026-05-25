@@ -49,6 +49,7 @@ import RussoYM.ClaySurvivalAudit
 import RussoYM.ClaySurvivalConsequences
 import RussoYM.ClayHolonomyPacketSurvivalAudit
 import RussoYM.ClayRedLemmaTheorem
+import RussoYM.ClayDirectMixingRedLemmaTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3212,5 +3213,111 @@ theorem theorem_index_clay_red_lemma_theorem_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact clay_red_lemma_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 163: Delta0-targeted primitive mixing packet implies direct Delta0
+mixing smallness.
+-/
+theorem theorem_index_delta0_targeted_mixing_to_direct_mixing_smallness
+    {Cmix eps ell rho Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0TargetedMixingRedLemmaAssumptions
+        Cmix eps ell rho Delta0 kappa) :
+    Delta0MixingSmallnessAssumptions Cmix eps ell Delta0 kappa := by
+  exact Delta0TargetedMixingRedLemmaAssumptions.to_delta0_mixing_smallness h
+
+/-
+Endpoint 164: Schur/Feshbach plus direct Delta0 mixing smallness implies
+Delta0 <= DeltaFine.
+-/
+theorem theorem_index_schur_direct_mixing_to_delta0_le_deltaFine
+    {DeltaFine Delta0 dBlock dUV Cmix eps ell : Real}
+    {kappa : Nat}
+    (hScale :
+      LayerOnePositiveScaleAssumptions Delta0 dBlock dUV)
+    (hMix :
+      Delta0MixingSmallnessAssumptions Cmix eps ell Delta0 kappa)
+    (hFine :
+      FineLowerSchurComplementAssumptions
+        DeltaFine dBlock dUV Cmix eps ell kappa) :
+    Delta0 <= DeltaFine := by
+  exact
+    FineLowerSchurComplementAssumptions.imply_delta0_le_deltaFine_of_mixing_small
+      hScale hMix hFine
+
+/-
+Endpoint 165: direct-mixing Clay assumptions imply Layer-One fine gap data.
+-/
+theorem theorem_index_direct_mixing_clay_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectMixingRedLemmaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayDirectMixingRedLemmaAssumptions.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 166: direct-mixing Clay assumptions imply continuum gap data.
+-/
+theorem theorem_index_direct_mixing_clay_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectMixingRedLemmaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayDirectMixingRedLemmaAssumptions.imply_continuum_gap_data h
+
+/-
+Endpoint 167: direct-mixing Clay theorem implies positive continuum YM gap.
+-/
+theorem theorem_index_direct_mixing_clay_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectMixingRedLemmaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    0 < DeltaYM := by
+  exact clay_direct_mixing_red_lemma_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 168: direct-mixing Clay theorem implies the strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_direct_mixing_clay_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectMixingRedLemmaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_direct_mixing_red_lemma_theorem_implies_mass_gap h
 
 end RussoYM
