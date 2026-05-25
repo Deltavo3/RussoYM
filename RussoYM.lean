@@ -65,3 +65,4 @@ import RussoYM.ClayMixingPowerCriterion
 import RussoYM.ClayMixingRatioCriterion
 import RussoYM.ClayMixingScaleSeparationCriterion
 import RussoYM.ClayMixingDecayBudget
+import RussoYM.ClayMixingKappaExistence
