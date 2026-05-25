@@ -32,6 +32,7 @@ import RussoYM.ClayAssumptionAudit
 import RussoYM.ClayAtomicAssumptionAudit
 import RussoYM.LayerOneScaleNormalization
 import RussoYM.ClayPositiveScaleAudit
+import RussoYM.ClayConditionalEndpoint
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2182,5 +2183,101 @@ theorem theorem_index_positive_continuum_gap_from_positive_scale_atomic_audit
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayPositiveScaleAtomicAudit.imply_positive_continuum_gap h
+
+/-
+Endpoint 105: positive-scale atomic audit gives an explicit positive
+finite-volume gap lower bound.
+
+This theorem is a named alias for:
+
+  ClayPositiveScaleAtomicAudit.exists_positive_finite_gap_bound
+-/
+theorem theorem_index_positive_scale_atomic_audit_to_exists_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n := by
+  exact ClayPositiveScaleAtomicAudit.exists_positive_finite_gap_bound h
+
+/-
+Endpoint 106: full conditional Clay-compatible gap data from the
+positive-scale atomic audit.
+
+This theorem is a named alias for:
+
+  clay_conditional_gap_data
+-/
+theorem theorem_index_conditional_clay_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact clay_conditional_gap_data h
+
+/-
+Endpoint 107: clean conditional positive continuum Yang--Mills gap endpoint.
+
+This theorem is a named alias for:
+
+  clay_conditional_positive_continuum_gap
+-/
+theorem theorem_index_conditional_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact clay_conditional_positive_continuum_gap h
+
+/-
+Endpoint 108: formal conditional mass-gap summary.
+
+This theorem is a named alias for:
+
+  clay_conditional_mass_gap_summary
+-/
+theorem theorem_index_conditional_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_conditional_mass_gap_summary h
 
 end RussoYM

@@ -40,3 +40,4 @@ import RussoYM.ClayAssumptionAudit
 import RussoYM.ClayAtomicAssumptionAudit
 import RussoYM.LayerOneScaleNormalization
 import RussoYM.ClayPositiveScaleAudit
+import RussoYM.ClayConditionalEndpoint
