@@ -50,6 +50,7 @@ import RussoYM.ClaySurvivalConsequences
 import RussoYM.ClayHolonomyPacketSurvivalAudit
 import RussoYM.ClayRedLemmaTheorem
 import RussoYM.ClayDirectMixingRedLemmaTheorem
+import RussoYM.ClayDirectRedLemmaTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3319,5 +3320,67 @@ theorem theorem_index_direct_mixing_clay_implies_mass_gap
     (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
       ∧ 0 < DeltaYM := by
   exact clay_direct_mixing_red_lemma_theorem_implies_mass_gap h
+
+/-
+Endpoint 169: current clean direct red-lemma theorem implies full strongest gap
+data.
+-/
+theorem theorem_index_direct_red_lemma_theorem_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact clay_direct_red_lemma_theorem_implies_full_gap_data h
+
+/-
+Endpoint 170: current clean direct red-lemma theorem implies the strongest
+conditional Yang--Mills mass-gap summary.
+-/
+theorem theorem_index_direct_red_lemma_theorem_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_direct_red_lemma_theorem_implies_mass_gap h
+
+/-
+Endpoint 171: current clean direct red-lemma theorem implies the positive
+continuum Yang--Mills gap.
+-/
+theorem theorem_index_direct_red_lemma_theorem_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDirectRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    0 < DeltaYM := by
+  exact clay_direct_red_lemma_theorem_implies_positive_continuum_gap h
 
 end RussoYM
