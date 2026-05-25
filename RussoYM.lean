@@ -44,3 +44,5 @@ import RussoYM.ClayConditionalEndpoint
 import RussoYM.ClayMainTheorem
 import RussoYM.ContinuumFiniteLowerReduction
 import RussoYM.ClayFiniteLowerAudit
+import RussoYM.FiniteGapLowerFromHolonomy
+import RussoYM.ClayHolonomyFiniteLowerAudit
