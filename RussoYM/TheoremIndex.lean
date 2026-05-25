@@ -30,6 +30,8 @@ import RussoYM.FineLowerRedLemmas
 import RussoYM.LayerOneScaleRedLemmas
 import RussoYM.ClayAssumptionAudit
 import RussoYM.ClayAtomicAssumptionAudit
+import RussoYM.LayerOneScaleNormalization
+import RussoYM.ClayPositiveScaleAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2093,5 +2095,92 @@ theorem theorem_index_positive_continuum_gap_from_atomic_red_lemma_audit
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayAtomicRedLemmaAudit.imply_positive_continuum_gap h
+
+/-
+Endpoint 100: primitive positive scale data implies positivity of the
+Layer-One reference gap.
+
+This theorem is a named alias for:
+
+  LayerOnePositiveScaleAssumptions.imply_delta0_positive
+-/
+theorem theorem_index_positive_scale_data_to_delta0_positive
+    {Delta0 dBlock dUV : Real}
+    (h : LayerOnePositiveScaleAssumptions Delta0 dBlock dUV) :
+    0 < Delta0 := by
+  exact LayerOnePositiveScaleAssumptions.imply_delta0_positive h
+
+/-
+Endpoint 101: primitive positive scale data implies the Layer-One scale
+red-lemma packet.
+
+This theorem is a named alias for:
+
+  LayerOnePositiveScaleAssumptions.to_scale_red_lemmas
+-/
+theorem theorem_index_positive_scale_data_to_scale_red_lemmas
+    {Delta0 dBlock dUV : Real}
+    (h : LayerOnePositiveScaleAssumptions Delta0 dBlock dUV) :
+    LayerOneScaleRedLemmaAssumptions Delta0 dBlock dUV := by
+  exact LayerOnePositiveScaleAssumptions.to_scale_red_lemmas h
+
+/-
+Endpoint 102: primitive positive scale data implies the full positive scale
+checklist.
+-/
+theorem theorem_index_positive_scale_data_to_scale_checklist
+    {Delta0 dBlock dUV : Real}
+    (h : LayerOnePositiveScaleAssumptions Delta0 dBlock dUV) :
+    0 < dBlock
+      ∧ 0 < dUV
+      ∧ Delta0 = (1 / 2) * min dBlock dUV
+      ∧ 0 < Delta0 := by
+  exact LayerOnePositiveScaleAssumptions.imply_positive_scale_data h
+
+/-
+Endpoint 103: positive-scale atomic audit implies the previous atomic audit.
+
+This theorem is a named alias for:
+
+  ClayPositiveScaleAtomicAudit.to_atomic_red_lemma_audit
+-/
+theorem theorem_index_positive_scale_atomic_audit_to_atomic_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayAtomicRedLemmaAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayPositiveScaleAtomicAudit.to_atomic_red_lemma_audit h
+
+/-
+Endpoint 104: positive continuum YM gap from the positive-scale atomic audit.
+
+This theorem is a named alias for:
+
+  ClayPositiveScaleAtomicAudit.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_positive_scale_atomic_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayPositiveScaleAtomicAudit.imply_positive_continuum_gap h
 
 end RussoYM
