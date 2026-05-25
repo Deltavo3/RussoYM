@@ -52,6 +52,7 @@ import RussoYM.ClayRedLemmaTheorem
 import RussoYM.ClayDirectMixingRedLemmaTheorem
 import RussoYM.ClayDirectRedLemmaTheorem
 import RussoYM.ClayReducedScaleDirectTheorem
+import RussoYM.ClayMixingParameterCriterion
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3472,5 +3473,100 @@ theorem theorem_index_reduced_scale_direct_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayReducedScaleDirectAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 177: mixing parameter criterion implies direct Delta0 mixing smallness.
+-/
+theorem theorem_index_mixing_parameter_criterion_to_delta0_mixing_smallness
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0MixingParameterCriterionAssumptions
+        Cmix eps ell q Delta0 kappa) :
+    Delta0MixingSmallnessAssumptions Cmix eps ell Delta0 kappa := by
+  exact
+    Delta0MixingParameterCriterionAssumptions.to_delta0_mixing_smallness h
+
+/-
+Endpoint 178: mixing-parameter Clay assumptions imply reduced-scale direct Clay
+assumptions.
+-/
+theorem theorem_index_mixing_parameter_direct_to_reduced_scale_direct
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingParameterDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    ClayReducedScaleDirectAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa := by
+  exact ClayMixingParameterDirectAssumptions.to_reduced_scale_direct_assumptions h
+
+/-
+Endpoint 179: mixing-parameter theorem implies full strongest gap data.
+-/
+theorem theorem_index_mixing_parameter_direct_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingParameterDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayMixingParameterDirectAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 180: mixing-parameter theorem implies strongest conditional mass-gap
+summary.
+-/
+theorem theorem_index_mixing_parameter_direct_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingParameterDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayMixingParameterDirectAssumptions.imply_mass_gap h
+
+/-
+Endpoint 181: mixing-parameter theorem implies positive continuum Yang--Mills
+gap.
+-/
+theorem theorem_index_mixing_parameter_direct_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingParameterDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayMixingParameterDirectAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
