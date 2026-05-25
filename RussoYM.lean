@@ -63,3 +63,4 @@ import RussoYM.ClayReducedScaleDirectTheorem
 import RussoYM.ClayMixingParameterCriterion
 import RussoYM.ClayMixingPowerCriterion
 import RussoYM.ClayMixingRatioCriterion
+import RussoYM.ClayMixingScaleSeparationCriterion

@@ -55,6 +55,7 @@ import RussoYM.ClayReducedScaleDirectTheorem
 import RussoYM.ClayMixingParameterCriterion
 import RussoYM.ClayMixingPowerCriterion
 import RussoYM.ClayMixingRatioCriterion
+import RussoYM.ClayMixingScaleSeparationCriterion
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3729,5 +3730,95 @@ theorem theorem_index_mixing_ratio_direct_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayMixingRatioDirectAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 192: mixing scale-separation criterion implies the mixing ratio
+criterion.
+-/
+theorem theorem_index_mixing_scale_separation_to_ratio_criterion
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0MixingScaleSeparationCriterionAssumptions
+        Cmix eps ell q Delta0 kappa) :
+    Delta0MixingRatioCriterionAssumptions
+      Cmix eps ell q Delta0 kappa := by
+  exact
+    Delta0MixingScaleSeparationCriterionAssumptions.to_ratio_criterion h
+
+/-
+Endpoint 193: mixing scale-separation criterion implies direct Delta0 mixing
+smallness.
+-/
+theorem theorem_index_mixing_scale_separation_to_delta0_mixing_smallness
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0MixingScaleSeparationCriterionAssumptions
+        Cmix eps ell q Delta0 kappa) :
+    Delta0MixingSmallnessAssumptions Cmix eps ell Delta0 kappa := by
+  exact
+    Delta0MixingScaleSeparationCriterionAssumptions.to_delta0_mixing_smallness h
+
+/-
+Endpoint 194: mixing scale-separation Clay assumptions imply mixing-ratio Clay
+assumptions.
+-/
+theorem theorem_index_mixing_scale_separation_direct_to_mixing_ratio_direct
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingScaleSeparationDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    ClayMixingRatioDirectAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa := by
+  exact
+    ClayMixingScaleSeparationDirectAssumptions.to_mixing_ratio_direct_assumptions h
+
+/-
+Endpoint 195: mixing scale-separation theorem implies strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_mixing_scale_separation_direct_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingScaleSeparationDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayMixingScaleSeparationDirectAssumptions.imply_mass_gap h
+
+/-
+Endpoint 196: mixing scale-separation theorem implies positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_mixing_scale_separation_direct_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayMixingScaleSeparationDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayMixingScaleSeparationDirectAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
