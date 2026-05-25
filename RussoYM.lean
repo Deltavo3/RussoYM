@@ -37,3 +37,4 @@ import RussoYM.MixingRedLemmas
 import RussoYM.FineLowerRedLemmas
 import RussoYM.LayerOneScaleRedLemmas
 import RussoYM.ClayAssumptionAudit
+import RussoYM.ClayAtomicAssumptionAudit
