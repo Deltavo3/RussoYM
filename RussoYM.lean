@@ -61,3 +61,4 @@ import RussoYM.ClayDirectMixingRedLemmaTheorem
 import RussoYM.ClayDirectRedLemmaTheorem
 import RussoYM.ClayReducedScaleDirectTheorem
 import RussoYM.ClayMixingParameterCriterion
+import RussoYM.ClayMixingPowerCriterion
