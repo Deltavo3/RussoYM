@@ -47,6 +47,7 @@ import RussoYM.ClayStrongestConditional
 import RussoYM.EpsilonContinuumSurvival
 import RussoYM.ClaySurvivalAudit
 import RussoYM.ClaySurvivalConsequences
+import RussoYM.ClayHolonomyPacketSurvivalAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3016,5 +3017,103 @@ theorem theorem_index_survival_audit_to_full_survival_gap_data
       ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
           ∧ 0 < DeltaYM) := by
   exact ClaySurvivalAudit.imply_full_survival_gap_data h
+
+/-
+Endpoint 153: holonomy-packet survival audit implies the previous survival audit.
+-/
+theorem theorem_index_holonomy_packet_survival_audit_to_survival_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayHolonomyPacketSurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClaySurvivalAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayHolonomyPacketSurvivalAudit.to_survival_audit h
+
+/-
+Endpoint 154: holonomy-packet survival audit implies Layer-One fine gap data.
+-/
+theorem theorem_index_holonomy_packet_survival_audit_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayHolonomyPacketSurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayHolonomyPacketSurvivalAudit.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 155: holonomy-packet survival audit implies continuum gap data.
+-/
+theorem theorem_index_holonomy_packet_survival_audit_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayHolonomyPacketSurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayHolonomyPacketSurvivalAudit.imply_continuum_gap_data h
+
+/-
+Endpoint 156: strongest conditional mass-gap theorem from the holonomy-packet
+survival audit.
+-/
+theorem theorem_index_strongest_conditional_mass_gap_from_holonomy_packet_survival_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayHolonomyPacketSurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayHolonomyPacketSurvivalAudit.imply_strongest_conditional_mass_gap h
+
+/-
+Endpoint 157: full survival gap data from the holonomy-packet survival audit.
+-/
+theorem theorem_index_full_survival_gap_data_from_holonomy_packet_survival_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayHolonomyPacketSurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayHolonomyPacketSurvivalAudit.imply_full_survival_gap_data h
 
 end RussoYM
