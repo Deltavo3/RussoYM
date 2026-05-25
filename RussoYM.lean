@@ -34,3 +34,4 @@ import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
 import RussoYM.MixingRedLemmas
+import RussoYM.FineLowerRedLemmas

@@ -26,6 +26,7 @@ import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
 import RussoYM.MixingRedLemmas
+import RussoYM.FineLowerRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1814,5 +1815,71 @@ theorem theorem_index_positive_continuum_gap_from_all_red_lemmas
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayFromAllRedLemmasAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 88: decomposed fine lower red lemmas imply the finite/fine
+lower-bound inequality.
+
+This theorem is a named alias for:
+
+  FineLowerRedLemmaAssumptions.imply_fine_lower
+-/
+theorem theorem_index_fine_lower_red_lemmas_to_fine_lower
+    {DeltaFine dBlock dUV Cmix eps ell : Real}
+    {kappa : Nat}
+    (h : FineLowerRedLemmaAssumptions
+      DeltaFine dBlock dUV Cmix eps ell kappa) :
+    min dBlock dUV - 2 * Cmix * (eps / ell)^kappa <= DeltaFine := by
+  exact FineLowerRedLemmaAssumptions.imply_fine_lower h
+
+/-
+Endpoint 89: Clay gap from the complete decomposed red-lemma packet.
+
+This theorem is a named alias for:
+
+  ClayFromCompleteRedLemmasAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_complete_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromCompleteRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayFromCompleteRedLemmasAssumptions.imply_clay_gap h
+
+/-
+Endpoint 90: positive continuum YM gap from the complete decomposed
+red-lemma packet.
+
+This theorem is a named alias for:
+
+  ClayFromCompleteRedLemmasAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_complete_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromCompleteRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayFromCompleteRedLemmasAssumptions.imply_positive_continuum_gap h
 
 end RussoYM

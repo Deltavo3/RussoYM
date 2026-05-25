@@ -6,6 +6,8 @@ import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
 import RussoYM.MixingRedLemmas
+import RussoYM.FineLowerRedLemmas
+import RussoYM.FineLowerRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -935,5 +937,94 @@ theorem ClayFromAllRedLemmasAssumptions.imply_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact (ClayFromAllRedLemmasAssumptions.imply_clay_gap h).2.2.2.2.2
+
+/--
+Clay-compatible assumptions from all currently decomposed red lemmas, including
+the finite/fine lower-bound red lemma.
+
+This strengthens `ClayFromAllRedLemmasAssumptions` by replacing the remaining
+raw fine-lower-bound inequality with the named packet
+`FineLowerRedLemmaAssumptions`.
+-/
+structure ClayFromCompleteRedLemmasAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  holonomyRedLemmas :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingRedLemmas :
+    LayerOneMixingRedLemmaAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  fineLowerRedLemmas :
+    FineLowerRedLemmaAssumptions
+      DeltaFine (mu * (delta / C)^2) dUV Cmix eps ell kappa
+  continuumRedLemmas :
+    ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap
+
+/--
+Clay endpoint from the complete named red-lemma packet.
+-/
+theorem ClayFromCompleteRedLemmasAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromCompleteRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hFine :
+      min (mu * (delta / C)^2) dUV
+        - 2 * Cmix * (eps / ell)^kappa <= DeltaFine := by
+    exact FineLowerRedLemmaAssumptions.imply_fine_lower h.fineLowerRedLemmas
+  have hBase :
+      ClayFromAllRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { holonomyRedLemmas := h.holonomyRedLemmas
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingRedLemmas := h.mixingRedLemmas
+        hFine_lower := hFine
+        continuumRedLemmas := h.continuumRedLemmas }
+  exact ClayFromAllRedLemmasAssumptions.imply_clay_gap hBase
+
+/--
+Headline positive continuum gap endpoint from the complete named red-lemma
+packet.
+-/
+theorem ClayFromCompleteRedLemmasAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromCompleteRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact (ClayFromCompleteRedLemmasAssumptions.imply_clay_gap h).2.2.2.2.2
 
 end RussoYM
