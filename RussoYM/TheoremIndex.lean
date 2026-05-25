@@ -1651,4 +1651,55 @@ theorem theorem_index_continuum_red_lemmas_continuum_gap_assumptions
     ContinuumGapAssumptions DeltaYM Delta0 := by
   exact ContinuumRedLemmaAssumptions.imply_continuum_gap_assumptions h
 
+/-
+Endpoint 80: Clay gap from holonomy and continuum red lemmas.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_holonomy_and_continuum_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyAndContinuumRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact
+    ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_clay_gap h
+
+/-
+Endpoint 81: positive continuum YM gap from holonomy and continuum red lemmas.
+
+This theorem is a named alias for:
+
+  ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_holonomy_and_continuum_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromHolonomyAndContinuumRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact
+    ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
