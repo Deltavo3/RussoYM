@@ -58,6 +58,7 @@ import RussoYM.ClayMixingRatioCriterion
 import RussoYM.ClayMixingScaleSeparationCriterion
 import RussoYM.ClayMixingDecayBudget
 import RussoYM.ClayMixingKappaExistence
+import RussoYM.ClayMixingSeparatedKappa
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3992,5 +3993,95 @@ theorem theorem_index_mixing_kappa_existence_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
     0 < DeltaYM := by
   exact ClayMixingKappaExistenceAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 206: mixing scale data plus kappa decay budget recover the previous
+decay-budget mixing assumptions.
+-/
+theorem theorem_index_mixing_scale_data_with_kappa_decay_budget
+    {Cmix eps ell q Delta0 : Real}
+    {kappa : Nat}
+    (hScale : Delta0MixingScaleData Cmix eps ell q)
+    (hDecay : Delta0MixingKappaDecayBudget Cmix q Delta0 kappa) :
+    Delta0MixingDecayBudgetAssumptions Cmix eps ell q Delta0 kappa := by
+  exact Delta0MixingScaleData.with_kappa_decay_budget hScale hDecay
+
+/-
+Endpoint 207: separated-kappa assumptions imply the previous existential-kappa
+assumptions.
+-/
+theorem theorem_index_separated_kappa_to_mixing_kappa_existence
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClayMixingSeparatedKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    ClayMixingKappaExistenceAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta := by
+  exact ClayMixingSeparatedKappaAssumptions.to_mixing_kappa_existence_assumptions h
+
+/-
+Endpoint 208: separated-kappa theorem implies full strongest gap data.
+-/
+theorem theorem_index_separated_kappa_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClayMixingSeparatedKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayMixingSeparatedKappaAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 209: separated-kappa theorem implies strongest conditional mass-gap
+summary.
+-/
+theorem theorem_index_separated_kappa_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClayMixingSeparatedKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayMixingSeparatedKappaAssumptions.imply_mass_gap h
+
+/-
+Endpoint 210: separated-kappa theorem implies positive continuum Yang--Mills
+gap.
+-/
+theorem theorem_index_separated_kappa_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClayMixingSeparatedKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    0 < DeltaYM := by
+  exact ClayMixingSeparatedKappaAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
