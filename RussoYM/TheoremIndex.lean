@@ -51,6 +51,7 @@ import RussoYM.ClayHolonomyPacketSurvivalAudit
 import RussoYM.ClayRedLemmaTheorem
 import RussoYM.ClayDirectMixingRedLemmaTheorem
 import RussoYM.ClayDirectRedLemmaTheorem
+import RussoYM.ClayReducedScaleDirectTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3382,5 +3383,94 @@ theorem theorem_index_direct_red_lemma_theorem_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
     0 < DeltaYM := by
   exact clay_direct_red_lemma_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 172: reduced scale assumptions plus block positivity recover the
+positive scale packet.
+-/
+theorem theorem_index_reduced_scale_to_positive_scale
+    {Delta0 dBlock dUV : Real}
+    (hBlock_pos : 0 < dBlock)
+    (h :
+      LayerOneReducedScaleAssumptions Delta0 dBlock dUV) :
+    LayerOnePositiveScaleAssumptions Delta0 dBlock dUV := by
+  exact LayerOneReducedScaleAssumptions.to_positive_scale hBlock_pos h
+
+/-
+Endpoint 173: holonomy red-lemma packet supplies positivity of the Clay block
+scale.
+-/
+theorem theorem_index_holonomy_packet_to_block_scale_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      UniformHolonomyRedLemmaAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < mu * (delta / C)^2 := by
+  exact UniformHolonomyRedLemmaAssumptions.imply_block_scale_positive h
+
+/-
+Endpoint 174: reduced-scale direct assumptions imply the previous direct
+red-lemma assumptions.
+-/
+theorem theorem_index_reduced_scale_direct_to_direct_red_lemma_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayReducedScaleDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    ClayDirectRedLemmaTheoremAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa := by
+  exact ClayReducedScaleDirectAssumptions.to_direct_red_lemma_assumptions h
+
+/-
+Endpoint 175: reduced-scale direct theorem implies strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_reduced_scale_direct_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayReducedScaleDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayReducedScaleDirectAssumptions.imply_mass_gap h
+
+/-
+Endpoint 176: reduced-scale direct theorem implies positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_reduced_scale_direct_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayReducedScaleDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayReducedScaleDirectAssumptions.imply_positive_continuum_gap h
 
 end RussoYM

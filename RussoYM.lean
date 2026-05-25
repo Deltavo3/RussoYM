@@ -59,3 +59,4 @@ import RussoYM.ClayHolonomyPacketSurvivalAudit
 import RussoYM.ClayRedLemmaTheorem
 import RussoYM.ClayDirectMixingRedLemmaTheorem
 import RussoYM.ClayDirectRedLemmaTheorem
+import RussoYM.ClayReducedScaleDirectTheorem
