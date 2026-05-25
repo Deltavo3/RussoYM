@@ -40,6 +40,7 @@ import RussoYM.FiniteGapLowerFromHolonomy
 import RussoYM.ClayHolonomyFiniteLowerAudit
 import RussoYM.ClayPrimitiveMixingAudit
 import RussoYM.ClayDelta0MixingAudit
+import RussoYM.FineGapFromSchurMixing
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2566,5 +2567,76 @@ theorem theorem_index_positive_continuum_gap_from_delta0_mixing_audit
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayDelta0MixingAudit.imply_positive_continuum_gap h
+
+/-
+Endpoint 129: primitive Delta0-targeted mixing packets imply mixing smallness
+with target Delta0.
+-/
+theorem theorem_index_delta0_primitive_mixing_to_mixing_small
+    {Cmix eps ell rho Delta0 : Real}
+    {kappa : Nat}
+    (hPos : MixingScalePositivityAssumptions Cmix eps ell)
+    (hSep : MultiplicativeScaleSeparationAssumptions eps ell rho)
+    (hBudget : MixingRhoBudgetAssumptions Cmix rho Delta0 kappa) :
+    2 * Cmix * (eps / ell)^kappa <= Delta0 := by
+  exact
+    mixing_small_from_delta0_primitive_packets
+      hPos hSep hBudget
+
+/-
+Endpoint 130: Schur/Feshbach fine lower bound plus Delta0-targeted primitive
+mixing control implies Delta0 <= DeltaFine.
+-/
+theorem theorem_index_schur_mixing_to_delta0_le_deltaFine
+    {DeltaFine Delta0 dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (hScale :
+      LayerOnePositiveScaleAssumptions Delta0 dBlock dUV)
+    (hPos : MixingScalePositivityAssumptions Cmix eps ell)
+    (hSep : MultiplicativeScaleSeparationAssumptions eps ell rho)
+    (hBudget : MixingRhoBudgetAssumptions Cmix rho Delta0 kappa)
+    (hFine :
+      FineLowerSchurComplementAssumptions
+        DeltaFine dBlock dUV Cmix eps ell kappa) :
+    Delta0 <= DeltaFine := by
+  exact
+    FineLowerSchurComplementAssumptions.imply_delta0_le_deltaFine
+      hScale hPos hSep hBudget hFine
+
+/-
+Endpoint 131: Delta0-targeted Clay mixing audit implies Delta0 <= DeltaFine.
+-/
+theorem theorem_index_delta0_mixing_audit_to_delta0_le_deltaFine
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDelta0MixingAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine := by
+  exact ClayDelta0MixingAudit.imply_delta0_le_deltaFine h
+
+/-
+Endpoint 132: Delta0-targeted Clay mixing audit implies Layer-One fine gap data.
+-/
+theorem theorem_index_delta0_mixing_audit_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDelta0MixingAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayDelta0MixingAudit.imply_layer_one_fine_gap_data h
 
 end RussoYM
