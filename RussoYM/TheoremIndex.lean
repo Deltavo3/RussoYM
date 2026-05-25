@@ -28,6 +28,7 @@ import RussoYM.ContinuumRedLemmas
 import RussoYM.MixingRedLemmas
 import RussoYM.FineLowerRedLemmas
 import RussoYM.LayerOneScaleRedLemmas
+import RussoYM.ClayAssumptionAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1944,5 +1945,79 @@ theorem theorem_index_positive_continuum_gap_from_fully_named_red_lemmas
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayFromFullyNamedRedLemmasAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 94: the named red-lemma audit packet implies the fully named
+red-lemma assumptions.
+
+This theorem is a named alias for:
+
+  ClayNamedRedLemmaAudit.to_fully_named_red_lemmas
+-/
+theorem theorem_index_named_red_lemma_audit_to_fully_named_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayNamedRedLemmaAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayFromFullyNamedRedLemmasAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayNamedRedLemmaAudit.to_fully_named_red_lemmas h
+
+/-
+Endpoint 95: Clay gap from the named red-lemma audit packet.
+
+This theorem is a named alias for:
+
+  ClayNamedRedLemmaAudit.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_named_red_lemma_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayNamedRedLemmaAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayNamedRedLemmaAudit.imply_clay_gap h
+
+/-
+Endpoint 96: positive continuum YM gap from the named red-lemma audit packet.
+
+This theorem is a named alias for:
+
+  ClayNamedRedLemmaAudit.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_named_red_lemma_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayNamedRedLemmaAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayNamedRedLemmaAudit.imply_positive_continuum_gap h
 
 end RussoYM
