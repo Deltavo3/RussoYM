@@ -44,6 +44,8 @@ import RussoYM.FineGapFromSchurMixing
 import RussoYM.ClayDerivedFineGapAudit
 import RussoYM.ClayDerivedContinuumAudit
 import RussoYM.ClayStrongestConditional
+import RussoYM.EpsilonContinuumSurvival
+import RussoYM.ClaySurvivalAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2870,5 +2872,71 @@ theorem theorem_index_strongest_conditional_yang_mills_layer_one_fine_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact strongest_conditional_yang_mills_layer_one_fine_gap h
+
+/-
+Endpoint 145: named epsilon-continuum survival recovers the epsilon continuum
+approximation packet.
+-/
+theorem theorem_index_epsilon_survival_to_epsilon_continuum_approximation
+    {DeltaYM : Real}
+    {Gap : Nat -> Real}
+    (h : EpsilonContinuumSurvivalAssumptions DeltaYM Gap) :
+    EpsilonContinuumApproximationAssumptions DeltaYM Gap := by
+  exact
+    EpsilonContinuumSurvivalAssumptions.to_epsilon_continuum_approximation h
+
+/-
+Endpoint 146: named epsilon-continuum survival plus finite lower-bound data
+recovers the decomposed continuum red-lemma packet.
+-/
+theorem theorem_index_epsilon_survival_to_continuum_red_lemmas
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (hFinite : UniformFiniteGapLowerAssumptions Delta0 Gap)
+    (hSurvival : EpsilonContinuumSurvivalAssumptions DeltaYM Gap) :
+    ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap := by
+  exact
+    EpsilonContinuumSurvivalAssumptions.to_continuum_red_lemmas
+      hFinite hSurvival
+
+/-
+Endpoint 147: survival audit implies the derived fine-gap audit.
+-/
+theorem theorem_index_survival_audit_to_derived_fine_gap_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayDerivedFineGapAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClaySurvivalAudit.to_derived_fine_gap_audit h
+
+/-
+Endpoint 148: strongest conditional Yang--Mills mass-gap theorem from the
+survival audit.
+-/
+theorem theorem_index_strongest_conditional_mass_gap_from_survival_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClaySurvivalAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClaySurvivalAudit.imply_strongest_conditional_mass_gap h
 
 end RussoYM
