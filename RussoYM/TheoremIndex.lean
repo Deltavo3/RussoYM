@@ -34,6 +34,8 @@ import RussoYM.LayerOneScaleNormalization
 import RussoYM.ClayPositiveScaleAudit
 import RussoYM.ClayConditionalEndpoint
 import RussoYM.ClayMainTheorem
+import RussoYM.ContinuumFiniteLowerReduction
+import RussoYM.ClayFiniteLowerAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2347,5 +2349,71 @@ theorem theorem_index_conditional_yang_mills_finite_gap_bound
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     ∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n := by
   exact conditional_yang_mills_finite_gap_bound h
+
+/-
+Endpoint 112: reduced finite-gap lower-only assumptions expose the finite
+lower-bound estimate.
+-/
+theorem theorem_index_finite_gap_lower_only_to_finite_gap_lower
+    {Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : FiniteGapLowerOnlyAssumptions Delta0 Gap) :
+    forall n, Delta0 <= Gap n := by
+  exact FiniteGapLowerOnlyAssumptions.imply_finite_gap_lower h
+
+/-
+Endpoint 113: reduced finite-gap lower-only assumptions plus positivity of
+Delta0 recover the original uniform finite-gap lower packet.
+-/
+theorem theorem_index_finite_gap_lower_only_to_uniform_finite_gap_lower
+    {Delta0 : Real}
+    {Gap : Nat -> Real}
+    (hDelta0_pos : 0 < Delta0)
+    (h : FiniteGapLowerOnlyAssumptions Delta0 Gap) :
+    UniformFiniteGapLowerAssumptions Delta0 Gap := by
+  exact
+    FiniteGapLowerOnlyAssumptions.to_uniform_finite_gap_lower
+      hDelta0_pos h
+
+/-
+Endpoint 114: reduced finite-lower audit implies the positive-scale atomic
+audit.
+-/
+theorem theorem_index_reduced_finite_lower_audit_to_positive_scale_atomic_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayReducedFiniteLowerAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayPositiveScaleAtomicAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayReducedFiniteLowerAudit.to_positive_scale_atomic_audit h
+
+/-
+Endpoint 115: conditional Yang--Mills mass-gap theorem from the reduced
+finite-lower audit.
+-/
+theorem theorem_index_conditional_mass_gap_from_reduced_finite_lower_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayReducedFiniteLowerAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayReducedFiniteLowerAudit.imply_conditional_mass_gap h
 
 end RussoYM
