@@ -174,6 +174,14 @@ UniformHolonomyCoercivityAssumptions
 + epsilon-style continuum preservation
 => 0 < DeltaYM
 
+### Strongest current direct red-lemma endpoint
+
+The strongest current direct Clay-compatible endpoint is:
+
+```lean
+theorem_index_positive_continuum_gap_from_holonomy_red_lemmas_with_multiplicative_mixing_epsilon_continuum
+```
+
 ### `RussoYM/AlgebraCore.lean`
 
 Core algebraic lemmas.
