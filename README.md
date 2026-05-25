@@ -174,6 +174,11 @@ UniformHolonomyCoercivityAssumptions
 + epsilon-style continuum preservation
 => 0 < DeltaYM
 
+UniformHolonomyRedLemmaAssumptions
++ LayerOneMixingMultiplicativeScaleAssumptions
++ ContinuumRedLemmaAssumptions
+=> 0 < DeltaYM
+
 ### Strongest current direct red-lemma endpoint
 
 The strongest current direct Clay-compatible endpoint is:
