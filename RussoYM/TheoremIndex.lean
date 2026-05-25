@@ -42,6 +42,7 @@ import RussoYM.ClayPrimitiveMixingAudit
 import RussoYM.ClayDelta0MixingAudit
 import RussoYM.FineGapFromSchurMixing
 import RussoYM.ClayDerivedFineGapAudit
+import RussoYM.ClayDerivedContinuumAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2714,5 +2715,81 @@ theorem theorem_index_positive_continuum_gap_from_derived_fine_gap_audit
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayDerivedFineGapAudit.imply_positive_continuum_gap h
+
+/-
+Endpoint 137: derived fine-gap audit implies the decomposed continuum
+red-lemma packet.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_continuum_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap := by
+  exact ClayDerivedFineGapAudit.to_continuum_red_lemmas h
+
+/-
+Endpoint 138: derived fine-gap audit implies continuum gap data.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayDerivedFineGapAudit.imply_continuum_gap_data h
+
+/-
+Endpoint 139: derived fine-gap audit implies the positive continuum
+Yang--Mills gap directly.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_positive_continuum_gap_direct
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayDerivedFineGapAudit.imply_positive_continuum_gap_direct h
+
+/-
+Endpoint 140: derived fine-gap audit implies both Layer-One fine gap data and
+continuum gap data.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_fine_and_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM) := by
+  exact ClayDerivedFineGapAudit.imply_fine_and_continuum_gap_data h
 
 end RussoYM
