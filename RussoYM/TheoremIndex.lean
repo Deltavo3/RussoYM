@@ -48,6 +48,7 @@ import RussoYM.EpsilonContinuumSurvival
 import RussoYM.ClaySurvivalAudit
 import RussoYM.ClaySurvivalConsequences
 import RussoYM.ClayHolonomyPacketSurvivalAudit
+import RussoYM.ClayRedLemmaTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -3115,5 +3116,101 @@ theorem theorem_index_full_survival_gap_data_from_holonomy_packet_survival_audit
       ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
           ∧ 0 < DeltaYM) := by
   exact ClayHolonomyPacketSurvivalAudit.imply_full_survival_gap_data h
+
+/-
+Endpoint 158: Delta0-targeted mixing red-lemma packet implies the finite mixing
+red-lemma packet with target Delta0.
+-/
+theorem theorem_index_delta0_targeted_mixing_packet_to_finite_mixing_red_lemmas
+    {Cmix eps ell rho Delta0 : Real}
+    {kappa : Nat}
+    (h :
+      Delta0TargetedMixingRedLemmaAssumptions
+        Cmix eps ell rho Delta0 kappa) :
+    FiniteMixingRedLemmaAssumptions Cmix eps ell rho Delta0 kappa := by
+  exact Delta0TargetedMixingRedLemmaAssumptions.to_finite_mixing_red_lemmas h
+
+/-
+Endpoint 159: clean red-lemma theorem assumptions imply the holonomy-packet
+survival audit.
+-/
+theorem theorem_index_red_lemma_theorem_assumptions_to_holonomy_packet_survival_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayHolonomyPacketSurvivalAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayRedLemmaTheoremAssumptions.to_holonomy_packet_survival_audit h
+
+/-
+Endpoint 160: full strongest gap data from the clean red-lemma theorem
+assumptions.
+-/
+theorem theorem_index_red_lemma_theorem_assumptions_to_strongest_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayRedLemmaTheoremAssumptions.imply_strongest_gap_data h
+
+/-
+Endpoint 161: clean red-lemma theorem implies the strongest conditional
+Yang--Mills mass-gap summary.
+-/
+theorem theorem_index_clay_red_lemma_theorem_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_red_lemma_theorem_implies_mass_gap h
+
+/-
+Endpoint 162: clean red-lemma theorem implies the positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_clay_red_lemma_theorem_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayRedLemmaTheoremAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact clay_red_lemma_theorem_implies_positive_continuum_gap h
 
 end RussoYM
