@@ -5,6 +5,7 @@ import RussoYM.ContinuumPreservation
 import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
+import RussoYM.MixingRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -843,5 +844,96 @@ theorem ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_positive_continuu
     0 < DeltaYM := by
   exact
     (ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_clay_gap h).2.2.2.2.2
+
+/--
+Clay-compatible assumptions from all currently decomposed red lemmas.
+
+This is the most decomposed current endpoint:
+
+* holonomy/coercivity is supplied by `UniformHolonomyRedLemmaAssumptions`,
+* mixing suppression is supplied by `LayerOneMixingRedLemmaAssumptions`,
+* continuum preservation is supplied by `ContinuumRedLemmaAssumptions`.
+-/
+structure ClayFromAllRedLemmasAssumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    (links : Nat -> List R)
+    (Gap Energy curvatureNorm : Nat -> Real)
+    (DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real)
+    (kappa : Nat) : Prop where
+  holonomyRedLemmas :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta
+  hUV_pos :
+    0 < dUV
+  hDelta0_def :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+  mixingRedLemmas :
+    LayerOneMixingRedLemmaAssumptions
+      (mu * (delta / C)^2) dUV Cmix eps ell rho kappa
+  hFine_lower :
+    min (mu * (delta / C)^2) dUV
+      - 2 * Cmix * (eps / ell)^kappa <= DeltaFine
+  continuumRedLemmas :
+    ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap
+
+/--
+Clay endpoint from all currently decomposed red lemmas.
+-/
+theorem ClayFromAllRedLemmasAssumptions.imply_clay_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromAllRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  have hMix :
+      LayerOneMixingMultiplicativeScaleAssumptions
+        (mu * (delta / C)^2) dUV Cmix eps ell rho kappa := by
+    exact LayerOneMixingRedLemmaAssumptions.imply_layer_one_multiplicative_scale_assumptions
+      h.mixingRedLemmas
+  have hBase :
+      ClayFromHolonomyAndContinuumRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+    exact
+      { holonomyRedLemmas := h.holonomyRedLemmas
+        hUV_pos := h.hUV_pos
+        hDelta0_def := h.hDelta0_def
+        mixingSuppression := hMix
+        hFine_lower := h.hFine_lower
+        continuumRedLemmas := h.continuumRedLemmas }
+  exact ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_clay_gap hBase
+
+/--
+Headline positive continuum gap endpoint from all currently decomposed red
+lemmas.
+-/
+theorem ClayFromAllRedLemmasAssumptions.imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromAllRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact (ClayFromAllRedLemmasAssumptions.imply_clay_gap h).2.2.2.2.2
 
 end RussoYM

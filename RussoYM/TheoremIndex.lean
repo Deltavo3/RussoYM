@@ -1766,4 +1766,53 @@ theorem theorem_index_layer_one_mixing_red_lemmas_mixing_small
     2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
   exact LayerOneMixingRedLemmaAssumptions.imply_layer_one_mixing_small h
 
+/-
+Endpoint 86: Clay gap from all decomposed red lemmas.
+
+This theorem is a named alias for:
+
+  ClayFromAllRedLemmasAssumptions.imply_clay_gap
+-/
+theorem theorem_index_clay_gap_from_all_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromAllRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ Delta0 <= DeltaFine
+      ∧ 0 < Delta0
+      ∧ 0 < DeltaFine
+      ∧ Delta0 <= DeltaYM
+      ∧ 0 < DeltaYM := by
+  exact ClayFromAllRedLemmasAssumptions.imply_clay_gap h
+
+/-
+Endpoint 87: positive continuum YM gap from all decomposed red lemmas.
+
+This theorem is a named alias for:
+
+  ClayFromAllRedLemmasAssumptions.imply_positive_continuum_gap
+-/
+theorem theorem_index_positive_continuum_gap_from_all_red_lemmas
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayFromAllRedLemmasAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayFromAllRedLemmasAssumptions.imply_positive_continuum_gap h
+
 end RussoYM
