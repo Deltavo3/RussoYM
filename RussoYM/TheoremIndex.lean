@@ -33,6 +33,7 @@ import RussoYM.ClayAtomicAssumptionAudit
 import RussoYM.LayerOneScaleNormalization
 import RussoYM.ClayPositiveScaleAudit
 import RussoYM.ClayConditionalEndpoint
+import RussoYM.ClayMainTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2279,5 +2280,72 @@ theorem theorem_index_conditional_mass_gap_summary
     (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
       ∧ 0 < DeltaYM := by
   exact clay_conditional_mass_gap_summary h
+
+/-
+Endpoint 109: headline conditional Yang--Mills mass-gap theorem.
+
+This theorem is a named alias for:
+
+  conditional_yang_mills_mass_gap
+-/
+theorem theorem_index_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 110: headline conditional positive continuum Yang--Mills gap theorem.
+
+This theorem is a named alias for:
+
+  conditional_yang_mills_positive_continuum_gap
+-/
+theorem theorem_index_conditional_yang_mills_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact conditional_yang_mills_positive_continuum_gap h
+
+/-
+Endpoint 111: headline conditional positive finite-volume gap theorem.
+
+This theorem is a named alias for:
+
+  conditional_yang_mills_finite_gap_bound
+-/
+theorem theorem_index_conditional_yang_mills_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayPositiveScaleAtomicAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n := by
+  exact conditional_yang_mills_finite_gap_bound h
 
 end RussoYM
