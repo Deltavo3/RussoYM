@@ -43,6 +43,7 @@ import RussoYM.ClayDelta0MixingAudit
 import RussoYM.FineGapFromSchurMixing
 import RussoYM.ClayDerivedFineGapAudit
 import RussoYM.ClayDerivedContinuumAudit
+import RussoYM.ClayStrongestConditional
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2791,5 +2792,83 @@ theorem theorem_index_derived_fine_gap_audit_to_fine_and_continuum_gap_data
     (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
       ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM) := by
   exact ClayDerivedFineGapAudit.imply_fine_and_continuum_gap_data h
+
+/-
+Endpoint 141: strongest conditional Yang--Mills gap data from the current
+audited route.
+-/
+theorem theorem_index_strongest_conditional_yang_mills_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact strongest_conditional_yang_mills_gap_data h
+
+/-
+Endpoint 142: strongest headline conditional Yang--Mills mass-gap theorem.
+-/
+theorem theorem_index_strongest_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact strongest_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 143: strongest conditional positive continuum Yang--Mills gap theorem.
+-/
+theorem theorem_index_strongest_conditional_yang_mills_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact strongest_conditional_yang_mills_positive_continuum_gap h
+
+/-
+Endpoint 144: strongest conditional Layer-One fine gap theorem.
+-/
+theorem theorem_index_strongest_conditional_yang_mills_layer_one_fine_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact strongest_conditional_yang_mills_layer_one_fine_gap h
 
 end RussoYM
