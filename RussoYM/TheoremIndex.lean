@@ -39,6 +39,7 @@ import RussoYM.ClayFiniteLowerAudit
 import RussoYM.FiniteGapLowerFromHolonomy
 import RussoYM.ClayHolonomyFiniteLowerAudit
 import RussoYM.ClayPrimitiveMixingAudit
+import RussoYM.ClayDelta0MixingAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2490,5 +2491,80 @@ theorem theorem_index_positive_continuum_gap_from_primitive_mixing_audit
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     0 < DeltaYM := by
   exact ClayPrimitiveMixingAudit.imply_positive_continuum_gap h
+
+/-
+Endpoint 125: a Delta0-targeted rho budget recovers the old half-min
+rho-budget target using the Layer-One scale definition.
+-/
+theorem theorem_index_delta0_budget_to_half_min_budget
+    {Delta0 dBlock dUV Cmix rho : Real}
+    {kappa : Nat}
+    (hScale :
+      LayerOnePositiveScaleAssumptions Delta0 dBlock dUV)
+    (hBudget :
+      MixingRhoBudgetAssumptions Cmix rho Delta0 kappa) :
+    MixingRhoBudgetAssumptions
+      Cmix rho ((1 / 2) * min dBlock dUV) kappa := by
+  exact
+    mixing_rho_budget_to_half_min_from_delta0
+      hScale hBudget
+
+/-
+Endpoint 126: Delta0-targeted mixing audit implies the primitive mixing audit.
+-/
+theorem theorem_index_delta0_mixing_audit_to_primitive_mixing_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDelta0MixingAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayPrimitiveMixingAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayDelta0MixingAudit.to_primitive_mixing_audit h
+
+/-
+Endpoint 127: conditional mass-gap theorem from the Delta0-targeted mixing audit.
+-/
+theorem theorem_index_conditional_mass_gap_from_delta0_mixing_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDelta0MixingAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayDelta0MixingAudit.imply_conditional_mass_gap h
+
+/-
+Endpoint 128: positive continuum Yang--Mills gap from the Delta0-targeted
+mixing audit.
+-/
+theorem theorem_index_positive_continuum_gap_from_delta0_mixing_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDelta0MixingAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayDelta0MixingAudit.imply_positive_continuum_gap h
 
 end RussoYM
