@@ -24,6 +24,7 @@ import RussoYM.FiniteMixingSuppression
 import RussoYM.ContinuumPreservation
 import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
+import RussoYM.ContinuumRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1605,5 +1606,49 @@ theorem theorem_index_positive_continuum_gap_from_holonomy_red_lemmas_with_multi
     0 < DeltaYM := by
   exact
     ClayFromHolonomyRedLemmasWithMultiplicativeMixingEpsilonContinuumAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 77: decomposed continuum red lemmas imply finite-to-continuum
+gap-preservation assumptions.
+
+This theorem is a named alias for:
+
+  ContinuumRedLemmaAssumptions.imply_uniform_finite_to_continuum_gap_assumptions
+-/
+theorem theorem_index_continuum_red_lemmas_to_finite_to_continuum
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap) :
+    UniformFiniteToContinuumGapAssumptions DeltaYM Delta0 Gap := by
+  exact ContinuumRedLemmaAssumptions.imply_uniform_finite_to_continuum_gap_assumptions h
+
+/-
+Endpoint 78: decomposed continuum red lemmas imply positive continuum gap.
+
+This theorem is a named alias for:
+
+  ContinuumRedLemmaAssumptions.imply_continuum_gap
+-/
+theorem theorem_index_continuum_red_lemmas_continuum_gap
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ContinuumRedLemmaAssumptions.imply_continuum_gap h
+
+/-
+Endpoint 79: decomposed continuum red lemmas imply the original continuum gap
+interface.
+
+This theorem is a named alias for:
+
+  ContinuumRedLemmaAssumptions.imply_continuum_gap_assumptions
+-/
+theorem theorem_index_continuum_red_lemmas_continuum_gap_assumptions
+    {DeltaYM Delta0 : Real}
+    {Gap : Nat -> Real}
+    (h : ContinuumRedLemmaAssumptions DeltaYM Delta0 Gap) :
+    ContinuumGapAssumptions DeltaYM Delta0 := by
+  exact ContinuumRedLemmaAssumptions.imply_continuum_gap_assumptions h
 
 end RussoYM
