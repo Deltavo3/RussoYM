@@ -49,3 +49,4 @@ import RussoYM.ClayHolonomyFiniteLowerAudit
 import RussoYM.ClayPrimitiveMixingAudit
 import RussoYM.ClayDelta0MixingAudit
 import RussoYM.FineGapFromSchurMixing
+import RussoYM.ClayDerivedFineGapAudit

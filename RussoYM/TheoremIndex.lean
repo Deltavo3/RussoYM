@@ -41,6 +41,7 @@ import RussoYM.ClayHolonomyFiniteLowerAudit
 import RussoYM.ClayPrimitiveMixingAudit
 import RussoYM.ClayDelta0MixingAudit
 import RussoYM.FineGapFromSchurMixing
+import RussoYM.ClayDerivedFineGapAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -2638,5 +2639,80 @@ theorem theorem_index_delta0_mixing_audit_to_layer_one_fine_gap_data
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact ClayDelta0MixingAudit.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 133: derived fine-gap audit implies the Delta0-targeted mixing audit.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_delta0_mixing_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    ClayDelta0MixingAudit
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa := by
+  exact ClayDerivedFineGapAudit.to_delta0_mixing_audit h
+
+/-
+Endpoint 134: derived fine-gap audit implies Layer-One fine gap data.
+-/
+theorem theorem_index_derived_fine_gap_audit_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayDerivedFineGapAudit.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 135: conditional mass-gap theorem from the derived fine-gap audit.
+-/
+theorem theorem_index_conditional_mass_gap_from_derived_fine_gap_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayDerivedFineGapAudit.imply_conditional_mass_gap h
+
+/-
+Endpoint 136: positive continuum Yang--Mills gap from the derived fine-gap audit.
+-/
+theorem theorem_index_positive_continuum_gap_from_derived_fine_gap_audit
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta : Real}
+    {kappa : Nat}
+    (h :
+      ClayDerivedFineGapAudit
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell rho C mu delta kappa) :
+    0 < DeltaYM := by
+  exact ClayDerivedFineGapAudit.imply_positive_continuum_gap h
 
 end RussoYM
