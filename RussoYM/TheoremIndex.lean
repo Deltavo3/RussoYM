@@ -25,6 +25,7 @@ import RussoYM.ContinuumPreservation
 import RussoYM.UniformHolonomyCoercivity
 import RussoYM.UniformHolonomyRedLemmas
 import RussoYM.ContinuumRedLemmas
+import RussoYM.MixingRedLemmas
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -1701,5 +1702,68 @@ theorem theorem_index_positive_continuum_gap_from_holonomy_and_continuum_red_lem
     0 < DeltaYM := by
   exact
     ClayFromHolonomyAndContinuumRedLemmasAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 82: decomposed finite mixing red lemmas imply multiplicative
+scale-separation assumptions.
+
+This theorem is a named alias for:
+
+  FiniteMixingRedLemmaAssumptions.imply_multiplicative_scale_assumptions
+-/
+theorem theorem_index_finite_mixing_red_lemmas_to_multiplicative_scale
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (h : FiniteMixingRedLemmaAssumptions Cmix eps ell rho target kappa) :
+    FiniteMixingMultiplicativeScaleAssumptions
+      Cmix eps ell rho target kappa := by
+  exact FiniteMixingRedLemmaAssumptions.imply_multiplicative_scale_assumptions h
+
+/-
+Endpoint 83: decomposed finite mixing red lemmas imply finite mixing-smallness.
+
+This theorem is a named alias for:
+
+  FiniteMixingRedLemmaAssumptions.imply_mixing_small
+-/
+theorem theorem_index_finite_mixing_red_lemmas_mixing_small
+    {Cmix eps ell rho target : Real}
+    {kappa : Nat}
+    (h : FiniteMixingRedLemmaAssumptions Cmix eps ell rho target kappa) :
+    2 * Cmix * (eps / ell)^kappa <= target := by
+  exact FiniteMixingRedLemmaAssumptions.imply_mixing_small h
+
+/-
+Endpoint 84: decomposed Layer One mixing red lemmas imply multiplicative
+Layer One mixing assumptions.
+
+This theorem is a named alias for:
+
+  LayerOneMixingRedLemmaAssumptions.imply_layer_one_multiplicative_scale_assumptions
+-/
+theorem theorem_index_layer_one_mixing_red_lemmas_to_multiplicative_scale
+    {dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (h : LayerOneMixingRedLemmaAssumptions
+      dBlock dUV Cmix eps ell rho kappa) :
+    LayerOneMixingMultiplicativeScaleAssumptions
+      dBlock dUV Cmix eps ell rho kappa := by
+  exact LayerOneMixingRedLemmaAssumptions.imply_layer_one_multiplicative_scale_assumptions h
+
+/-
+Endpoint 85: decomposed Layer One mixing red lemmas imply Layer One
+mixing-smallness.
+
+This theorem is a named alias for:
+
+  LayerOneMixingRedLemmaAssumptions.imply_layer_one_mixing_small
+-/
+theorem theorem_index_layer_one_mixing_red_lemmas_mixing_small
+    {dBlock dUV Cmix eps ell rho : Real}
+    {kappa : Nat}
+    (h : LayerOneMixingRedLemmaAssumptions
+      dBlock dUV Cmix eps ell rho kappa) :
+    2 * Cmix * (eps / ell)^kappa <= (1 / 2) * min dBlock dUV := by
+  exact LayerOneMixingRedLemmaAssumptions.imply_layer_one_mixing_small h
 
 end RussoYM
