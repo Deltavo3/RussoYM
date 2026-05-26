@@ -69,3 +69,5 @@ import RussoYM.ClayMixingKappaExistence
 import RussoYM.ClayMixingSeparatedKappa
 import RussoYM.ClaySeparatedKappaTheorem
 import RussoYM.ClaySchurLossForm
+import RussoYM.ClaySchurLossTheorem
+import RussoYM.ClaySchurLossBudget

@@ -61,6 +61,8 @@ import RussoYM.ClayMixingKappaExistence
 import RussoYM.ClayMixingSeparatedKappa
 import RussoYM.ClaySeparatedKappaTheorem
 import RussoYM.ClaySchurLossForm
+import RussoYM.ClaySchurLossTheorem
+import RussoYM.ClaySchurLossBudget
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4235,5 +4237,128 @@ theorem theorem_index_schur_loss_kappa_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
     0 < DeltaYM := by
   exact ClaySchurLossKappaAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 219: Schur-loss theorem implies full strongest gap data.
+-/
+theorem theorem_index_schur_loss_theorem_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClaySchurLossKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact clay_schur_loss_theorem_implies_full_gap_data h
+
+/-
+Endpoint 220: Schur-loss theorem implies strongest conditional mass-gap summary.
+-/
+theorem theorem_index_schur_loss_theorem_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClaySchurLossKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_schur_loss_theorem_implies_mass_gap h
+
+/-
+Endpoint 221: Schur-loss theorem implies positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_schur_loss_theorem_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClaySchurLossKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    0 < DeltaYM := by
+  exact clay_schur_loss_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 222: mixing loss identity plus mixing scale/decay data imply the Schur
+loss budget.
+-/
+theorem theorem_index_kappa_mixing_loss_identity_implies_loss_budget
+    {Cmix eps ell q Delta0 loss : Real}
+    {kappa : Nat}
+    (hScale : Delta0MixingScaleData Cmix eps ell q)
+    (hDecay : Delta0MixingKappaDecayBudget Cmix q Delta0 kappa)
+    (hLoss : KappaMixingLossIdentity loss Cmix eps ell kappa) :
+    SchurLossBudgetAssumptions loss Delta0 := by
+  exact KappaMixingLossIdentity.imply_loss_budget hScale hDecay hLoss
+
+/-
+Endpoint 223: Schur/Feshbach lower bound plus loss budget implies
+Delta0 <= DeltaFine.
+-/
+theorem theorem_index_schur_loss_budget_to_delta0_le_deltaFine
+    {DeltaFine Delta0 dBlock dUV loss : Real}
+    (hScale :
+      LayerOneReducedScaleAssumptions Delta0 dBlock dUV)
+    (hBudget :
+      SchurLossBudgetAssumptions loss Delta0)
+    (hSchur :
+      SchurFeshbachLossLowerAssumptions DeltaFine dBlock dUV loss) :
+    Delta0 <= DeltaFine := by
+  exact
+    SchurFeshbachLossLowerAssumptions.imply_delta0_le_deltaFine_of_loss_budget
+      hScale hBudget hSchur
+
+/-
+Endpoint 224: Schur-loss kappa assumptions imply Delta0 <= DeltaFine by the
+loss-budget bridge.
+-/
+theorem theorem_index_schur_loss_kappa_to_delta0_le_deltaFine_by_loss_budget
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClaySchurLossKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    Delta0 <= DeltaFine := by
+  exact ClaySchurLossKappaAssumptions.imply_delta0_le_deltaFine_by_loss_budget h
+
+/-
+Endpoint 225: Schur-loss kappa assumptions imply Layer-One fine gap data by the
+loss-budget bridge.
+-/
+theorem theorem_index_schur_loss_kappa_to_layer_one_fine_gap_data_by_loss_budget
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta : Real}
+    (h :
+      ClaySchurLossKappaAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV Cmix eps ell q C mu delta) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact
+    ClaySchurLossKappaAssumptions.imply_layer_one_fine_gap_data_by_loss_budget h
 
 end RussoYM
