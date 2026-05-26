@@ -63,6 +63,7 @@ import RussoYM.ClaySeparatedKappaTheorem
 import RussoYM.ClaySchurLossForm
 import RussoYM.ClaySchurLossTheorem
 import RussoYM.ClaySchurLossBudget
+import RussoYM.ClaySchurBudgetForm
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4360,5 +4361,114 @@ theorem theorem_index_schur_loss_kappa_to_layer_one_fine_gap_data_by_loss_budget
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact
     ClaySchurLossKappaAssumptions.imply_layer_one_fine_gap_data_by_loss_budget h
+
+/-
+Endpoint 226: Schur-budget assumptions imply positive scale data.
+-/
+theorem theorem_index_schur_budget_to_positive_scale
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    LayerOnePositiveScaleAssumptions
+      Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClaySchurBudgetAssumptions.to_positive_scale h
+
+/-
+Endpoint 227: Schur-budget assumptions imply Layer-One fine gap data.
+-/
+theorem theorem_index_schur_budget_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClaySchurBudgetAssumptions.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 228: Schur-budget assumptions imply continuum gap data.
+-/
+theorem theorem_index_schur_budget_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClaySchurBudgetAssumptions.imply_continuum_gap_data h
+
+/-
+Endpoint 229: Schur-budget assumptions imply full strongest gap data.
+-/
+theorem theorem_index_schur_budget_to_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClaySchurBudgetAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 230: Schur-budget assumptions imply strongest conditional mass-gap
+summary.
+-/
+theorem theorem_index_schur_budget_to_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClaySchurBudgetAssumptions.imply_mass_gap h
+
+/-
+Endpoint 231: Schur-budget assumptions imply positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_schur_budget_to_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClaySchurBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClaySchurBudgetAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
