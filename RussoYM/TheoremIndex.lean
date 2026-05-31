@@ -112,6 +112,7 @@ import RussoYM.ClaySevenAnalyticObligations
 import RussoYM.ClayProofStateAudit
 import RussoYM.ClayHolonomySeparationProofStrategy
 import RussoYM.ClayCompactSectorSeparation
+import RussoYM.ClayTransferWitnessConstruction
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9400,5 +9401,101 @@ theorem theorem_index_compact_sector_with_remaining_obligations_imply_mass_gap_s
     clay_compact_sector_with_remaining_obligations_imply_mass_gap_summary
       hCompactSector hControl hCoercive hGap
       hScaleForWitness hSchurForWitness hContinuumForWitness
+
+/-
+Endpoint 484: positive concrete block gives scale transfer data.
+-/
+theorem theorem_index_scale_transfer_of_block_positive
+    {C mu delta : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2) :
+    ClayScaleTransferExistenceAssumptions C mu delta := by
+  exact ClayScaleTransferExistenceAssumptions.of_block_positive hBlock_pos
+
+/-
+Endpoint 485: positive block and scale data imply Delta0 positivity.
+-/
+theorem theorem_index_scale_delta0_positive_of_block_pos
+    {C mu delta Delta0 dUV : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (hUV_pos :
+      0 < dUV)
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV) :
+    0 < Delta0 := by
+  exact
+    scale_delta0_positive_of_block_pos
+      hBlock_pos hUV_pos hDelta0_def
+
+/-
+Endpoint 486: nonnegative Delta0 gives Schur/Feshbach zero-loss data.
+-/
+theorem theorem_index_schur_loss_transfer_of_zero_loss
+    {C mu delta Delta0 dUV : Real}
+    (hDelta0_nonneg :
+      0 <= Delta0) :
+    ClaySchurLossTransferExistenceAssumptions
+      C mu delta Delta0 dUV := by
+  exact
+    ClaySchurLossTransferExistenceAssumptions.of_zero_loss
+      hDelta0_nonneg
+
+/-
+Endpoint 487: positive block plus scale data gives Schur/Feshbach loss transfer.
+-/
+theorem theorem_index_schur_loss_transfer_of_scale_data_and_block_positive
+    {C mu delta Delta0 dUV : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (hUV_pos :
+      0 < dUV)
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV) :
+    ClaySchurLossTransferExistenceAssumptions
+      C mu delta Delta0 dUV := by
+  exact
+    ClaySchurLossTransferExistenceAssumptions.of_scale_data_and_block_positive
+      hBlock_pos hUV_pos hDelta0_def
+
+/-
+Endpoint 488: positive block plus continuum transfer gives raw transfer
+existence.
+-/
+theorem theorem_index_raw_transfer_of_block_positive_and_continuum_transfer
+    {DeltaYM C mu delta : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        Delta0 <= DeltaYM) :
+    ClayRawTransferExistenceAssumptions DeltaYM C mu delta := by
+  exact
+    ClayRawTransferExistenceAssumptions.of_block_positive_and_continuum_transfer
+      hBlock_pos hContinuumForScale
+
+/-
+Endpoint 489: positive block plus continuum transfer gives transfer gap data.
+-/
+theorem theorem_index_transfer_gap_data_of_block_positive_and_continuum_transfer
+    {DeltaYM C mu delta : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        Delta0 <= DeltaYM) :
+    ∃ DeltaFine Delta0 : Real,
+      Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine
+        ∧ Delta0 <= DeltaYM
+        ∧ 0 < DeltaYM := by
+  exact
+    transfer_gap_data_of_block_positive_and_continuum_transfer
+      hBlock_pos hContinuumForScale
 
 end RussoYM
