@@ -416,6 +416,65 @@ Define the admissible nontrivial sector (K) without using energy or a spectral l
 
 Risk: high.
 
+## Obligation 1 Update: Nontrivial Holonomy Sector Defined
+
+Dedicated definition file:
+
+```text
+docs/ClayNontrivialHolonomySectorDefinition.md
+```
+
+The nontrivial sector is now proposed as a finite-resolution holonomy-sector fiber:
+
+[
+K=q_{\mathrm{hol}}^{-1}(\lambda_*),
+\qquad
+\lambda_*\neq \lambda_{\mathrm{id}}.
+]
+
+Here (q_{\mathrm{hol}}) is a finite-resolution holonomy sector map
+
+[
+q_{\mathrm{hol}}:G^m\to\Lambda_{\mathrm{hol}},
+]
+
+and (\lambda_{\mathrm{id}}) is the resolved identity-sector label.
+
+This is safe because (K) is defined by resolved holonomy data, not by energy, confinement, or a spectral lower bound.
+
+The remaining paper burden for obligation 1 is now:
+
+1. define (q_{\mathrm{hol}}) precisely;
+2. prove the identity tuple (\mathbf 1) maps to (\lambda_{\mathrm{id}});
+3. choose (\lambda_*\neq\lambda_{\mathrm{id}});
+4. prove the regulator sequence satisfies (\operatorname{Hol}_{\Gamma}(A_n)\in K);
+5. prove (K) is compact, usually by proving it is a closed fiber of (q_{\mathrm{hol}}) inside compact (G^m);
+6. prove the resolved holonomy product map (U:K\to G) is continuous;
+7. prove (U(V)=1) forces the resolved identity sector, so (U(V)=1) cannot occur inside (K).
+
+Thus obligation 1 is reduced to a precise finite-resolution holonomy-sector theorem:
+
+[
+K=q_{\mathrm{hol}}^{-1}(\lambda_*),
+\qquad
+K\subseteq G^m\text{ compact},
+\qquad
+\mathbf 1\notin K
+]
+
+implies
+
+[
+\exists \delta>0,\quad
+\forall n,\quad
+\delta\leq|1-U_n|.
+]
+
+Status: reduced but not fully proved.
+
+Risk: still high, but localized.
+
+
 ---
 
 ## Obligation 2: Holonomy-curvature control
