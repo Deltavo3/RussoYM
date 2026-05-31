@@ -65,6 +65,7 @@ import RussoYM.ClaySchurLossTheorem
 import RussoYM.ClaySchurLossBudget
 import RussoYM.ClaySchurBudgetForm
 import RussoYM.ClaySchurBudgetTheorem
+import RussoYM.ClayContinuumSurvivalForm
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4528,5 +4529,131 @@ theorem theorem_index_schur_budget_theorem_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact clay_schur_budget_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 235: direct continuum survival plus positivity of Delta0 gives
+continuum gap data.
+-/
+theorem theorem_index_direct_continuum_survival_to_gap_data
+    {DeltaYM Delta0 : Real}
+    (hSurvival :
+      ContinuumGapSurvivalAssumptions DeltaYM Delta0)
+    (hDelta0_pos : 0 < Delta0) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact
+    ContinuumGapSurvivalAssumptions.imply_continuum_gap_data
+      hSurvival hDelta0_pos
+
+/-
+Endpoint 236: direct continuum-survival assumptions recover positive scale data.
+-/
+theorem theorem_index_continuum_survival_budget_to_positive_scale
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    LayerOnePositiveScaleAssumptions
+      Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayContinuumSurvivalBudgetAssumptions.to_positive_scale h
+
+/-
+Endpoint 237: direct continuum-survival assumptions imply Layer-One fine gap
+data.
+-/
+theorem theorem_index_continuum_survival_budget_to_layer_one_fine_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayContinuumSurvivalBudgetAssumptions.imply_layer_one_fine_gap_data h
+
+/-
+Endpoint 238: direct continuum-survival assumptions imply continuum gap data.
+-/
+theorem theorem_index_continuum_survival_budget_to_continuum_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayContinuumSurvivalBudgetAssumptions.imply_continuum_gap_data h
+
+/-
+Endpoint 239: direct continuum-survival assumptions imply full strongest gap
+data.
+-/
+theorem theorem_index_continuum_survival_budget_to_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayContinuumSurvivalBudgetAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 240: direct continuum-survival assumptions imply strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_continuum_survival_budget_to_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayContinuumSurvivalBudgetAssumptions.imply_mass_gap h
+
+/-
+Endpoint 241: direct continuum-survival assumptions imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_continuum_survival_budget_to_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayContinuumSurvivalBudgetAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
