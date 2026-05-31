@@ -102,6 +102,7 @@ import RussoYM.ClayExistentialWitnessPackage
 import RussoYM.ClayExplicitRawDataTheorem
 import RussoYM.ClayExplicitRawDataWitnessPackage
 import RussoYM.ClaySeparatedAnalyticObligations
+import RussoYM.ClayRawHolonomyExistence
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8114,5 +8115,133 @@ theorem theorem_index_separated_analytic_obligations_conditional_yang_mills_mass
         links Gap Energy curvatureNorm DeltaYM) :
     0 < DeltaYM := by
   exact clay_separated_analytic_obligations_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 432: raw holonomy existence exposes C, mu, delta witness data.
+-/
+theorem theorem_index_raw_holonomy_existence_exists_witness_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    (h :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm) :
+    ∃ C mu delta : Real,
+      0 < delta
+        ∧ (forall n, delta <= ‖1 - (links n).prod‖)
+        ∧ 0 < C
+        ∧ (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n)
+        ∧ 0 < mu
+        ∧ (forall n, mu * (curvatureNorm n)^2 <= Energy n)
+        ∧ (forall n, Energy n <= Gap n) := by
+  exact ClayRawHolonomyExistenceAssumptions.exists_holonomy_witness_data h
+
+/-
+Endpoint 433: separated analytic obligations imply raw holonomy existence.
+-/
+theorem theorem_index_separated_analytic_obligations_to_raw_holonomy_existence
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySeparatedAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClayRawHolonomyExistenceAssumptions
+      links Gap Energy curvatureNorm := by
+  exact ClaySeparatedAnalyticObligations.to_raw_holonomy_existence h
+
+/-
+Endpoint 434: raw holonomy existence plus transfer existence gives separated
+analytic obligations.
+-/
+theorem theorem_index_raw_holonomy_existence_to_separated_analytic_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ClaySeparatedAnalyticObligations
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact
+    ClayRawHolonomyExistenceAssumptions.to_separated_analytic_obligations
+      hHol hTransferForWitness
+
+/-
+Endpoint 435: raw holonomy existence plus transfer existence gives positive
+continuum Yang--Mills gap.
+-/
+theorem theorem_index_raw_holonomy_existence_imply_positive_continuum_gap_with_transfer
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    0 < DeltaYM := by
+  exact
+    ClayRawHolonomyExistenceAssumptions.imply_positive_continuum_gap_with_transfer
+      hHol hTransferForWitness
+
+/-
+Endpoint 436: raw holonomy existence plus transfer existence gives mass-gap
+summary.
+-/
+theorem theorem_index_raw_holonomy_existence_imply_mass_gap_summary_with_transfer
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    ClayRawHolonomyExistenceAssumptions.imply_mass_gap_summary_with_transfer
+      hHol hTransferForWitness
 
 end RussoYM
