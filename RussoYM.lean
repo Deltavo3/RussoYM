@@ -125,3 +125,4 @@ import RussoYM.ClayContinuumTransferReduction
 import RussoYM.ClayReducedAnalyticRoadmap
 import RussoYM.ClayEnergyNormCoercivity
 import RussoYM.ClayDirectHolonomySector
+import RussoYM.ClayHolonomyCurvatureEnergyPackaging

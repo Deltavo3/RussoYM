@@ -117,6 +117,7 @@ import RussoYM.ClayContinuumTransferReduction
 import RussoYM.ClayReducedAnalyticRoadmap
 import RussoYM.ClayEnergyNormCoercivity
 import RussoYM.ClayDirectHolonomySector
+import RussoYM.ClayHolonomyCurvatureEnergyPackaging
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9866,5 +9867,102 @@ theorem theorem_index_direct_sector_with_remaining_obligations_imply_mass_gap_su
   exact
     clay_direct_sector_with_remaining_obligations_imply_mass_gap_summary
       heps hsector hControl hEnergyDef hGap hContinuumForWitness
+
+/-
+Endpoint 506: local flux control plus flux-energy comparison gives
+holonomy-curvature control.
+-/
+theorem theorem_index_holonomy_curvature_control_of_local_flux_energy_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm fluxNorm : Nat -> Real}
+    {C_loc areaFactor : Real}
+    (hCloc_pos :
+      0 < C_loc)
+    (hArea_pos :
+      0 < areaFactor)
+    (hLocal :
+      forall n, ‖1 - (links n).prod‖ <= C_loc * fluxNorm n)
+    (hFluxEnergy :
+      forall n, fluxNorm n <= areaFactor * curvatureNorm n) :
+    ClayHolonomyCurvatureControlExistenceAssumptions
+      links curvatureNorm := by
+  exact
+    ClayHolonomyCurvatureControlExistenceAssumptions.of_local_flux_energy_control
+      hCloc_pos hArea_pos hLocal hFluxEnergy
+
+/-
+Endpoint 507: local flux control plus flux-energy comparison exposes the
+explicit holonomy-curvature control witness.
+-/
+theorem theorem_index_exists_control_of_local_flux_energy_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm fluxNorm : Nat -> Real}
+    {C_loc areaFactor : Real}
+    (hCloc_pos :
+      0 < C_loc)
+    (hArea_pos :
+      0 < areaFactor)
+    (hLocal :
+      forall n, ‖1 - (links n).prod‖ <= C_loc * fluxNorm n)
+    (hFluxEnergy :
+      forall n, fluxNorm n <= areaFactor * curvatureNorm n) :
+    ∃ C : Real,
+      0 < C
+        ∧ forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n := by
+  exact
+    exists_control_of_local_flux_energy_control
+      hCloc_pos hArea_pos hLocal hFluxEnergy
+
+/-
+Endpoint 508: direct sector plus packaged holonomy-curvature control implies
+positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_direct_sector_with_packaged_holonomy_control_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm fluxNorm : Nat -> Real}
+    {DeltaYM eps C_loc areaFactor : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖)
+    (hCloc_pos :
+      0 < C_loc)
+    (hArea_pos :
+      0 < areaFactor)
+    (hLocal :
+      forall n, ‖1 - (links n).prod‖ <= C_loc * fluxNorm n)
+    (hFluxEnergy :
+      forall n, fluxNorm n <= areaFactor * curvatureNorm n)
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          Delta0 <= DeltaYM) :
+    0 < DeltaYM := by
+  exact
+    clay_direct_sector_with_packaged_holonomy_control_imply_mass_gap
+      heps hsector hCloc_pos hArea_pos hLocal hFluxEnergy
+      hEnergyDef hGap hContinuumForWitness
 
 end RussoYM
