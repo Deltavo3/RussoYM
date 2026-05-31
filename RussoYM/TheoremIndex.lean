@@ -91,6 +91,7 @@ import RussoYM.ClayFullyRawDecomposedTheorem
 import RussoYM.ClayConcreteGapWitness
 import RussoYM.ClayConcreteDelta0Witness
 import RussoYM.ClayRawHolonomyPointwise
+import RussoYM.ClayRawHolonomyPointwiseConsequences
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6993,5 +6994,108 @@ theorem theorem_index_raw_holonomy_implies_pointwise_gap_chain
         ∧ mu * (delta / C)^2 <= Energy n
         ∧ mu * (delta / C)^2 <= Gap n := by
   exact ClayRawHolonomyAssumptions.imply_pointwise_gap_chain h
+
+/-
+Endpoint 373: raw holonomy assumptions imply positivity of delta / C.
+-/
+theorem theorem_index_raw_holonomy_implies_delta_div_C_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < delta / C := by
+  exact ClayRawHolonomyAssumptions.imply_delta_div_C_positive h
+
+/-
+Endpoint 374: raw holonomy assumptions imply pointwise positivity of curvature
+norm.
+-/
+theorem theorem_index_raw_holonomy_implies_curvatureNorm_positive_at_each_n
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, 0 < curvatureNorm n := by
+  exact ClayRawHolonomyAssumptions.imply_curvatureNorm_positive_at_each_n h
+
+/-
+Endpoint 375: raw holonomy assumptions imply positivity of the concrete block.
+-/
+theorem theorem_index_raw_holonomy_implies_concrete_block_positive_pointwise
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < mu * (delta / C)^2 := by
+  exact ClayRawHolonomyAssumptions.imply_concrete_block_positive_pointwise h
+
+/-
+Endpoint 376: raw holonomy assumptions imply pointwise positivity of energy.
+-/
+theorem theorem_index_raw_holonomy_implies_energy_positive_at_each_n
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, 0 < Energy n := by
+  exact ClayRawHolonomyAssumptions.imply_energy_positive_at_each_n h
+
+/-
+Endpoint 377: raw holonomy assumptions imply pointwise positivity of the finite
+gap.
+-/
+theorem theorem_index_raw_holonomy_implies_gap_positive_at_each_n_pointwise
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, 0 < Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_gap_positive_at_each_n_pointwise h
+
+/-
+Endpoint 378: raw holonomy assumptions imply all pointwise positivity
+consequences.
+-/
+theorem theorem_index_raw_holonomy_implies_pointwise_positive_chain
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < delta / C
+      ∧ (forall n, 0 < curvatureNorm n)
+      ∧ 0 < mu * (delta / C)^2
+      ∧ (forall n, 0 < Energy n)
+      ∧ forall n, 0 < Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_pointwise_positive_chain h
 
 end RussoYM
