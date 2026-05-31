@@ -111,6 +111,7 @@ import RussoYM.ClayTransferExistenceSubObligations
 import RussoYM.ClaySevenAnalyticObligations
 import RussoYM.ClayProofStateAudit
 import RussoYM.ClayHolonomySeparationProofStrategy
+import RussoYM.ClayCompactSectorSeparation
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9225,6 +9226,179 @@ theorem theorem_index_sector_separation_with_remaining_obligations_imply_mass_ga
   exact
     clay_sector_separation_with_remaining_obligations_imply_mass_gap_summary
       hSector hControl hCoercive hGap
+      hScaleForWitness hSchurForWitness hContinuumForWitness
+
+/-
+Endpoint 479: compact nontrivial sector certificate gives sector separation.
+-/
+theorem theorem_index_compact_sector_to_sector_separation_certificate
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayCompactNontrivialHolonomySectorCertificate links) :
+    ClayHolonomySectorSeparationCertificate links := by
+  exact
+    ClayCompactNontrivialHolonomySectorCertificate.to_sector_separation_certificate h
+
+/-
+Endpoint 480: compact nontrivial sector certificate proves holonomy separation.
+-/
+theorem theorem_index_compact_sector_to_holonomy_separation_existence
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayCompactNontrivialHolonomySectorCertificate links) :
+    ClayHolonomySeparationExistenceAssumptions links := by
+  exact
+    ClayCompactNontrivialHolonomySectorCertificate.to_holonomy_separation_existence h
+
+/-
+Endpoint 481: compact nontrivial sector certificate exposes delta witness.
+-/
+theorem theorem_index_compact_sector_exists_delta_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayCompactNontrivialHolonomySectorCertificate links) :
+    ∃ delta : Real,
+      0 < delta
+        ∧ forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact
+    ClayCompactNontrivialHolonomySectorCertificate.exists_delta_witness h
+
+/-
+Endpoint 482: compact sector certificate plus remaining obligations implies
+positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_compact_sector_with_remaining_obligations_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hCompactSector :
+      ClayCompactNontrivialHolonomySectorCertificate links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hScaleForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClaySchurLossTransferExistenceAssumptions
+            C mu delta Delta0 dUV)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    0 < DeltaYM := by
+  exact
+    clay_compact_sector_with_remaining_obligations_imply_mass_gap
+      hCompactSector hControl hCoercive hGap
+      hScaleForWitness hSchurForWitness hContinuumForWitness
+
+/-
+Endpoint 483: compact sector certificate plus remaining obligations implies
+the mass-gap summary.
+-/
+theorem theorem_index_compact_sector_with_remaining_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hCompactSector :
+      ClayCompactNontrivialHolonomySectorCertificate links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hScaleForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClaySchurLossTransferExistenceAssumptions
+            C mu delta Delta0 dUV)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_compact_sector_with_remaining_obligations_imply_mass_gap_summary
+      hCompactSector hControl hCoercive hGap
       hScaleForWitness hSchurForWitness hContinuumForWitness
 
 end RussoYM
