@@ -115,6 +115,7 @@ import RussoYM.ClayCompactSectorSeparation
 import RussoYM.ClayTransferWitnessConstruction
 import RussoYM.ClayContinuumTransferReduction
 import RussoYM.ClayReducedAnalyticRoadmap
+import RussoYM.ClayEnergyNormCoercivity
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9709,5 +9710,41 @@ theorem theorem_index_reduced_five_obligations_current_proof_state_mass_gap
         links Gap Energy curvatureNorm DeltaYM) :
     0 < DeltaYM := by
   exact clay_reduced_five_obligations_current_proof_state_mass_gap h
+
+/-
+Endpoint 499: energy-norm identity gives curvature coercivity.
+-/
+theorem theorem_index_curvature_coercivity_of_energy_norm_identity
+    {Energy curvatureNorm : Nat -> Real}
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2) :
+    ClayCurvatureCoercivityExistenceAssumptions
+      Energy curvatureNorm := by
+  exact
+    ClayCurvatureCoercivityExistenceAssumptions.of_energy_norm_identity
+      hEnergyDef
+
+/-
+Endpoint 500: energy-norm identity gives the concrete mu-one witness.
+-/
+theorem theorem_index_energy_norm_identity_mu_one_witness
+    {Energy curvatureNorm : Nat -> Real}
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2) :
+    0 < (1 : Real)
+      ∧ forall n, (1 : Real) * (curvatureNorm n)^2 <= Energy n := by
+  exact energy_norm_identity_mu_one_witness hEnergyDef
+
+/-
+Endpoint 501: energy-norm identity gives existential coercivity data.
+-/
+theorem theorem_index_exists_coercivity_of_energy_norm_identity
+    {Energy curvatureNorm : Nat -> Real}
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2) :
+    ∃ mu : Real,
+      0 < mu
+        ∧ forall n, mu * (curvatureNorm n)^2 <= Energy n := by
+  exact exists_coercivity_of_energy_norm_identity hEnergyDef
 
 end RussoYM
