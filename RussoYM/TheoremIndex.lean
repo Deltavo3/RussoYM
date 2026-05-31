@@ -69,6 +69,7 @@ import RussoYM.ClayContinuumSurvivalForm
 import RussoYM.ClayContinuumSurvivalTheorem
 import RussoYM.ClayFinalDirectTheorem
 import RussoYM.ClayFinalDirectAssumptionAudit
+import RussoYM.ClayPrimitiveObligations
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4872,5 +4873,82 @@ theorem theorem_index_final_direct_audit_remaining_direct_packets
               DeltaFine (mu * (delta / C)^2) dUV loss)
       ∧ ContinuumGapSurvivalAssumptions DeltaYM Delta0 := by
   exact ClayFinalDirectAssumptions.audit_remaining_direct_packets h
+
+/-
+Endpoint 253: primitive obligations imply final direct Clay assumptions.
+-/
+theorem theorem_index_primitive_obligations_to_final_direct_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayPrimitiveObligationAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayFinalDirectAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV C mu delta := by
+  exact ClayPrimitiveObligationAssumptions.to_final_direct_assumptions h
+
+/-
+Endpoint 254: primitive-obligation theorem implies full strongest gap data.
+-/
+theorem theorem_index_primitive_obligations_imply_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayPrimitiveObligationAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayPrimitiveObligationAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 255: primitive-obligation theorem implies strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_primitive_obligations_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayPrimitiveObligationAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayPrimitiveObligationAssumptions.imply_mass_gap h
+
+/-
+Endpoint 256: primitive-obligation theorem implies positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_primitive_obligations_imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayPrimitiveObligationAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayPrimitiveObligationAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
