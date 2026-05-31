@@ -517,6 +517,7 @@ Dedicated definition file:
 
 ```text
 docs/ClayUniversalLowerBoundDefinition.md
+```
 
 The paper should no longer describe the Lean variable Energy n as an ordinary energy value.
 
@@ -728,6 +729,68 @@ The required comparison is:
 This is valid only if (\mathrm{Lower}(n)) is proved to bound every normalized non-vacuum finite-regulator state from below.
 
 Risk: high.
+
+## Obligation 4 Update: Sector-Specific Theorem First
+
+Dedicated theorem file:
+
+```text
+docs/ClaySectorSpecificGapTheorem.md
+```
+
+The safe theorem currently supported by the proof mechanism is sector-specific.
+
+The proof route gives a positive lower bound inside a fixed resolved nontrivial holonomy sector:
+
+Gap
+λ
+∗
+	​
+
+	​
+
+(n)≥Δ
+λ
+∗
+	​
+
+	​
+
+>0.
+
+This should not yet be identified with the full finite-regulator Yang--Mills gap
+
+Gap(n)=
+ψ∈N
+n
+	​
+
+inf
+	​
+
+⟨ψ,H
+n
+	​
+
+ψ⟩.
+
+The full finite-regulator gap requires a sector-coverage theorem showing that every normalized non-vacuum finite-regulator state is detected by a resolved nontrivial holonomy sector with a uniform lower-bound constant.
+
+Therefore the current honest paper structure is:
+
+sector-specific finite lower bound
+
+then
+
+sector coverage⇒full finite-regulator lower bound
+
+then
+
+continuum survival⇒continuum Yang–Mills gap.
+
+Status: safe sector-specific theorem stated.
+
+Remaining burden: sector coverage and continuum survival.
 
 ## Obligation 4 Update: Universal Lower-Bound Interpretation
 
