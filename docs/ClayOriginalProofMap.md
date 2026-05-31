@@ -474,7 +474,6 @@ Status: reduced but not fully proved.
 
 Risk: still high, but localized.
 
-
 ---
 
 ## Obligation 2: Holonomy-curvature control
