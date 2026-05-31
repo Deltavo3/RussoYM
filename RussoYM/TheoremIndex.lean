@@ -96,6 +96,7 @@ import RussoYM.ClayFullyRawPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseGapChain
 import RussoYM.ClayRawSchurAlgebra
 import RussoYM.ClayRawContinuumAlgebra
+import RussoYM.ClayFullyRawAlgebraicTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7521,5 +7522,80 @@ theorem theorem_index_fully_raw_implies_fine_and_continuum_data_by_raw_algebra
     (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
       ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM) := by
   exact ClayFullyRawAssumptions.imply_fine_and_continuum_data_by_raw_algebra h
+
+/-
+Endpoint 403: fully raw algebraic theorem gives full strongest gap data.
+-/
+theorem theorem_index_fully_raw_implies_full_gap_data_by_raw_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayFullyRawAssumptions.imply_full_gap_data_by_raw_algebra h
+
+/-
+Endpoint 404: fully raw algebraic theorem gives the mass-gap summary.
+-/
+theorem theorem_index_fully_raw_implies_mass_gap_by_raw_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_mass_gap_by_raw_algebra h
+
+/-
+Endpoint 405: fully raw algebraic theorem gives positive continuum Yang--Mills
+gap.
+-/
+theorem theorem_index_fully_raw_implies_positive_continuum_gap_by_raw_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_positive_continuum_gap_by_raw_algebra h
+
+/-
+Endpoint 406: headline fully raw algebraic conditional Yang--Mills mass-gap
+theorem.
+-/
+theorem theorem_index_fully_raw_algebraic_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact clay_fully_raw_algebraic_conditional_yang_mills_mass_gap h
 
 end RussoYM
