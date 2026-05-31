@@ -391,6 +391,184 @@ Conclusion: paper proof required first. Lean should only package it after the an
 
 ---
 
+# Updated Status After Paper-Audit Files
+
+The remaining proof burden has now been sharpened.
+
+## Obligation 1: Compact/nontrivial holonomy sector separation
+
+Status: reduced to a compact-sector or finite-resolution-sector separation lemma.
+
+Dedicated audit file:
+
+```text
+docs/ClayCompactHolonomySectorLemma.md
+```
+
+Current requirement:
+
+Define the admissible nontrivial sector (K) without using energy or a spectral lower bound. Then prove:
+
+1. (U_n\in K) for all (n).
+2. (1\notin K).
+3. (K) is compact, closed with positive separation, or finite-resolution separated from the identity sector.
+4. The distance map (U\mapsto |1-U|) is continuous.
+
+Risk: high.
+
+---
+
+## Obligation 2: Holonomy-curvature control
+
+Status: reduced to uniform holonomy-curvature control in the energy norm.
+
+Dedicated audit file:
+
+```text
+docs/ClayHolonomyCurvatureControlLemma.md
+```
+
+Current requirement:
+
+Prove
+
+[
+|1-U_n|\leq C|F_n|_{E,n}
+]
+
+with (C) independent of (n).
+
+This should come from:
+
+1. local holonomy-curvature estimate,
+2. Cauchy--Schwarz,
+3. uniform regulator geometry,
+4. local-to-global energy comparison.
+
+Risk: medium.
+
+---
+
+## Obligation 3: Curvature coercivity
+
+Status: definition-level discharged under the energy-norm convention.
+
+Dedicated files:
+
+```text
+docs/ClayCurvatureCoercivityLemma.md
+docs/ClayEnergyNormConvention.md
+RussoYM/ClayEnergyNormCoercivity.lean
+```
+
+Current convention:
+
+[
+\mathrm{curvatureNorm}(n)=|F_n|*{E,n},
+\qquad
+\mathrm{Energy}(n)=|F_n|*{E,n}^{2}.
+]
+
+Then coercivity holds with
+
+[
+\mu=1.
+]
+
+Lean has verified the schematic implication:
+
+[
+\forall n,\ \mathrm{Energy}(n)=(\mathrm{curvatureNorm}(n))^2
+\Rightarrow
+\texttt{ClayCurvatureCoercivityExistenceAssumptions}.
+]
+
+Risk: low, assuming the definitions are used consistently.
+
+---
+
+## Obligation 4: Finite gap lower comparison
+
+Status: direction issue identified and clarified.
+
+Dedicated audit file:
+
+```text
+docs/ClayFiniteGapComparisonLemma.md
+```
+
+Current requirement:
+
+The Lean variable currently called `Energy n` must be interpreted in the paper as a universal lower-bound scale, not as an arbitrary energy value or an infimum over a smaller selected sector.
+
+Recommended paper notation:
+
+[
+\mathrm{Lower}(n)
+]
+
+instead of
+
+[
+\mathrm{Energy}(n).
+]
+
+The required comparison is:
+
+[
+\mathrm{Lower}(n)\leq \mathrm{Gap}(n).
+]
+
+This is valid only if (\mathrm{Lower}(n)) is proved to bound every normalized non-vacuum finite-regulator state from below.
+
+Risk: high.
+
+---
+
+## Obligation 5: Continuum survival
+
+Status: reduced to an operator-limit / spectral-lower-bound preservation theorem.
+
+Dedicated audit file:
+
+```text
+docs/ClayContinuumSurvivalLemma.md
+```
+
+Current requirement:
+
+Prove that a uniform finite-regulator lower bound survives the continuum limit:
+
+[
+H_n\geq \Delta_0(I-P_n)
+\quad\Longrightarrow\quad
+H_{\mathrm{YM}}\geq \Delta_0(I-P).
+]
+
+This requires:
+
+1. a precise regulator convergence framework,
+2. convergence of vacuum projections (P_n\to P),
+3. no collapse of the non-vacuum sector,
+4. preservation of lower spectral bounds.
+
+Risk: very high.
+
+---
+
+# Updated Effective Burden
+
+After the energy-norm convention, the proof is effectively reduced to four major analytic burdens:
+
+1. Define and separate the compact/nontrivial holonomy sector.
+2. Prove uniform holonomy-curvature control in the energy norm.
+3. Prove the universal finite lower-bound comparison (\mathrm{Lower}(n)\leq\mathrm{Gap}(n)).
+4. Prove continuum survival of the uniform lower bound.
+
+Curvature coercivity remains in the Lean theorem chain, but it is now discharged by definition with (\mu=1).
+
+---
+
 # Immediate Work Plan
 
 1. Locate the original proof paragraphs corresponding to each obligation.
