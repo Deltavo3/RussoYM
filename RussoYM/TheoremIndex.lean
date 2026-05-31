@@ -86,6 +86,7 @@ import RussoYM.ClayFullyRawSummary
 import RussoYM.ClayRawHolonomyFiniteGap
 import RussoYM.ClayFullyRawHolonomyBridge
 import RussoYM.ClayFullyRawFineGapBridge
+import RussoYM.ClayFullyRawContinuumBridge
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6532,5 +6533,76 @@ theorem theorem_index_fully_raw_implies_layer_one_fine_gap_data_via_raw_schur
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact ClayFullyRawAssumptions.imply_layer_one_fine_gap_data_via_raw_schur h
+
+/-
+Endpoint 348: fully raw assumptions imply the continuum primitive obligation.
+-/
+theorem theorem_index_fully_raw_to_continuum_primitive_obligation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayContinuumPrimitiveObligation DeltaYM Delta0 := by
+  exact ClayFullyRawAssumptions.to_continuum_primitive_obligation h
+
+/-
+Endpoint 349: fully raw assumptions imply Delta0 <= DeltaYM through the raw
+continuum route.
+-/
+theorem theorem_index_fully_raw_implies_delta0_le_deltaYM_via_raw_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_delta0_le_deltaYM_via_raw_continuum h
+
+/-
+Endpoint 350: fully raw assumptions imply continuum gap data through the raw
+continuum route.
+-/
+theorem theorem_index_fully_raw_implies_continuum_gap_data_via_raw_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_continuum_gap_data_via_raw_continuum h
+
+/-
+Endpoint 351: fully raw assumptions imply a positive continuum Yang--Mills gap
+through the raw continuum route.
+-/
+theorem theorem_index_fully_raw_implies_positive_continuum_gap_via_raw_continuum
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_positive_continuum_gap_via_raw_continuum h
 
 end RussoYM
