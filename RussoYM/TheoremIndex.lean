@@ -104,6 +104,7 @@ import RussoYM.ClayExplicitRawDataWitnessPackage
 import RussoYM.ClaySeparatedAnalyticObligations
 import RussoYM.ClayRawHolonomyExistence
 import RussoYM.ClayAnalyticExistenceProgram
+import RussoYM.ClayRawTransferExistence
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8329,5 +8330,85 @@ theorem theorem_index_analytic_existence_program_conditional_yang_mills_mass_gap
         links Gap Energy curvatureNorm DeltaYM) :
     0 < DeltaYM := by
   exact clay_analytic_existence_program_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 442: construct raw transfer existence from explicit witnesses.
+-/
+theorem theorem_index_raw_transfer_existence_of_witnesses
+    {DeltaYM C mu delta DeltaFine Delta0 dUV loss : Real}
+    (hUV_pos :
+      0 < dUV)
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV)
+    (hLoss :
+      loss <= Delta0)
+    (hLower :
+      min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
+    (hCont :
+      Delta0 <= DeltaYM) :
+    ClayRawTransferExistenceAssumptions DeltaYM C mu delta := by
+  exact
+    ClayRawTransferExistenceAssumptions.of_witnesses
+      hUV_pos hDelta0_def hLoss hLower hCont
+
+/-
+Endpoint 443: raw transfer existence gives scale, Schur, and continuum
+primitive obligations.
+-/
+theorem theorem_index_raw_transfer_existence_imply_exists_transfer_primitives
+    {DeltaYM C mu delta : Real}
+    (h :
+      ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ DeltaFine Delta0 dUV : Real,
+      ClayScalePrimitiveObligation
+        Delta0 (mu * (delta / C)^2) dUV
+        ∧ ClaySchurPrimitiveObligation
+            DeltaFine Delta0 (mu * (delta / C)^2) dUV
+        ∧ ClayContinuumPrimitiveObligation DeltaYM Delta0 := by
+  exact ClayRawTransferExistenceAssumptions.imply_exists_transfer_primitives h
+
+/-
+Endpoint 444: raw transfer existence exposes the scale primitive.
+-/
+theorem theorem_index_raw_transfer_existence_imply_exists_scale_primitive
+    {DeltaYM C mu delta : Real}
+    (h :
+      ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ Delta0 dUV : Real,
+      ClayScalePrimitiveObligation
+        Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayRawTransferExistenceAssumptions.imply_exists_scale_primitive h
+
+/-
+Endpoint 445: raw transfer existence exposes the Schur primitive.
+-/
+theorem theorem_index_raw_transfer_existence_imply_exists_schur_primitive
+    {DeltaYM C mu delta : Real}
+    (h :
+      ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ DeltaFine Delta0 dUV : Real,
+      ClaySchurPrimitiveObligation
+        DeltaFine Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayRawTransferExistenceAssumptions.imply_exists_schur_primitive h
+
+/-
+Endpoint 446: raw transfer existence plus block positivity gives all transfer
+gap data.
+-/
+theorem theorem_index_raw_transfer_existence_imply_exists_transfer_gap_data_of_block_pos
+    {DeltaYM C mu delta : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (h :
+      ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ DeltaFine Delta0 : Real,
+      Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine
+        ∧ Delta0 <= DeltaYM
+        ∧ 0 < DeltaYM := by
+  exact
+    ClayRawTransferExistenceAssumptions.imply_exists_transfer_gap_data_of_block_pos
+      hBlock_pos h
 
 end RussoYM
