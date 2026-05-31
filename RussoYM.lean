@@ -97,3 +97,4 @@ import RussoYM.ClayFullyRawFineGapBridge
 import RussoYM.ClayFullyRawContinuumBridge
 import RussoYM.ClayFullyRawDecomposedTheorem
 import RussoYM.ClayConcreteGapWitness
+import RussoYM.ClayConcreteDelta0Witness

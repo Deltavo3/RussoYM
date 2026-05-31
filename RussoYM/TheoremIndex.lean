@@ -89,6 +89,7 @@ import RussoYM.ClayFullyRawFineGapBridge
 import RussoYM.ClayFullyRawContinuumBridge
 import RussoYM.ClayFullyRawDecomposedTheorem
 import RussoYM.ClayConcreteGapWitness
+import RussoYM.ClayConcreteDelta0Witness
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6779,5 +6780,114 @@ theorem theorem_index_fully_raw_implies_concrete_gap_witness_and_continuum_gap
       ∧ forall n, mu * (delta / C)^2 <= Gap n)
       ∧ 0 < DeltaYM := by
   exact ClayFullyRawAssumptions.imply_concrete_gap_witness_and_continuum_gap h
+
+/-
+Endpoint 361: fully raw assumptions give positivity of Delta0.
+-/
+theorem theorem_index_fully_raw_implies_concrete_delta0_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < Delta0 := by
+  exact ClayFullyRawAssumptions.imply_concrete_delta0_positive h
+
+/-
+Endpoint 362: fully raw assumptions transfer Delta0 to the fine gap.
+-/
+theorem theorem_index_fully_raw_implies_delta0_transfers_to_fine_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_delta0_transfers_to_fine_gap h
+
+/-
+Endpoint 363: fully raw assumptions transfer Delta0 to the continuum gap.
+-/
+theorem theorem_index_fully_raw_implies_delta0_transfers_to_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_delta0_transfers_to_continuum_gap h
+
+/-
+Endpoint 364: fully raw assumptions give the concrete Delta0 transfer witness.
+-/
+theorem theorem_index_fully_raw_implies_concrete_delta0_transfer_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < Delta0
+      ∧ Delta0 <= DeltaFine
+      ∧ Delta0 <= DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_concrete_delta0_transfer_witness h
+
+/-
+Endpoint 365: fully raw assumptions give positivity of both transferred gaps.
+-/
+theorem theorem_index_fully_raw_implies_positive_transferred_fine_and_continuum_gaps
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaFine ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_positive_transferred_fine_and_continuum_gaps h
+
+/-
+Endpoint 366: fully raw assumptions give the current concrete witness package.
+-/
+theorem theorem_index_fully_raw_implies_concrete_witness_package
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (0 < mu * (delta / C)^2
+      ∧ forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ (0 < Delta0
+          ∧ Delta0 <= DeltaFine
+          ∧ Delta0 <= DeltaYM)
+      ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_concrete_witness_package h
 
 end RussoYM
