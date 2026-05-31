@@ -90,6 +90,7 @@ import RussoYM.ClayFullyRawContinuumBridge
 import RussoYM.ClayFullyRawDecomposedTheorem
 import RussoYM.ClayConcreteGapWitness
 import RussoYM.ClayConcreteDelta0Witness
+import RussoYM.ClayRawHolonomyPointwise
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6889,5 +6890,108 @@ theorem theorem_index_fully_raw_implies_concrete_witness_package
           ∧ Delta0 <= DeltaYM)
       ∧ 0 < DeltaYM := by
   exact ClayFullyRawAssumptions.imply_concrete_witness_package h
+
+/-
+Endpoint 367: raw holonomy assumptions imply the combined
+delta <= C * curvatureNorm bound.
+-/
+theorem theorem_index_raw_holonomy_implies_delta_le_C_mul_curvatureNorm
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, delta <= C * curvatureNorm n := by
+  exact ClayRawHolonomyAssumptions.imply_delta_le_C_mul_curvatureNorm h
+
+/-
+Endpoint 368: raw holonomy assumptions imply the curvature lower bound.
+-/
+theorem theorem_index_raw_holonomy_implies_curvatureNorm_lower_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, delta / C <= curvatureNorm n := by
+  exact ClayRawHolonomyAssumptions.imply_curvatureNorm_lower_bound h
+
+/-
+Endpoint 369: raw holonomy assumptions imply the squared curvature lower bound.
+-/
+theorem theorem_index_raw_holonomy_implies_curvatureNorm_square_lower_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, (delta / C)^2 <= (curvatureNorm n)^2 := by
+  exact ClayRawHolonomyAssumptions.imply_curvatureNorm_square_lower_bound h
+
+/-
+Endpoint 370: raw holonomy assumptions imply the energy lower bound by the
+concrete witness.
+-/
+theorem theorem_index_raw_holonomy_implies_energy_lower_by_concrete_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, mu * (delta / C)^2 <= Energy n := by
+  exact ClayRawHolonomyAssumptions.imply_energy_lower_by_concrete_witness h
+
+/-
+Endpoint 371: raw holonomy assumptions imply the gap lower bound by the concrete
+witness.
+-/
+theorem theorem_index_raw_holonomy_implies_gap_lower_by_concrete_witness_pointwise
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, mu * (delta / C)^2 <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_gap_lower_by_concrete_witness_pointwise h
+
+/-
+Endpoint 372: raw holonomy assumptions imply the full pointwise finite-gap chain.
+-/
+theorem theorem_index_raw_holonomy_implies_pointwise_gap_chain
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n,
+      delta / C <= curvatureNorm n
+        ∧ (delta / C)^2 <= (curvatureNorm n)^2
+        ∧ mu * (delta / C)^2 <= Energy n
+        ∧ mu * (delta / C)^2 <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_pointwise_gap_chain h
 
 end RussoYM
