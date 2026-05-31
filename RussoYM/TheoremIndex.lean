@@ -76,6 +76,7 @@ import RussoYM.ClayReducedPrimitiveObligations
 import RussoYM.ClaySchurPrimitive
 import RussoYM.ClayRawPrimitiveTheorem
 import RussoYM.ClayRawPrimitiveAudit
+import RussoYM.ClayHolonomyPrimitive
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5431,5 +5432,126 @@ theorem theorem_index_raw_primitive_audit_all_raw_obligations
             ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
       ∧ Delta0 <= DeltaYM := by
   exact ClayRawPrimitiveAssumptions.audit_all_raw_obligations h
+
+/-
+Endpoint 285: construct holonomy primitive obligation from its four constituent
+packets.
+-/
+theorem theorem_index_holonomy_primitive_from_packets
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (hSep :
+      UniformHolonomySeparationAssumptions links delta)
+    (hControl :
+      UniformHolonomyCurvatureControlAssumptions links curvatureNorm C)
+    (hCoercive :
+      UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu)
+    (hGapLower :
+      UniformGapLowerBoundAssumptions Gap Energy) :
+    ClayHolonomyPrimitiveObligation
+      links Gap Energy curvatureNorm C mu delta := by
+  exact
+    ClayHolonomyPrimitiveObligation.of_packets
+      hSep hControl hCoercive hGapLower
+
+/-
+Endpoint 286: holonomy primitive obligation exposes holonomy separation.
+-/
+theorem theorem_index_holonomy_primitive_audit_holonomy_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    UniformHolonomySeparationAssumptions links delta := by
+  exact ClayHolonomyPrimitiveObligation.audit_holonomy_separation h
+
+/-
+Endpoint 287: holonomy primitive obligation exposes holonomy curvature control.
+-/
+theorem theorem_index_holonomy_primitive_audit_holonomy_curvature_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    UniformHolonomyCurvatureControlAssumptions links curvatureNorm C := by
+  exact ClayHolonomyPrimitiveObligation.audit_holonomy_curvature_control h
+
+/-
+Endpoint 288: holonomy primitive obligation exposes curvature coercivity.
+-/
+theorem theorem_index_holonomy_primitive_audit_curvature_coercivity
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu := by
+  exact ClayHolonomyPrimitiveObligation.audit_curvature_coercivity h
+
+/-
+Endpoint 289: holonomy primitive obligation exposes finite gap lower bound.
+-/
+theorem theorem_index_holonomy_primitive_audit_finite_gap_lower
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    UniformGapLowerBoundAssumptions Gap Energy := by
+  exact ClayHolonomyPrimitiveObligation.audit_finite_gap_lower h
+
+/-
+Endpoint 290: holonomy primitive obligation gives block scale positivity.
+-/
+theorem theorem_index_holonomy_primitive_implies_block_scale_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < mu * (delta / C)^2 := by
+  exact ClayHolonomyPrimitiveObligation.imply_block_scale_positive h
+
+/-
+Endpoint 291: holonomy primitive obligation gives the finite-regulator gap bound.
+-/
+theorem theorem_index_holonomy_primitive_implies_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta) :
+    ∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n := by
+  exact ClayHolonomyPrimitiveObligation.imply_finite_gap_bound h
 
 end RussoYM

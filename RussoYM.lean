@@ -84,3 +84,4 @@ import RussoYM.ClayReducedPrimitiveObligations
 import RussoYM.ClaySchurPrimitive
 import RussoYM.ClayRawPrimitiveTheorem
 import RussoYM.ClayRawPrimitiveAudit
+import RussoYM.ClayHolonomyPrimitive
