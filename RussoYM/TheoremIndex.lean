@@ -99,6 +99,7 @@ import RussoYM.ClayRawContinuumAlgebra
 import RussoYM.ClayFullyRawAlgebraicTheorem
 import RussoYM.ClayExistentialFullyRawTheorem
 import RussoYM.ClayExistentialWitnessPackage
+import RussoYM.ClayExplicitRawDataTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7813,5 +7814,98 @@ theorem theorem_index_existential_fully_raw_implies_exists_pointwise_positive_ch
         ∧ (forall n, 0 < Energy n)
         ∧ forall n, 0 < Gap n := by
   exact ClayExistentialFullyRawAssumptions.imply_exists_pointwise_positive_chain h
+
+/-
+Endpoint 417: explicit raw data assumptions imply existential fully raw
+assumptions.
+-/
+theorem theorem_index_explicit_raw_data_to_existential_fully_raw_assumptions
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClayExistentialFullyRawAssumptions
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact ClayExplicitRawDataAssumptions.to_existential_fully_raw_assumptions h
+
+/-
+Endpoint 418: explicit raw data theorem gives positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_explicit_raw_data_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact ClayExplicitRawDataAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 419: explicit raw data theorem gives the mass-gap summary.
+-/
+theorem theorem_index_explicit_raw_data_implies_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayExplicitRawDataAssumptions.imply_mass_gap_summary h
+
+/-
+Endpoint 420: explicit raw data theorem gives the concrete witness package.
+-/
+theorem theorem_index_explicit_raw_data_implies_exists_concrete_witness_package
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ ((0 < mu * (delta / C)^2
+              ∧ forall n, mu * (delta / C)^2 <= Gap n)
+            ∧ (0 < Delta0
+                ∧ Delta0 <= DeltaFine
+                ∧ Delta0 <= DeltaYM)
+            ∧ 0 < DeltaYM) := by
+  exact ClayExplicitRawDataAssumptions.imply_exists_concrete_witness_package h
+
+/-
+Endpoint 421: headline explicit raw-data conditional Yang--Mills mass-gap
+theorem.
+-/
+theorem theorem_index_explicit_raw_data_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact clay_explicit_raw_data_conditional_yang_mills_mass_gap h
 
 end RussoYM
