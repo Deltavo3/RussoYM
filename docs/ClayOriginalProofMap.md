@@ -539,6 +539,46 @@ This should come from:
 
 Risk: medium.
 
+## Obligation 2 Lean Packaging Update
+
+Dedicated Lean file:
+
+```text
+RussoYM/ClayHolonomyCurvatureEnergyPackaging.lean
+```
+
+The holonomy-curvature control obligation is now Lean-packaged from two paper-level estimates:
+
+[
+|1-U_n|\leq C_{\mathrm{loc}}\operatorname{FluxNorm}(n)
+]
+
+and
+
+[
+\operatorname{FluxNorm}(n)\leq A_{\mathrm{fac}}\operatorname{curvatureNorm}(n).
+]
+
+Lean verifies that these imply
+
+[
+|1-U_n|
+\leq
+(C_{\mathrm{loc}}A_{\mathrm{fac}})
+\operatorname{curvatureNorm}(n).
+]
+
+Thus the remaining paper burden for obligation 2 is no longer constant bookkeeping. It is exactly:
+
+1. prove the local holonomy/flux estimate;
+2. prove flux-to-energy comparison;
+3. prove (C_{\mathrm{loc}}>0) and (A_{\mathrm{fac}}>0);
+4. ensure all constants are uniform in (n).
+
+Status: Lean-packaged from local flux estimates.
+
+Remaining burden: prove the geometric estimates on paper.
+
 ---
 
 ## Obligation 3: Curvature coercivity
