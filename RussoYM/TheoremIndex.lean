@@ -88,6 +88,7 @@ import RussoYM.ClayFullyRawHolonomyBridge
 import RussoYM.ClayFullyRawFineGapBridge
 import RussoYM.ClayFullyRawContinuumBridge
 import RussoYM.ClayFullyRawDecomposedTheorem
+import RussoYM.ClayConcreteGapWitness
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6680,5 +6681,103 @@ theorem theorem_index_fully_raw_decomposed_conditional_yang_mills_mass_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact clay_fully_raw_decomposed_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 356: raw holonomy/coercivity assumptions give the concrete
+finite-regulator gap witness.
+-/
+theorem theorem_index_raw_holonomy_implies_concrete_gap_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < mu * (delta / C)^2
+      ∧ forall n, mu * (delta / C)^2 <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_concrete_gap_witness h
+
+/-
+Endpoint 357: raw holonomy/coercivity assumptions give an explicit
+finite-regulator gap bound.
+-/
+theorem theorem_index_raw_holonomy_implies_explicit_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    ∃ Delta : Real,
+      Delta = mu * (delta / C)^2
+        ∧ 0 < Delta
+        ∧ forall n, Delta <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_explicit_finite_gap_bound h
+
+/-
+Endpoint 358: fully raw assumptions give the concrete finite-regulator gap
+witness.
+-/
+theorem theorem_index_fully_raw_implies_concrete_gap_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < mu * (delta / C)^2
+      ∧ forall n, mu * (delta / C)^2 <= Gap n := by
+  exact ClayFullyRawAssumptions.imply_concrete_gap_witness h
+
+/-
+Endpoint 359: fully raw assumptions give an explicit finite-regulator gap
+bound.
+-/
+theorem theorem_index_fully_raw_implies_explicit_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ∃ Delta : Real,
+      Delta = mu * (delta / C)^2
+        ∧ 0 < Delta
+        ∧ forall n, Delta <= Gap n := by
+  exact ClayFullyRawAssumptions.imply_explicit_finite_gap_bound h
+
+/-
+Endpoint 360: fully raw assumptions give the concrete finite-regulator witness
+and the positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_fully_raw_implies_concrete_gap_witness_and_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (0 < mu * (delta / C)^2
+      ∧ forall n, mu * (delta / C)^2 <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_concrete_gap_witness_and_continuum_gap h
 
 end RussoYM
