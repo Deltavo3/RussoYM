@@ -78,6 +78,7 @@ import RussoYM.ClayRawPrimitiveTheorem
 import RussoYM.ClayRawPrimitiveAudit
 import RussoYM.ClayHolonomyPrimitive
 import RussoYM.ClayHolonomyExpandedRawTheorem
+import RussoYM.ClayHolonomyExpandedRawAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5631,5 +5632,169 @@ theorem theorem_index_holonomy_expanded_raw_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayHolonomyExpandedRawAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 296: holonomy-expanded raw assumptions expose holonomy separation.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformHolonomySeparationAssumptions links delta := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_separation h
+
+/-
+Endpoint 297: holonomy-expanded raw assumptions expose curvature control.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_curvature_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformHolonomyCurvatureControlAssumptions links curvatureNorm C := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_curvature_control h
+
+/-
+Endpoint 298: holonomy-expanded raw assumptions expose coercivity.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_coercivity
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_coercivity h
+
+/-
+Endpoint 299: holonomy-expanded raw assumptions expose gap lower data.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_gap_lower
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformGapLowerBoundAssumptions Gap Energy := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_gap_lower h
+
+/-
+Endpoint 300: holonomy-expanded raw assumptions expose UV positivity.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_uv_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < dUV := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_uv_positive h
+
+/-
+Endpoint 301: holonomy-expanded raw assumptions expose Delta0 normalization.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_delta0_definition
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_delta0_definition h
+
+/-
+Endpoint 302: holonomy-expanded raw assumptions expose raw Schur bounds.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_raw_schur_bounds
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ∃ loss : Real,
+      loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_raw_schur_bounds h
+
+/-
+Endpoint 303: holonomy-expanded raw assumptions expose continuum survival.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_continuum_survival
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_continuum_survival h
+
+/-
+Endpoint 304: holonomy-expanded raw assumptions expose all current raw data.
+-/
+theorem theorem_index_holonomy_expanded_raw_audit_all_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayHolonomyExpandedRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformHolonomySeparationAssumptions links delta
+      ∧ UniformHolonomyCurvatureControlAssumptions links curvatureNorm C
+      ∧ UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu
+      ∧ UniformGapLowerBoundAssumptions Gap Energy
+      ∧ 0 < dUV
+      ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+      ∧ (∃ loss : Real,
+          loss <= Delta0
+            ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
+      ∧ Delta0 <= DeltaYM := by
+  exact ClayHolonomyExpandedRawAssumptions.audit_all_holonomy_expanded_raw_data h
 
 end RussoYM
