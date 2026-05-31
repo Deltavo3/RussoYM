@@ -116,6 +116,7 @@ import RussoYM.ClayTransferWitnessConstruction
 import RussoYM.ClayContinuumTransferReduction
 import RussoYM.ClayReducedAnalyticRoadmap
 import RussoYM.ClayEnergyNormCoercivity
+import RussoYM.ClayDirectHolonomySector
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9746,5 +9747,124 @@ theorem theorem_index_exists_coercivity_of_energy_norm_identity
       0 < mu
         ∧ forall n, mu * (curvatureNorm n)^2 <= Energy n := by
   exact exists_coercivity_of_energy_norm_identity hEnergyDef
+
+/-
+Endpoint 502: direct finite-resolution sector gives holonomy separation.
+-/
+theorem theorem_index_holonomy_separation_of_direct_sector
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {eps : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖) :
+    ClayHolonomySeparationExistenceAssumptions links := by
+  exact
+    ClayHolonomySeparationExistenceAssumptions.of_direct_sector
+      heps hsector
+
+/-
+Endpoint 503: direct finite-resolution sector exposes delta witness.
+-/
+theorem theorem_index_exists_delta_of_direct_holonomy_sector
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {eps : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖) :
+    ∃ delta : Real,
+      0 < delta
+        ∧ forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact
+    exists_delta_of_direct_holonomy_sector
+      heps hsector
+
+/-
+Endpoint 504: direct sector plus remaining obligations implies positive
+continuum Yang--Mills gap.
+-/
+theorem theorem_index_direct_sector_with_remaining_obligations_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM eps : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          Delta0 <= DeltaYM) :
+    0 < DeltaYM := by
+  exact
+    clay_direct_sector_with_remaining_obligations_imply_mass_gap
+      heps hsector hControl hEnergyDef hGap hContinuumForWitness
+
+/-
+Endpoint 505: direct sector plus remaining obligations implies the mass-gap
+summary.
+-/
+theorem theorem_index_direct_sector_with_remaining_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM eps : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          Delta0 <= DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_direct_sector_with_remaining_obligations_imply_mass_gap_summary
+      heps hsector hControl hEnergyDef hGap hContinuumForWitness
 
 end RussoYM

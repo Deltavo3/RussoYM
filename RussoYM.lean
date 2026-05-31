@@ -124,3 +124,4 @@ import RussoYM.ClayTransferWitnessConstruction
 import RussoYM.ClayContinuumTransferReduction
 import RussoYM.ClayReducedAnalyticRoadmap
 import RussoYM.ClayEnergyNormCoercivity
+import RussoYM.ClayDirectHolonomySector
