@@ -82,6 +82,7 @@ import RussoYM.ClayHolonomyExpandedRawAudit
 import RussoYM.ClayHolonomySubpacketPrimitives
 import RussoYM.ClayFullyRawTheorem
 import RussoYM.ClayFullyRawAudit
+import RussoYM.ClayFullyRawSummary
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6224,5 +6225,61 @@ theorem theorem_index_fully_raw_audit_all_data
             ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
       ∧ Delta0 <= DeltaYM := by
   exact ClayFullyRawAssumptions.audit_all_fully_raw_data h
+
+/-
+Endpoint 331: headline fully raw conditional Yang--Mills mass-gap theorem.
+-/
+theorem theorem_index_fully_raw_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact clay_fully_raw_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 332: headline fully raw conditional Yang--Mills mass-gap summary.
+-/
+theorem theorem_index_fully_raw_conditional_yang_mills_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_fully_raw_conditional_yang_mills_mass_gap_summary h
+
+/-
+Endpoint 333: headline fully raw theorem with all strongest tracked gap data.
+-/
+theorem theorem_index_fully_raw_conditional_yang_mills_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact clay_fully_raw_conditional_yang_mills_full_gap_data h
 
 end RussoYM
