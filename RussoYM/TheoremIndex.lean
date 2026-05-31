@@ -80,6 +80,7 @@ import RussoYM.ClayHolonomyPrimitive
 import RussoYM.ClayHolonomyExpandedRawTheorem
 import RussoYM.ClayHolonomyExpandedRawAudit
 import RussoYM.ClayHolonomySubpacketPrimitives
+import RussoYM.ClayFullyRawTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5929,5 +5930,80 @@ theorem theorem_index_gap_lower_from_raw
     (hLower : forall n, Energy n <= Gap n) :
     UniformGapLowerBoundAssumptions Gap Energy := by
   exact UniformGapLowerBoundAssumptions.of_raw hLower
+
+/-
+Endpoint 315: fully raw assumptions imply holonomy-expanded raw assumptions.
+-/
+theorem theorem_index_fully_raw_to_holonomy_expanded_raw
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayHolonomyExpandedRawAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV C mu delta := by
+  exact ClayFullyRawAssumptions.to_holonomy_expanded_raw_assumptions h
+
+/-
+Endpoint 316: fully raw theorem implies full strongest gap data.
+-/
+theorem theorem_index_fully_raw_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayFullyRawAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 317: fully raw theorem implies strongest conditional mass-gap summary.
+-/
+theorem theorem_index_fully_raw_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_mass_gap h
+
+/-
+Endpoint 318: fully raw theorem implies positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_fully_raw_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
