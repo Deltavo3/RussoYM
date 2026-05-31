@@ -80,3 +80,4 @@ import RussoYM.ClayFinalDirectAssumptionAudit
 import RussoYM.ClayPrimitiveObligations
 import RussoYM.ClayScalePrimitive
 import RussoYM.ClayContinuumPrimitive
+import RussoYM.ClayReducedPrimitiveObligations
