@@ -103,6 +103,7 @@ import RussoYM.ClayExplicitRawDataTheorem
 import RussoYM.ClayExplicitRawDataWitnessPackage
 import RussoYM.ClaySeparatedAnalyticObligations
 import RussoYM.ClayRawHolonomyExistence
+import RussoYM.ClayAnalyticExistenceProgram
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8243,5 +8244,90 @@ theorem theorem_index_raw_holonomy_existence_imply_mass_gap_summary_with_transfe
   exact
     ClayRawHolonomyExistenceAssumptions.imply_mass_gap_summary_with_transfer
       hHol hTransferForWitness
+
+/-
+Endpoint 437: analytic existence program implies separated analytic obligations.
+-/
+theorem theorem_index_analytic_existence_program_to_separated_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayAnalyticExistenceProgram
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClaySeparatedAnalyticObligations
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact ClayAnalyticExistenceProgram.to_separated_analytic_obligations h
+
+/-
+Endpoint 438: analytic existence program implies explicit raw-data assumptions.
+-/
+theorem theorem_index_analytic_existence_program_to_explicit_raw_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayAnalyticExistenceProgram
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClayExplicitRawDataAssumptions
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact ClayAnalyticExistenceProgram.to_explicit_raw_data_assumptions h
+
+/-
+Endpoint 439: analytic existence program implies positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_analytic_existence_program_imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayAnalyticExistenceProgram
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact ClayAnalyticExistenceProgram.imply_positive_continuum_gap h
+
+/-
+Endpoint 440: analytic existence program implies the mass-gap summary.
+-/
+theorem theorem_index_analytic_existence_program_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayAnalyticExistenceProgram
+        links Gap Energy curvatureNorm DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayAnalyticExistenceProgram.imply_mass_gap_summary h
+
+/-
+Endpoint 441: headline analytic-existence-program conditional Yang--Mills
+mass-gap theorem.
+-/
+theorem theorem_index_analytic_existence_program_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayAnalyticExistenceProgram
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact clay_analytic_existence_program_conditional_yang_mills_mass_gap h
 
 end RussoYM
