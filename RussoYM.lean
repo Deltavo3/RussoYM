@@ -115,3 +115,4 @@ import RussoYM.ClayAnalyticExistenceProgram
 import RussoYM.ClayRawTransferExistence
 import RussoYM.ClayTwoObligationTheorem
 import RussoYM.ClayHolonomyExistenceSubObligations
+import RussoYM.ClayTransferExistenceSubObligations

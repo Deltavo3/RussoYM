@@ -107,6 +107,7 @@ import RussoYM.ClayAnalyticExistenceProgram
 import RussoYM.ClayRawTransferExistence
 import RussoYM.ClayTwoObligationTheorem
 import RussoYM.ClayHolonomyExistenceSubObligations
+import RussoYM.ClayTransferExistenceSubObligations
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8718,5 +8719,221 @@ theorem theorem_index_holonomy_sub_obligations_with_transfer_imply_mass_gap_summ
   exact
     clay_holonomy_sub_obligations_with_transfer_imply_mass_gap_summary
       hSep hControl hCoercive hGap hTransferForWitness
+
+/-
+Endpoint 459: scale transfer existence exposes scale witness data.
+-/
+theorem theorem_index_scale_transfer_existence_exists_scale_witness_data
+    {C mu delta : Real}
+    (h :
+      ClayScaleTransferExistenceAssumptions C mu delta) :
+    ∃ Delta0 dUV : Real,
+      0 < dUV
+        ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV := by
+  exact ClayScaleTransferExistenceAssumptions.exists_scale_witness_data h
+
+/-
+Endpoint 460: Schur/Feshbach loss transfer existence exposes Schur witness data.
+-/
+theorem theorem_index_schur_loss_transfer_existence_exists_schur_witness_data
+    {C mu delta Delta0 dUV : Real}
+    (h :
+      ClaySchurLossTransferExistenceAssumptions
+        C mu delta Delta0 dUV) :
+    ∃ DeltaFine loss : Real,
+      loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine := by
+  exact ClaySchurLossTransferExistenceAssumptions.exists_schur_witness_data h
+
+/-
+Endpoint 461: continuum transfer exposes the transfer inequality.
+-/
+theorem theorem_index_continuum_transfer_expose_transfer
+    {DeltaYM Delta0 : Real}
+    (h :
+      ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    Delta0 <= DeltaYM := by
+  exact ClayContinuumTransferAssumptions.expose_transfer h
+
+/-
+Endpoint 462: transfer sub-obligations imply raw transfer existence.
+-/
+theorem theorem_index_transfer_sub_obligations_to_raw_transfer_existence
+    {DeltaYM C mu delta : Real}
+    (hScale :
+      ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        ClaySchurLossTransferExistenceAssumptions
+          C mu delta Delta0 dUV)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    ClayRawTransferExistenceAssumptions DeltaYM C mu delta := by
+  exact
+    clay_transfer_sub_obligations_to_raw_transfer_existence
+      hScale hSchurForScale hContinuumForScale
+
+/-
+Endpoint 463: transfer sub-obligations plus block positivity imply transfer gap
+data.
+-/
+theorem theorem_index_transfer_sub_obligations_imply_transfer_gap_data_of_block_pos
+    {DeltaYM C mu delta : Real}
+    (hBlock_pos :
+      0 < mu * (delta / C)^2)
+    (hScale :
+      ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        ClaySchurLossTransferExistenceAssumptions
+          C mu delta Delta0 dUV)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    ∃ DeltaFine Delta0 : Real,
+      Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine
+        ∧ Delta0 <= DeltaYM
+        ∧ 0 < DeltaYM := by
+  exact
+    clay_transfer_sub_obligations_imply_transfer_gap_data_of_block_pos
+      hBlock_pos hScale hSchurForScale hContinuumForScale
+
+/-
+Endpoint 464: all sub-obligations imply positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_all_sub_obligations_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hSep :
+      ClayHolonomySeparationExistenceAssumptions links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hScaleForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClaySchurLossTransferExistenceAssumptions
+            C mu delta Delta0 dUV)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    0 < DeltaYM := by
+  exact
+    clay_all_sub_obligations_conditional_yang_mills_mass_gap
+      hSep hControl hCoercive hGap
+      hScaleForWitness hSchurForWitness hContinuumForWitness
+
+/-
+Endpoint 465: all sub-obligations imply the mass-gap summary.
+-/
+theorem theorem_index_all_sub_obligations_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hSep :
+      ClayHolonomySeparationExistenceAssumptions links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hScaleForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClaySchurLossTransferExistenceAssumptions
+            C mu delta Delta0 dUV)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_all_sub_obligations_mass_gap_summary
+      hSep hControl hCoercive hGap
+      hScaleForWitness hSchurForWitness hContinuumForWitness
 
 end RussoYM
