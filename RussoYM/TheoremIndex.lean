@@ -83,6 +83,7 @@ import RussoYM.ClayHolonomySubpacketPrimitives
 import RussoYM.ClayFullyRawTheorem
 import RussoYM.ClayFullyRawAudit
 import RussoYM.ClayFullyRawSummary
+import RussoYM.ClayRawHolonomyFiniteGap
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6281,5 +6282,90 @@ theorem theorem_index_fully_raw_conditional_yang_mills_full_gap_data
       ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
           ∧ 0 < DeltaYM) := by
   exact clay_fully_raw_conditional_yang_mills_full_gap_data h
+
+/-
+Endpoint 334: raw holonomy/coercivity assumptions imply the holonomy primitive
+obligation.
+-/
+theorem theorem_index_raw_holonomy_to_holonomy_primitive_obligation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    ClayHolonomyPrimitiveObligation
+      links Gap Energy curvatureNorm C mu delta := by
+  exact ClayRawHolonomyAssumptions.to_holonomy_primitive_obligation h
+
+/-
+Endpoint 335: raw holonomy/coercivity assumptions imply block scale positivity.
+-/
+theorem theorem_index_raw_holonomy_implies_block_scale_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    0 < mu * (delta / C)^2 := by
+  exact ClayRawHolonomyAssumptions.imply_block_scale_positive h
+
+/-
+Endpoint 336: raw holonomy/coercivity assumptions imply the uniform gap lower
+bound.
+-/
+theorem theorem_index_raw_holonomy_implies_uniform_gap_lower
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, mu * (delta / C)^2 <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_uniform_gap_lower h
+
+/-
+Endpoint 337: raw holonomy/coercivity assumptions imply a positive
+finite-regulator gap.
+-/
+theorem theorem_index_raw_holonomy_implies_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    ∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_finite_gap_bound h
+
+/-
+Endpoint 338: raw holonomy/coercivity assumptions imply each finite-regulator
+gap value is positive.
+-/
+theorem theorem_index_raw_holonomy_implies_gap_positive_at_each_n
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {C mu delta : Real}
+    (h :
+      ClayRawHolonomyAssumptions
+        links Gap Energy curvatureNorm C mu delta) :
+    forall n, 0 < Gap n := by
+  exact ClayRawHolonomyAssumptions.imply_gap_positive_at_each_n h
 
 end RussoYM
