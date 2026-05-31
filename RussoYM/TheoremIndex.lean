@@ -70,6 +70,7 @@ import RussoYM.ClayContinuumSurvivalTheorem
 import RussoYM.ClayFinalDirectTheorem
 import RussoYM.ClayFinalDirectAssumptionAudit
 import RussoYM.ClayPrimitiveObligations
+import RussoYM.ClayScalePrimitive
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4950,5 +4951,68 @@ theorem theorem_index_primitive_obligations_imply_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayPrimitiveObligationAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 257: UV positivity and Delta0 definition construct the primitive scale
+obligation.
+-/
+theorem theorem_index_scale_primitive_from_uv_pos_and_delta0_def
+    {Delta0 dBlock dUV : Real}
+    (hUV_pos : 0 < dUV)
+    (hDelta0_def : Delta0 = (1 / 2) * min dBlock dUV) :
+    ClayScalePrimitiveObligation Delta0 dBlock dUV := by
+  exact
+    ClayScalePrimitiveObligation.of_uv_pos_and_delta0_def
+      hUV_pos hDelta0_def
+
+/-
+Endpoint 258: primitive scale obligation plus block positivity recovers positive
+Layer-One scale data.
+-/
+theorem theorem_index_scale_primitive_to_positive_scale_of_block_pos
+    {Delta0 dBlock dUV : Real}
+    (hBlock_pos : 0 < dBlock)
+    (hScale :
+      ClayScalePrimitiveObligation Delta0 dBlock dUV) :
+    LayerOnePositiveScaleAssumptions Delta0 dBlock dUV := by
+  exact
+    ClayScalePrimitiveObligation.to_positive_scale_of_block_pos
+      hBlock_pos hScale
+
+/-
+Endpoint 259: primitive scale obligation plus block positivity gives positivity
+of Delta0.
+-/
+theorem theorem_index_scale_primitive_implies_delta0_positive_of_block_pos
+    {Delta0 dBlock dUV : Real}
+    (hBlock_pos : 0 < dBlock)
+    (hScale :
+      ClayScalePrimitiveObligation Delta0 dBlock dUV) :
+    0 < Delta0 := by
+  exact
+    ClayScalePrimitiveObligation.imply_delta0_positive_of_block_pos
+      hBlock_pos hScale
+
+/-
+Endpoint 260: holonomy plus primitive scale obligation gives positivity of
+Delta0 for the concrete Clay block scale.
+-/
+theorem theorem_index_scale_primitive_implies_delta0_positive_from_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {Delta0 dUV C mu delta : Real}
+    (hHolonomy :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta)
+    (hScale :
+      ClayScalePrimitiveObligation
+        Delta0 (mu * (delta / C)^2) dUV) :
+    0 < Delta0 := by
+  exact
+    ClayScalePrimitiveObligation.imply_delta0_positive_from_holonomy
+      hHolonomy hScale
 
 end RussoYM

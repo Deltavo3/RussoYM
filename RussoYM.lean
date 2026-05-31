@@ -78,3 +78,4 @@ import RussoYM.ClayContinuumSurvivalTheorem
 import RussoYM.ClayFinalDirectTheorem
 import RussoYM.ClayFinalDirectAssumptionAudit
 import RussoYM.ClayPrimitiveObligations
+import RussoYM.ClayScalePrimitive
