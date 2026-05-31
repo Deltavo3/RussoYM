@@ -79,6 +79,7 @@ import RussoYM.ClayRawPrimitiveAudit
 import RussoYM.ClayHolonomyPrimitive
 import RussoYM.ClayHolonomyExpandedRawTheorem
 import RussoYM.ClayHolonomyExpandedRawAudit
+import RussoYM.ClayHolonomySubpacketPrimitives
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5796,5 +5797,137 @@ theorem theorem_index_holonomy_expanded_raw_audit_all_data
             ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
       ∧ Delta0 <= DeltaYM := by
   exact ClayHolonomyExpandedRawAssumptions.audit_all_holonomy_expanded_raw_data h
+
+/-
+Endpoint 305: raw positivity and separation construct uniform holonomy
+separation.
+-/
+theorem theorem_index_holonomy_separation_from_raw
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {delta : Real}
+    (hDelta_pos : 0 < delta)
+    (hSep : forall n, delta <= ‖1 - (links n).prod‖) :
+    UniformHolonomySeparationAssumptions links delta := by
+  exact UniformHolonomySeparationAssumptions.of_raw hDelta_pos hSep
+
+/-
+Endpoint 306: uniform holonomy separation exposes positivity of delta.
+-/
+theorem theorem_index_holonomy_separation_audit_delta_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {delta : Real}
+    (h :
+      UniformHolonomySeparationAssumptions links delta) :
+    0 < delta := by
+  exact UniformHolonomySeparationAssumptions.audit_delta_positive h
+
+/-
+Endpoint 307: uniform holonomy separation exposes the raw separation bound.
+-/
+theorem theorem_index_holonomy_separation_audit_holonomy_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {delta : Real}
+    (h :
+      UniformHolonomySeparationAssumptions links delta) :
+    forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact UniformHolonomySeparationAssumptions.audit_holonomy_separation h
+
+/-
+Endpoint 308: raw positivity and control construct uniform holonomy-curvature
+control.
+-/
+theorem theorem_index_holonomy_curvature_control_from_raw
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm : Nat -> Real}
+    {C : Real}
+    (hC_pos : 0 < C)
+    (hControl : forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) :
+    UniformHolonomyCurvatureControlAssumptions links curvatureNorm C := by
+  exact UniformHolonomyCurvatureControlAssumptions.of_raw hC_pos hControl
+
+/-
+Endpoint 309: uniform holonomy-curvature control exposes positivity of C.
+-/
+theorem theorem_index_holonomy_curvature_control_audit_C_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm : Nat -> Real}
+    {C : Real}
+    (h :
+      UniformHolonomyCurvatureControlAssumptions links curvatureNorm C) :
+    0 < C := by
+  exact UniformHolonomyCurvatureControlAssumptions.audit_C_positive h
+
+/-
+Endpoint 310: uniform holonomy-curvature control exposes the raw control bound.
+-/
+theorem theorem_index_holonomy_curvature_control_audit_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm : Nat -> Real}
+    {C : Real}
+    (h :
+      UniformHolonomyCurvatureControlAssumptions links curvatureNorm C) :
+    forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n := by
+  exact UniformHolonomyCurvatureControlAssumptions.audit_holonomy_curvature_control h
+
+/-
+Endpoint 311: raw positivity and coercivity construct uniform curvature
+coercivity.
+-/
+theorem theorem_index_curvature_coercivity_from_raw
+    {Energy curvatureNorm : Nat -> Real}
+    {mu : Real}
+    (hMu_pos : 0 < mu)
+    (hCoercive : forall n, mu * (curvatureNorm n)^2 <= Energy n) :
+    UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu := by
+  exact UniformCurvatureCoercivityAssumptions.of_raw hMu_pos hCoercive
+
+/-
+Endpoint 312: uniform curvature coercivity exposes positivity of mu.
+-/
+theorem theorem_index_curvature_coercivity_audit_mu_positive
+    {Energy curvatureNorm : Nat -> Real}
+    {mu : Real}
+    (h :
+      UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu) :
+    0 < mu := by
+  exact UniformCurvatureCoercivityAssumptions.audit_mu_positive h
+
+/-
+Endpoint 313: uniform curvature coercivity exposes the raw energy coercivity.
+-/
+theorem theorem_index_curvature_coercivity_audit_energy_coercive
+    {Energy curvatureNorm : Nat -> Real}
+    {mu : Real}
+    (h :
+      UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu) :
+    forall n, mu * (curvatureNorm n)^2 <= Energy n := by
+  exact UniformCurvatureCoercivityAssumptions.audit_energy_coercive h
+
+/-
+Endpoint 314: raw gap lower inequality constructs uniform finite gap lower data.
+-/
+theorem theorem_index_gap_lower_from_raw
+    {Gap Energy : Nat -> Real}
+    (hLower : forall n, Energy n <= Gap n) :
+    UniformGapLowerBoundAssumptions Gap Energy := by
+  exact UniformGapLowerBoundAssumptions.of_raw hLower
 
 end RussoYM
