@@ -261,13 +261,133 @@ Eventually maybe. First prove carefully on paper.
 
 # Initial Classification Table
 
-| Obligation                              | Original proof source found? | Rigorous? | Needs new lemma? | Needs Lean? |      Risk |
-| --------------------------------------- | ---------------------------: | --------: | ---------------: | ----------: | --------: |
-| 1. Compact/nontrivial sector separation |                         TODO |      TODO |             TODO | Maybe later |      High |
-| 2. Holonomy-curvature control           |                         TODO |      TODO |             TODO |       Maybe |    Medium |
-| 3. Curvature coercivity                 |                         TODO |      TODO |             TODO |      Likely |    Medium |
-| 4. Finite gap lower comparison          |                         TODO |      TODO |             TODO |       Maybe |      High |
-| 5. Continuum survival                   |                         TODO |      TODO |             TODO | Maybe later | Very high |
+
+| Obligation                              |                               Old Lean source found? |                Rigorous? |                     Needs new lemma? | Needs Lean? |      Risk |
+| --------------------------------------- | ---------------------------------------------------: | -----------------------: | -----------------------------------: | ----------: | --------: |
+| 1. Compact/nontrivial sector separation |                                               Partly |                  Not yet |                                  Yes | Maybe later |      High |
+| 2. Holonomy-curvature control           |                         Yes, as an assumption packet | Not yet from definitions |                                  Yes |       Maybe |    Medium |
+| 3. Curvature coercivity                 |                        Yes, algebraic support exists |                   Partly | Yes, analytic definition-level lemma |      Likely |    Medium |
+| 4. Finite gap lower comparison          |                         Yes, as an assumption packet |                  Not yet |                                  Yes |       Maybe |      High |
+| 5. Continuum survival                   | Yes, split into finite lower + epsilon approximation |                  Not yet |                                  Yes | Maybe later | Very high |
+
+## Source Mapping Notes
+
+### Obligation 1: Compact/nontrivial holonomy sector separation
+
+Old source appears through:
+
+```lean
+UniformHolonomySeparationAssumptions links delta
+```
+
+and in the older atomic audit as:
+
+```lean
+holonomySeparation :
+  UniformHolonomySeparationAssumptions links delta
+```
+
+Current status: this was previously treated as an assumption. Our newer Lean work has improved the shape by replacing it with a compact/nontrivial sector certificate, but the compact-sector theorem itself is not yet proved.
+
+Conclusion: paper proof required.
+
+---
+
+### Obligation 2: Holonomy-curvature control
+
+Old source appears through:
+
+```lean
+UniformHolonomyCurvatureControlAssumptions links curvatureNorm C
+```
+
+and in the older atomic audit as:
+
+```lean
+holonomyCurvatureControl :
+  UniformHolonomyCurvatureControlAssumptions links curvatureNorm C
+```
+
+Current status: this was previously treated as an analytic red lemma. It should be proved by a local holonomy-curvature estimate, not by any mass-gap input.
+
+Conclusion: paper lemma required; Lean optional after definitions stabilize.
+
+---
+
+### Obligation 3: Curvature coercivity
+
+Old source appears through:
+
+```lean
+UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu
+```
+
+and in the older atomic audit as:
+
+```lean
+curvatureCoercivity :
+  UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu
+```
+
+There is also algebraic support in `AlgebraCore.lean`, including:
+
+```lean
+coercivity_implication_mul
+coercivity_implication_div
+finite_information_gap
+frt_gap_from_coercivity
+```
+
+Current status: the algebra is already Lean-verified, but the analytic Yang–Mills definition-level coercivity still needs proof. We must show that the regulated energy genuinely controls the chosen curvature norm.
+
+Conclusion: likely worth Lean-verifying once the definitions are fixed.
+
+---
+
+### Obligation 4: Finite gap lower comparison
+
+Old source appears through:
+
+```lean
+UniformGapLowerBoundAssumptions Gap Energy
+```
+
+and in the older atomic audit as:
+
+```lean
+finiteGapLower :
+  UniformGapLowerBoundAssumptions Gap Energy
+```
+
+Current status: this is dangerous because if `Gap` is defined incorrectly, the proof could accidentally write in the desired lower bound.
+
+Conclusion: must define `Gap n` independently and prove `Energy n <= Gap n` from the regulator spectral setup.
+
+---
+
+### Obligation 5: Continuum survival
+
+Old source appears split into:
+
+```lean
+UniformFiniteGapLowerAssumptions Delta0 Gap
+EpsilonContinuumApproximationAssumptions DeltaYM Gap
+```
+
+and in the older atomic audit as:
+
+```lean
+continuumFiniteLower :
+  UniformFiniteGapLowerAssumptions Delta0 Gap
+
+continuumApproximation :
+  EpsilonContinuumApproximationAssumptions DeltaYM Gap
+```
+
+Current status: this is the most important remaining transfer-side proof. The old proof already recognized that continuum survival should be split into a uniform finite lower bound plus an epsilon/continuum approximation step.
+
+Conclusion: paper proof required first. Lean should only package it after the analytic argument is stable.
+
 
 ---
 
