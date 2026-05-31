@@ -95,6 +95,7 @@ import RussoYM.ClayRawHolonomyPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseGapChain
 import RussoYM.ClayRawSchurAlgebra
+import RussoYM.ClayRawContinuumAlgebra
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7441,5 +7442,84 @@ theorem theorem_index_fully_raw_implies_fine_gap_data_by_raw_schur_algebra
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
   exact ClayFullyRawAssumptions.imply_fine_gap_data_by_raw_schur_algebra h
+
+/-
+Endpoint 398: raw continuum algebra transfers Delta0 positivity into DeltaYM.
+-/
+theorem theorem_index_raw_continuum_transfer_positive
+    {DeltaYM Delta0 : Real}
+    (hDelta0_pos :
+      0 < Delta0)
+    (hTransfer :
+      Delta0 <= DeltaYM) :
+    0 < DeltaYM := by
+  exact raw_continuum_transfer_positive hDelta0_pos hTransfer
+
+/-
+Endpoint 399: raw continuum algebra gives transfer data.
+-/
+theorem theorem_index_raw_continuum_transfer_data
+    {DeltaYM Delta0 : Real}
+    (hDelta0_pos :
+      0 < Delta0)
+    (hTransfer :
+      Delta0 <= DeltaYM) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact raw_continuum_transfer_data hDelta0_pos hTransfer
+
+/-
+Endpoint 400: fully raw assumptions imply positive continuum gap by raw
+continuum algebra.
+-/
+theorem theorem_index_fully_raw_implies_positive_continuum_gap_by_raw_continuum_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_positive_continuum_gap_by_raw_continuum_algebra h
+
+/-
+Endpoint 401: fully raw assumptions imply continuum gap data by raw continuum
+algebra.
+-/
+theorem theorem_index_fully_raw_implies_continuum_gap_data_by_raw_continuum_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact ClayFullyRawAssumptions.imply_continuum_gap_data_by_raw_continuum_algebra h
+
+/-
+Endpoint 402: fully raw assumptions imply fine-gap and continuum-gap transfer
+data by raw algebra.
+-/
+theorem theorem_index_fully_raw_implies_fine_and_continuum_data_by_raw_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM) := by
+  exact ClayFullyRawAssumptions.imply_fine_and_continuum_data_by_raw_algebra h
 
 end RussoYM
