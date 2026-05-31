@@ -68,6 +68,7 @@ import RussoYM.ClaySchurBudgetTheorem
 import RussoYM.ClayContinuumSurvivalForm
 import RussoYM.ClayContinuumSurvivalTheorem
 import RussoYM.ClayFinalDirectTheorem
+import RussoYM.ClayFinalDirectAssumptionAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4773,5 +4774,103 @@ theorem theorem_index_final_direct_theorem_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact clay_final_direct_theorem_implies_positive_continuum_gap h
+
+/-
+Endpoint 248: final direct assumptions expose the holonomy red-lemma packet.
+-/
+theorem theorem_index_final_direct_audit_holonomy_packet
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFinalDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta := by
+  exact ClayFinalDirectAssumptions.audit_holonomy_packet h
+
+/-
+Endpoint 249: final direct assumptions expose the reduced scale packet.
+-/
+theorem theorem_index_final_direct_audit_reduced_scale_packet
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFinalDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    LayerOneReducedScaleAssumptions
+      Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayFinalDirectAssumptions.audit_reduced_scale_packet h
+
+/-
+Endpoint 250: final direct assumptions expose the Schur loss-budget packet.
+-/
+theorem theorem_index_final_direct_audit_schur_loss_budget_packet
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFinalDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ∃ loss : Real,
+      SchurLossBudgetAssumptions loss Delta0
+        ∧ SchurFeshbachLossLowerAssumptions
+          DeltaFine (mu * (delta / C)^2) dUV loss := by
+  exact ClayFinalDirectAssumptions.audit_schur_loss_budget_packet h
+
+/-
+Endpoint 251: final direct assumptions expose the continuum survival packet.
+-/
+theorem theorem_index_final_direct_audit_continuum_survival_packet
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFinalDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ContinuumGapSurvivalAssumptions DeltaYM Delta0 := by
+  exact ClayFinalDirectAssumptions.audit_continuum_survival_packet h
+
+/-
+Endpoint 252: final direct assumptions expose all remaining direct packets.
+-/
+theorem theorem_index_final_direct_audit_remaining_direct_packets
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFinalDirectAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    UniformHolonomyRedLemmaAssumptions
+      links Gap Energy curvatureNorm C mu delta
+      ∧ LayerOneReducedScaleAssumptions
+        Delta0 (mu * (delta / C)^2) dUV
+      ∧ (∃ loss : Real,
+          SchurLossBudgetAssumptions loss Delta0
+            ∧ SchurFeshbachLossLowerAssumptions
+              DeltaFine (mu * (delta / C)^2) dUV loss)
+      ∧ ContinuumGapSurvivalAssumptions DeltaYM Delta0 := by
+  exact ClayFinalDirectAssumptions.audit_remaining_direct_packets h
 
 end RussoYM
