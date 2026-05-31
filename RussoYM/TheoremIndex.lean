@@ -105,6 +105,7 @@ import RussoYM.ClaySeparatedAnalyticObligations
 import RussoYM.ClayRawHolonomyExistence
 import RussoYM.ClayAnalyticExistenceProgram
 import RussoYM.ClayRawTransferExistence
+import RussoYM.ClayTwoObligationTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8410,5 +8411,158 @@ theorem theorem_index_raw_transfer_existence_imply_exists_transfer_gap_data_of_b
   exact
     ClayRawTransferExistenceAssumptions.imply_exists_transfer_gap_data_of_block_pos
       hBlock_pos h
+
+/-
+Endpoint 447: the two analytic obligations imply the analytic existence program.
+-/
+theorem theorem_index_two_obligations_to_analytic_existence_program
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ClayAnalyticExistenceProgram
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact
+    clay_two_obligations_to_analytic_existence_program
+      hHol hTransferForWitness
+
+/-
+Endpoint 448: the two analytic obligations imply separated analytic obligations.
+-/
+theorem theorem_index_two_obligations_to_separated_analytic_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ClaySeparatedAnalyticObligations
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact
+    clay_two_obligations_to_separated_analytic_obligations
+      hHol hTransferForWitness
+
+/-
+Endpoint 449: the two analytic obligations imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_two_obligations_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    0 < DeltaYM := by
+  exact
+    clay_two_obligations_conditional_yang_mills_mass_gap
+      hHol hTransferForWitness
+
+/-
+Endpoint 450: the two analytic obligations imply the mass-gap summary.
+-/
+theorem theorem_index_two_obligations_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_two_obligations_mass_gap_summary
+      hHol hTransferForWitness
+
+/-
+Endpoint 451: the two analytic obligations imply the concrete witness package.
+-/
+theorem theorem_index_two_obligations_concrete_witness_package
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hHol :
+      ClayRawHolonomyExistenceAssumptions
+        links Gap Energy curvatureNorm)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ ((0 < mu * (delta / C)^2
+              ∧ forall n, mu * (delta / C)^2 <= Gap n)
+            ∧ (0 < Delta0
+                ∧ Delta0 <= DeltaFine
+                ∧ Delta0 <= DeltaYM)
+            ∧ 0 < DeltaYM) := by
+  exact
+    clay_two_obligations_concrete_witness_package
+      hHol hTransferForWitness
 
 end RussoYM
