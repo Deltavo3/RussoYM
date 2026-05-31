@@ -474,6 +474,40 @@ Status: reduced but not fully proved.
 
 Risk: still high, but localized.
 
+## Obligation 1 Direct-Sector Lean Update
+
+Dedicated Lean file:
+
+```text
+RussoYM/ClayDirectHolonomySector.lean
+```
+
+The direct finite-resolution sector condition
+
+∀n,2ϵ
+hol
+	​
+
+≤∥1−(links n).prod∥
+
+now Lean-verifies the holonomy separation obligation with witness
+
+δ=2ϵ
+hol
+	​
+
+.
+
+Thus the old compact-sector certificate is no longer the main formal route. The current route is:
+
+direct resolved nontrivial holonomy sector⇒holonomy separation.
+
+The remaining paper issue for obligation 1 is not algebraic. It is to justify the sector membership condition as a legitimate finite-resolution sector selection, not an energy or mass-gap assumption.
+
+Status: Lean-packaged under direct sector assumption.
+
+Remaining burden: justify direct sector membership in the paper.
+
 ---
 
 ## Obligation 2: Holonomy-curvature control
@@ -521,11 +555,11 @@ RussoYM/ClayEnergyNormCoercivity.lean
 
 Current convention:
 
-[
-\mathrm{curvatureNorm}(n)=|F_n|*{E,n},
+\[
+\mathrm{curvatureNorm}(n)=\|F_n\|_{E,n},
 \qquad
-\mathrm{Energy}(n)=|F_n|*{E,n}^{2}.
-]
+\mathrm{Energy}(n)=\|F_n\|_{E,n}^{2}.
+\]
 
 Then coercivity holds with
 
