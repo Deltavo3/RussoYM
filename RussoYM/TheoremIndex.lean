@@ -66,6 +66,7 @@ import RussoYM.ClaySchurLossBudget
 import RussoYM.ClaySchurBudgetForm
 import RussoYM.ClaySchurBudgetTheorem
 import RussoYM.ClayContinuumSurvivalForm
+import RussoYM.ClayContinuumSurvivalTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -4655,5 +4656,63 @@ theorem theorem_index_continuum_survival_budget_to_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayContinuumSurvivalBudgetAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 242: direct-continuum-survival theorem implies full strongest gap data.
+-/
+theorem theorem_index_continuum_survival_theorem_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact clay_continuum_survival_theorem_implies_full_gap_data h
+
+/-
+Endpoint 243: direct-continuum-survival theorem implies strongest conditional
+mass-gap summary.
+-/
+theorem theorem_index_continuum_survival_theorem_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact clay_continuum_survival_theorem_implies_mass_gap h
+
+/-
+Endpoint 244: direct-continuum-survival theorem implies positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_continuum_survival_theorem_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayContinuumSurvivalBudgetAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact clay_continuum_survival_theorem_implies_positive_continuum_gap h
 
 end RussoYM
