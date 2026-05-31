@@ -113,6 +113,7 @@ import RussoYM.ClayProofStateAudit
 import RussoYM.ClayHolonomySeparationProofStrategy
 import RussoYM.ClayCompactSectorSeparation
 import RussoYM.ClayTransferWitnessConstruction
+import RussoYM.ClayContinuumTransferReduction
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9497,5 +9498,147 @@ theorem theorem_index_transfer_gap_data_of_block_positive_and_continuum_transfer
   exact
     transfer_gap_data_of_block_positive_and_continuum_transfer
       hBlock_pos hContinuumForScale
+
+/-
+Endpoint 490: positive constants imply positive concrete block.
+-/
+theorem theorem_index_concrete_block_positive_of_positive_constants
+    {C mu delta : Real}
+    (hDelta_pos :
+      0 < delta)
+    (hC_pos :
+      0 < C)
+    (hMu_pos :
+      0 < mu) :
+    0 < mu * (delta / C)^2 := by
+  exact
+    concrete_block_positive_of_positive_constants
+      hDelta_pos hC_pos hMu_pos
+
+/-
+Endpoint 491: positive constants and continuum transfer give raw transfer
+existence.
+-/
+theorem theorem_index_raw_transfer_of_positive_constants_and_continuum_transfer
+    {DeltaYM C mu delta : Real}
+    (hDelta_pos :
+      0 < delta)
+    (hC_pos :
+      0 < C)
+    (hMu_pos :
+      0 < mu)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        Delta0 <= DeltaYM) :
+    ClayRawTransferExistenceAssumptions DeltaYM C mu delta := by
+  exact
+    ClayRawTransferExistenceAssumptions.of_positive_constants_and_continuum_transfer
+      hDelta_pos hC_pos hMu_pos hContinuumForScale
+
+/-
+Endpoint 492: positive constants and continuum transfer give transfer gap data.
+-/
+theorem theorem_index_transfer_gap_data_of_positive_constants_and_continuum_transfer
+    {DeltaYM C mu delta : Real}
+    (hDelta_pos :
+      0 < delta)
+    (hC_pos :
+      0 < C)
+    (hMu_pos :
+      0 < mu)
+    (hContinuumForScale :
+      forall Delta0 dUV : Real,
+        0 < dUV ->
+        Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+        Delta0 <= DeltaYM) :
+    ∃ DeltaFine Delta0 : Real,
+      Delta0 <= DeltaFine
+        ∧ 0 < Delta0
+        ∧ 0 < DeltaFine
+        ∧ Delta0 <= DeltaYM
+        ∧ 0 < DeltaYM := by
+  exact
+    transfer_gap_data_of_positive_constants_and_continuum_transfer
+      hDelta_pos hC_pos hMu_pos hContinuumForScale
+
+/-
+Endpoint 493: compact sector plus continuum transfer gives positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_compact_sector_with_continuum_transfer_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hCompactSector :
+      ClayCompactNontrivialHolonomySectorCertificate links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          Delta0 <= DeltaYM) :
+    0 < DeltaYM := by
+  exact
+    clay_compact_sector_with_continuum_transfer_imply_mass_gap
+      hCompactSector hControl hCoercive hGap hContinuumForWitness
+
+/-
+Endpoint 494: compact sector plus continuum transfer gives the mass-gap summary.
+-/
+theorem theorem_index_compact_sector_with_continuum_transfer_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hCompactSector :
+      ClayCompactNontrivialHolonomySectorCertificate links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          Delta0 <= DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_compact_sector_with_continuum_transfer_imply_mass_gap_summary
+      hCompactSector hControl hCoercive hGap hContinuumForWitness
 
 end RussoYM
