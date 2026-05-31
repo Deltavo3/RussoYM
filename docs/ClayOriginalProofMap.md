@@ -655,6 +655,68 @@ This is valid only if (\mathrm{Lower}(n)) is proved to bound every normalized no
 
 Risk: high.
 
+## Obligation 4 Update: Universal Lower-Bound Interpretation
+
+Dedicated definition file:
+
+```text
+docs/ClayUniversalLowerBoundDefinition.md
+```
+
+The paper should no longer describe the Lean variable `Energy n` as an ordinary energy value.
+
+Instead, in the paper, it should be interpreted as a universal finite-regulator lower-bound scale:
+
+[
+\mathrm{Lower}(n).
+]
+
+The Lean comparison
+
+[
+\mathrm{Energy}(n)\leq \mathrm{Gap}(n)
+]
+
+should be read in the paper as
+
+[
+\mathrm{Lower}(n)\leq \mathrm{Gap}(n).
+]
+
+This direction is valid only if
+
+[
+\forall \psi\in\mathcal N_n,\quad
+\mathrm{Lower}(n)\leq
+\langle\psi,H_n\psi\rangle,
+]
+
+where
+
+[
+\mathcal N_n
+============
+
+{\psi\in\mathcal H_n:|\psi|=1,\ P_n\psi=0}.
+]
+
+Thus the remaining burden for obligation 4 is not algebraic. It is a sector-coverage or universality theorem.
+
+The proof currently gives a lower bound inside the resolved nontrivial holonomy sector. To upgrade this to the full finite-regulator gap, we must prove one of the following:
+
+1. The theorem is sector-specific, using a sector gap
+   [
+   \mathrm{Gap}*{\lambda**}(n).
+   ]
+
+2. Every normalized non-vacuum finite-regulator state is covered by resolved nontrivial holonomy sectors with a uniform lower-bound constant.
+
+Until this is proved, the safe statement is sector-specific.
+
+Status: reduced to universal lower-bound / sector-coverage problem.
+
+Risk: high.
+
 ---
 
 ## Obligation 5: Continuum survival
