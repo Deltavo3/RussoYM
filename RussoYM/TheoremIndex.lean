@@ -75,6 +75,7 @@ import RussoYM.ClayContinuumPrimitive
 import RussoYM.ClayReducedPrimitiveObligations
 import RussoYM.ClaySchurPrimitive
 import RussoYM.ClayRawPrimitiveTheorem
+import RussoYM.ClayRawPrimitiveAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5318,5 +5319,117 @@ theorem theorem_index_raw_primitive_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayRawPrimitiveAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 279: raw primitive assumptions expose the holonomy primitive obligation.
+-/
+theorem theorem_index_raw_primitive_audit_holonomy_obligation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayHolonomyPrimitiveObligation
+      links Gap Energy curvatureNorm C mu delta := by
+  exact ClayRawPrimitiveAssumptions.audit_holonomy_obligation h
+
+/-
+Endpoint 280: raw primitive assumptions expose UV positivity.
+-/
+theorem theorem_index_raw_primitive_audit_uv_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < dUV := by
+  exact ClayRawPrimitiveAssumptions.audit_uv_positive h
+
+/-
+Endpoint 281: raw primitive assumptions expose the Delta0 normalization.
+-/
+theorem theorem_index_raw_primitive_audit_delta0_definition
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV := by
+  exact ClayRawPrimitiveAssumptions.audit_delta0_definition h
+
+/-
+Endpoint 282: raw primitive assumptions expose the raw Schur/Feshbach bounds.
+-/
+theorem theorem_index_raw_primitive_audit_raw_schur_bounds
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ∃ loss : Real,
+      loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine := by
+  exact ClayRawPrimitiveAssumptions.audit_raw_schur_bounds h
+
+/-
+Endpoint 283: raw primitive assumptions expose direct continuum survival.
+-/
+theorem theorem_index_raw_primitive_audit_continuum_survival
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM := by
+  exact ClayRawPrimitiveAssumptions.audit_continuum_survival h
+
+/-
+Endpoint 284: raw primitive assumptions expose all current raw obligations.
+-/
+theorem theorem_index_raw_primitive_audit_all_raw_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayHolonomyPrimitiveObligation
+      links Gap Energy curvatureNorm C mu delta
+      ∧ 0 < dUV
+      ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+      ∧ (∃ loss : Real,
+          loss <= Delta0
+            ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
+      ∧ Delta0 <= DeltaYM := by
+  exact ClayRawPrimitiveAssumptions.audit_all_raw_obligations h
 
 end RussoYM
