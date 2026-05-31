@@ -110,6 +110,7 @@ import RussoYM.ClayHolonomyExistenceSubObligations
 import RussoYM.ClayTransferExistenceSubObligations
 import RussoYM.ClaySevenAnalyticObligations
 import RussoYM.ClayProofStateAudit
+import RussoYM.ClayHolonomySeparationProofStrategy
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9110,5 +9111,120 @@ theorem theorem_index_current_proof_state_conditional_yang_mills_mass_gap
         links Gap Energy curvatureNorm DeltaYM) :
     0 < DeltaYM := by
   exact clay_current_proof_state_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 475: sector uniform separation implies regulator holonomy separation.
+-/
+theorem theorem_index_sector_uniform_separation_to_holonomy_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (sector : R -> Prop)
+    (hContains :
+      forall n, sector ((links n).prod))
+    (hUniform :
+      ∃ delta : Real,
+        0 < delta
+          ∧ forall U : R, sector U -> delta <= ‖1 - U‖) :
+    ClayHolonomySeparationExistenceAssumptions links := by
+  exact
+    clay_sector_uniform_separation_to_holonomy_separation
+      sector hContains hUniform
+
+/-
+Endpoint 476: sector separation certificate proves holonomy separation existence.
+-/
+theorem theorem_index_sector_separation_certificate_to_holonomy_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayHolonomySectorSeparationCertificate links) :
+    ClayHolonomySeparationExistenceAssumptions links := by
+  exact
+    ClayHolonomySectorSeparationCertificate.to_holonomy_separation_existence h
+
+/-
+Endpoint 477: sector separation certificate exposes the delta witness.
+-/
+theorem theorem_index_sector_separation_certificate_exists_delta_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayHolonomySectorSeparationCertificate links) :
+    ∃ delta : Real,
+      0 < delta
+        ∧ forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact
+    ClayHolonomySectorSeparationCertificate.exists_delta_witness h
+
+/-
+Endpoint 478: sector separation plus the remaining six obligations implies the
+mass-gap summary.
+-/
+theorem theorem_index_sector_separation_with_remaining_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hSector :
+      ClayHolonomySectorSeparationCertificate links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hScaleForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayScaleTransferExistenceAssumptions C mu delta)
+    (hSchurForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClaySchurLossTransferExistenceAssumptions
+            C mu delta Delta0 dUV)
+    (hContinuumForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        forall Delta0 dUV : Real,
+          0 < dUV ->
+          Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV ->
+          ClayContinuumTransferAssumptions DeltaYM Delta0) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_sector_separation_with_remaining_obligations_imply_mass_gap_summary
+      hSector hControl hCoercive hGap
+      hScaleForWitness hSchurForWitness hContinuumForWitness
 
 end RussoYM
