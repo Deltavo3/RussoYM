@@ -108,6 +108,7 @@ import RussoYM.ClayRawTransferExistence
 import RussoYM.ClayTwoObligationTheorem
 import RussoYM.ClayHolonomyExistenceSubObligations
 import RussoYM.ClayTransferExistenceSubObligations
+import RussoYM.ClaySevenAnalyticObligations
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8935,5 +8936,83 @@ theorem theorem_index_all_sub_obligations_mass_gap_summary
     clay_all_sub_obligations_mass_gap_summary
       hSep hControl hCoercive hGap
       hScaleForWitness hSchurForWitness hContinuumForWitness
+
+/-
+Endpoint 466: seven analytic obligations imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_seven_analytic_obligations_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySevenAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact ClaySevenAnalyticObligations.imply_all_sub_obligations_mass_gap h
+
+/-
+Endpoint 467: seven analytic obligations imply the mass-gap summary.
+-/
+theorem theorem_index_seven_analytic_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySevenAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClaySevenAnalyticObligations.imply_mass_gap_summary h
+
+/-
+Endpoint 468: seven analytic obligations imply the two-obligation theorem data.
+-/
+theorem theorem_index_seven_analytic_obligations_to_two_obligation_theorem
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySevenAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+∃ _ :
+  ClayRawHolonomyExistenceAssumptions
+    links Gap Energy curvatureNorm,
+      (forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) := by
+  exact ClaySevenAnalyticObligations.to_two_obligation_theorem h
+
+/-
+Endpoint 469: headline seven-obligation conditional Yang--Mills mass-gap
+theorem.
+-/
+theorem theorem_index_seven_analytic_obligations_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySevenAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact clay_seven_analytic_obligations_conditional_yang_mills_mass_gap h
 
 end RussoYM
