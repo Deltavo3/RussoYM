@@ -74,6 +74,7 @@ import RussoYM.ClayScalePrimitive
 import RussoYM.ClayContinuumPrimitive
 import RussoYM.ClayReducedPrimitiveObligations
 import RussoYM.ClaySchurPrimitive
+import RussoYM.ClayRawPrimitiveTheorem
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5241,5 +5242,81 @@ theorem theorem_index_schur_primitive_to_layer_one_fine_gap_data_from_holonomy
   exact
     ClaySchurPrimitiveObligation.imply_layer_one_fine_gap_data_from_holonomy
       hHolonomy hScale hSchur
+
+/-
+Endpoint 275: raw primitive assumptions imply reduced primitive obligations.
+-/
+theorem theorem_index_raw_primitive_to_reduced_primitive_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayReducedPrimitiveObligationAssumptions
+      links Gap Energy curvatureNorm
+      DeltaYM DeltaFine Delta0 dUV C mu delta := by
+  exact ClayRawPrimitiveAssumptions.to_reduced_primitive_obligations h
+
+/-
+Endpoint 276: raw primitive theorem implies full strongest gap data.
+-/
+theorem theorem_index_raw_primitive_implies_full_gap_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ (Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine)
+      ∧ (Delta0 <= DeltaYM ∧ 0 < DeltaYM)
+      ∧ ((∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+          ∧ 0 < DeltaYM) := by
+  exact ClayRawPrimitiveAssumptions.imply_full_gap_data h
+
+/-
+Endpoint 277: raw primitive theorem implies strongest conditional mass-gap
+summary.
+-/
+theorem theorem_index_raw_primitive_implies_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayRawPrimitiveAssumptions.imply_mass_gap h
+
+/-
+Endpoint 278: raw primitive theorem implies positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_raw_primitive_implies_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayRawPrimitiveAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaYM := by
+  exact ClayRawPrimitiveAssumptions.imply_positive_continuum_gap h
 
 end RussoYM
