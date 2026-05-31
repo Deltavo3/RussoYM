@@ -101,6 +101,7 @@ import RussoYM.ClayExistentialFullyRawTheorem
 import RussoYM.ClayExistentialWitnessPackage
 import RussoYM.ClayExplicitRawDataTheorem
 import RussoYM.ClayExplicitRawDataWitnessPackage
+import RussoYM.ClaySeparatedAnalyticObligations
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8030,5 +8031,88 @@ theorem theorem_index_explicit_raw_data_implies_exists_pointwise_positive_chain
         ∧ (forall n, 0 < Energy n)
         ∧ forall n, 0 < Gap n := by
   exact ClayExplicitRawDataAssumptions.imply_exists_pointwise_positive_chain h
+
+/-
+Endpoint 427: raw transfer existence exposes transfer witness data.
+-/
+theorem theorem_index_raw_transfer_existence_exists_transfer_witness_data
+    {DeltaYM C mu delta : Real}
+    (h :
+      ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    ∃ DeltaFine Delta0 dUV loss : Real,
+      0 < dUV
+        ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+        ∧ loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine
+        ∧ Delta0 <= DeltaYM := by
+  exact ClayRawTransferExistenceAssumptions.exists_transfer_witness_data h
+
+/-
+Endpoint 428: separated analytic obligations imply explicit raw-data assumptions.
+-/
+theorem theorem_index_separated_analytic_obligations_to_explicit_raw_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySeparatedAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClayExplicitRawDataAssumptions
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact ClaySeparatedAnalyticObligations.to_explicit_raw_data_assumptions h
+
+/-
+Endpoint 429: separated analytic obligations imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_separated_analytic_obligations_imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySeparatedAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact ClaySeparatedAnalyticObligations.imply_positive_continuum_gap h
+
+/-
+Endpoint 430: separated analytic obligations imply the mass-gap summary.
+-/
+theorem theorem_index_separated_analytic_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySeparatedAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClaySeparatedAnalyticObligations.imply_mass_gap_summary h
+
+/-
+Endpoint 431: headline separated analytic-obligation conditional Yang--Mills
+mass-gap theorem.
+-/
+theorem theorem_index_separated_analytic_obligations_conditional_yang_mills_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClaySeparatedAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact clay_separated_analytic_obligations_conditional_yang_mills_mass_gap h
 
 end RussoYM
