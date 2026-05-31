@@ -118,6 +118,7 @@ import RussoYM.ClayReducedAnalyticRoadmap
 import RussoYM.ClayEnergyNormCoercivity
 import RussoYM.ClayDirectHolonomySector
 import RussoYM.ClayHolonomyCurvatureEnergyPackaging
+import RussoYM.ClaySectorSpecificLowerBound
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9964,5 +9965,69 @@ theorem theorem_index_direct_sector_with_packaged_holonomy_control_imply_mass_ga
     clay_direct_sector_with_packaged_holonomy_control_imply_mass_gap
       heps hsector hCloc_pos hArea_pos hLocal hFluxEnergy
       hEnergyDef hGap hContinuumForWitness
+
+/-
+Endpoint 509: direct sector plus local flux-energy estimates gives a positive
+finite-regulator lower bound.
+-/
+theorem theorem_index_exists_sector_lower_bound_of_direct_flux_energy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm fluxNorm : Nat -> Real}
+    {eps C_loc areaFactor : Real}
+    (heps :
+      0 < eps)
+    (hCloc_pos :
+      0 < C_loc)
+    (hArea_pos :
+      0 < areaFactor)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖)
+    (hLocal :
+      forall n, ‖1 - (links n).prod‖ <= C_loc * fluxNorm n)
+    (hFluxEnergy :
+      forall n, fluxNorm n <= areaFactor * curvatureNorm n)
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2)
+    (hGap :
+      forall n, Energy n <= Gap n) :
+    ∃ Delta : Real,
+      0 < Delta
+        ∧ forall n, Delta <= Gap n := by
+  exact
+    exists_sector_lower_bound_of_direct_flux_energy
+      heps hCloc_pos hArea_pos hsector hLocal hFluxEnergy
+      hEnergyDef hGap
+
+/-
+Endpoint 510: direct sector plus packaged holonomy-curvature control gives a
+positive finite-regulator lower bound.
+-/
+theorem theorem_index_exists_sector_lower_bound_of_direct_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {eps : Real}
+    (heps :
+      0 < eps)
+    (hsector :
+      forall n, 2 * eps <= ‖1 - (links n).prod‖)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hEnergyDef :
+      forall n, Energy n = (curvatureNorm n)^2)
+    (hGap :
+      forall n, Energy n <= Gap n) :
+    ∃ Delta : Real,
+      0 < Delta
+        ∧ forall n, Delta <= Gap n := by
+  exact
+    exists_sector_lower_bound_of_direct_control
+      heps hsector hControl hEnergyDef hGap
 
 end RussoYM
