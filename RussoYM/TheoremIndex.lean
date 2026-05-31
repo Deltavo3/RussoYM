@@ -114,6 +114,7 @@ import RussoYM.ClayHolonomySeparationProofStrategy
 import RussoYM.ClayCompactSectorSeparation
 import RussoYM.ClayTransferWitnessConstruction
 import RussoYM.ClayContinuumTransferReduction
+import RussoYM.ClayReducedAnalyticRoadmap
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -9640,5 +9641,73 @@ theorem theorem_index_compact_sector_with_continuum_transfer_imply_mass_gap_summ
   exact
     clay_compact_sector_with_continuum_transfer_imply_mass_gap_summary
       hCompactSector hControl hCoercive hGap hContinuumForWitness
+
+/-
+Endpoint 495: reduced five analytic obligations imply positive continuum
+Yang--Mills gap.
+-/
+theorem theorem_index_reduced_five_obligations_imply_positive_continuum_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayReducedFiveAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact ClayReducedFiveAnalyticObligations.imply_positive_continuum_gap h
+
+/-
+Endpoint 496: reduced five analytic obligations imply the mass-gap summary.
+-/
+theorem theorem_index_reduced_five_obligations_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayReducedFiveAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact ClayReducedFiveAnalyticObligations.imply_mass_gap_summary h
+
+/-
+Endpoint 497: reduced five analytic obligations imply the earlier seven
+analytic obligations.
+-/
+theorem theorem_index_reduced_five_obligations_to_seven_analytic_obligations
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayReducedFiveAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    ClaySevenAnalyticObligations
+      links Gap Energy curvatureNorm DeltaYM := by
+  exact ClayReducedFiveAnalyticObligations.to_seven_analytic_obligations h
+
+/-
+Endpoint 498: headline reduced five-obligation current proof-state theorem.
+-/
+theorem theorem_index_reduced_five_obligations_current_proof_state_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayReducedFiveAnalyticObligations
+        links Gap Energy curvatureNorm DeltaYM) :
+    0 < DeltaYM := by
+  exact clay_reduced_five_obligations_current_proof_state_mass_gap h
 
 end RussoYM
