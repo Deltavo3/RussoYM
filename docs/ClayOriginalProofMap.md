@@ -2,560 +2,147 @@
 
 ## Purpose
 
-This file maps the original Yang–Mills/FRT proof argument onto the five remaining analytic obligations identified in `docs/ClayProofAudit.md`.
+This file maps the Yang--Mills/FRT proof route onto the remaining analytic obligations.
 
-The goal is to determine which parts of the original proof are already rigorous, which parts need clarification, which parts need new lemmas, and which parts risk assuming the mass gap.
+The goal is to keep a clean audit of:
 
----
-
-# Reduced Five Obligations
-
-The current Lean roadmap reduces the proof to:
-
-1. Compact/nontrivial holonomy sector separation.
-2. Holonomy-curvature control.
-3. Curvature coercivity.
-4. Finite gap lower comparison.
-5. Continuum survival.
-
-If these five are proved, Lean already verifies the conditional route to:
-
-[
-0 < \Delta_{\mathrm{YM}}.
-]
+1. what Lean has already verified;
+2. what is definition-level;
+3. what is paper-level analysis;
+4. what remains open;
+5. where the proof could accidentally assume the mass gap.
 
 ---
 
-# Audit Rule
+# Core Safety Rule
 
-We may use standard Yang–Mills definitions, local identities, norm inequalities, and local holonomy-curvature estimates.
+We may use standard Yang--Mills definitions, local identities, norm inequalities, finite-regulator algebra, and local holonomy-curvature estimates.
 
-We may not use any theorem or assumption that already implies a positive Yang–Mills mass gap.
+We may not use any theorem or assumption that already implies a positive Yang--Mills mass gap.
 
-In particular, we must not assume:
+In particular, we must not assume
 
 [
-\inf \operatorname{Spec}(H_{\mathrm{YM}} \setminus {0}) > 0
+\inf \operatorname{Spec}(H_{\mathrm{YM}}\setminus{0})>0
 ]
 
 or anything equivalent to it.
 
 ---
 
-# Obligation 1: Compact / Nontrivial Holonomy Sector Separation
+# Original Five Obligations
 
-## Lean target
+The Lean roadmap originally reduced the Clay endpoint to five obligations:
+
+1. compact/nontrivial holonomy sector separation;
+2. holonomy-curvature control;
+3. curvature coercivity;
+4. finite gap lower comparison;
+5. continuum survival.
+
+If these are proved honestly, the Lean chain reaches
 
 [
-\exists \delta > 0,\quad
+0<\Delta_{\mathrm{YM}}.
+]
+
+---
+
+# Obligation 1: Holonomy Sector Separation
+
+## Original target
+
+[
+\exists\delta>0,\quad
 \forall n,\quad
-\delta \leq |1 - U_n|.
+\delta\leq |1-U_n|,
 ]
 
 where
 
 [
-U_n = (\mathrm{links}\ n).\mathrm{prod}.
+U_n=(\mathrm{links}\ n).\mathrm{prod}.
 ]
 
-## Original proof source
+## Current route
 
-TODO: Insert the paragraph or lemma from the original proof that argues the regulator sequence remains in a nontrivial holonomy sector.
+The old compact-sector route has been replaced by a more direct finite-resolution sector condition.
 
-## Claimed argument
+Dedicated files:
 
-Expected structure:
+```text
+docs/ClayCompactHolonomySectorLemma.md
+docs/ClayNontrivialHolonomySectorDefinition.md
+docs/ClayHolonomySectorMapDefinition.md
+docs/ClayDirectHolonomySectorChoice.md
+RussoYM/ClayDirectHolonomySector.lean
+```
 
-1. Define admissible nontrivial sector (K).
-2. Show (U_n \in K) for all (n).
-3. Show (1 \notin K).
-4. Show (K) is compact, closed, or finite-resolution compact.
-5. Conclude (\inf_{U\in K}|1-U|>0).
+The direct finite-resolution sector condition is
+
+[
+\forall n,\quad
+2\epsilon_{\mathrm{hol}}
+\leq
+|1-(\mathrm{links}\ n).\mathrm{prod}|.
+]
+
+Lean verifies that this gives holonomy separation with witness
+
+[
+\delta=2\epsilon_{\mathrm{hol}}.
+]
 
 ## Status
 
-Pending original-proof check.
+Lean-packaged under the direct sector assumption.
 
-## Risk level
+## Remaining burden
 
-High.
+Justify the direct sector membership condition in the paper as a legitimate finite-resolution holonomy-sector selection, not as an energy or mass-gap assumption.
 
-This is one of the places where the mass gap could be smuggled in if “nontrivial sector” is defined too strongly.
-
-## Does this need Lean?
-
-Not immediately. First prove on paper.
-
-Lean already verifies:
-
-[
-\text{compact sector certificate}
-\Rightarrow
-\text{holonomy separation}.
-]
+Risk: medium-high.
 
 ---
 
 # Obligation 2: Holonomy-Curvature Control
 
-## Lean target
+## Original target
 
 [
 \exists C>0,\quad
 \forall n,\quad
-|1-U_n|\leq C,\mathrm{curvatureNorm}(n).
-]
-
-## Original proof source
-
-TODO: Insert the paragraph or lemma from the original proof giving holonomy deviation control by curvature.
-
-## Claimed argument
-
-Expected structure:
-
-1. Define (U_n) as a product of holonomies around a loop/plaquette.
-2. Define (\mathrm{curvatureNorm}(n)).
-3. Prove a local estimate:
-
-[
-|1-\mathrm{Hol}(\gamma)|
+|1-U_n|
 \leq
-C|F_A|_{\text{local}}.
+C,\operatorname{curvatureNorm}(n).
 ]
 
-4. Show constants are uniform in (n).
+## Current route
 
-## Status
-
-Pending original-proof check.
-
-## Risk level
-
-Medium.
-
-This is probably a standard local estimate, but the exact norm and uniformity matter.
-
-## Does this need Lean?
-
-Maybe later, once the exact norm definitions are stable.
-
----
-
-# Obligation 3: Curvature Coercivity
-
-## Lean target
-
-[
-\exists \mu>0,\quad
-\forall n,\quad
-\mu(\mathrm{curvatureNorm}(n))^2
-\leq
-\mathrm{Energy}(n).
-]
-
-## Original proof source
-
-TODO: Insert the paragraph or lemma from the original proof defining energy and curvature norm.
-
-## Claimed argument
-
-Expected structure:
-
-1. Define regulated Yang–Mills energy.
-2. Define curvature norm compatibly.
-3. Prove energy controls curvature squared by definition or finite-dimensional norm equivalence.
-
-## Status
-
-Pending original-proof check.
-
-## Risk level
-
-Medium-low if definitions are chosen honestly.
-
-High if energy is defined in a way that already assumes the gap.
-
-## Does this need Lean?
-
-Probably yes if the definitions are simple enough.
-
-This is one of the best candidates for selective Lean verification.
-
----
-
-# Obligation 4: Finite Gap Lower Comparison
-
-## Lean target
-
-[
-\forall n,\quad
-\mathrm{Energy}(n)\leq \mathrm{Gap}(n).
-]
-
-## Original proof source
-
-TODO: Insert the paragraph or lemma from the original proof defining finite-regulator gap.
-
-## Claimed argument
-
-Expected structure:
-
-1. Define (\mathrm{Gap}(n)) independently.
-2. Define (\mathrm{Energy}(n)) independently.
-3. Prove the energy lower quantity is bounded above by the finite-regulator gap.
-
-## Status
-
-Pending original-proof check.
-
-## Risk level
-
-High.
-
-This is dangerous if (\mathrm{Gap}(n)) is defined in a way that already contains the desired lower bound.
-
-## Does this need Lean?
-
-Maybe, but only after the definitions are clarified.
-
----
-
-# Obligation 5: Continuum Survival
-
-## Lean target
-
-[
-\Delta_0 \leq \Delta_{\mathrm{YM}}.
-]
-
-## Original proof source
-
-TODO: Insert the paragraph or lemma from the original proof arguing that the finite-regulator lower bound survives the continuum limit.
-
-## Claimed argument
-
-Expected structure:
-
-1. Define (\Delta_{\mathrm{YM}}).
-2. Define the regulator limit.
-3. Prove lower semicontinuity or monotonicity of the gap under the limit.
-4. Show the sequence cannot collapse into the trivial sector.
-5. Show the constants (\delta,C,\mu,\Delta_0) are uniform.
-
-## Status
-
-Pending original-proof check.
-
-## Risk level
-
-Very high.
-
-This is the other major place where the proof could accidentally assume the conclusion.
-
-## Does this need Lean?
-
-Eventually maybe. First prove carefully on paper.
-
----
-
-# Initial Classification Table
-
-
-| Obligation                              |                               Old Lean source found? |                Rigorous? |                     Needs new lemma? | Needs Lean? |      Risk |
-| --------------------------------------- | ---------------------------------------------------: | -----------------------: | -----------------------------------: | ----------: | --------: |
-| 1. Compact/nontrivial sector separation |                                               Partly |                  Not yet |                                  Yes | Maybe later |      High |
-| 2. Holonomy-curvature control           |                         Yes, as an assumption packet | Not yet from definitions |                                  Yes |       Maybe |    Medium |
-| 3. Curvature coercivity                 |                        Yes, algebraic support exists |                   Partly | Yes, analytic definition-level lemma |      Likely |    Medium |
-| 4. Finite gap lower comparison          |                         Yes, as an assumption packet |                  Not yet |                                  Yes |       Maybe |      High |
-| 5. Continuum survival                   | Yes, split into finite lower + epsilon approximation |                  Not yet |                                  Yes | Maybe later | Very high |
-
-## Source Mapping Notes
-
-### Obligation 1: Compact/nontrivial holonomy sector separation
-
-Old source appears through:
-
-```lean
-UniformHolonomySeparationAssumptions links delta
-```
-
-and in the older atomic audit as:
-
-```lean
-holonomySeparation :
-  UniformHolonomySeparationAssumptions links delta
-```
-
-Current status: this was previously treated as an assumption. Our newer Lean work has improved the shape by replacing it with a compact/nontrivial sector certificate, but the compact-sector theorem itself is not yet proved.
-
-Conclusion: paper proof required.
-
----
-
-### Obligation 2: Holonomy-curvature control
-
-Old source appears through:
-
-```lean
-UniformHolonomyCurvatureControlAssumptions links curvatureNorm C
-```
-
-and in the older atomic audit as:
-
-```lean
-holonomyCurvatureControl :
-  UniformHolonomyCurvatureControlAssumptions links curvatureNorm C
-```
-
-Current status: this was previously treated as an analytic red lemma. It should be proved by a local holonomy-curvature estimate, not by any mass-gap input.
-
-Conclusion: paper lemma required; Lean optional after definitions stabilize.
-
----
-
-### Obligation 3: Curvature coercivity
-
-Old source appears through:
-
-```lean
-UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu
-```
-
-and in the older atomic audit as:
-
-```lean
-curvatureCoercivity :
-  UniformCurvatureCoercivityAssumptions Energy curvatureNorm mu
-```
-
-There is also algebraic support in `AlgebraCore.lean`, including:
-
-```lean
-coercivity_implication_mul
-coercivity_implication_div
-finite_information_gap
-frt_gap_from_coercivity
-```
-
-Current status: the algebra is already Lean-verified, but the analytic Yang–Mills definition-level coercivity still needs proof. We must show that the regulated energy genuinely controls the chosen curvature norm.
-
-Conclusion: likely worth Lean-verifying once the definitions are fixed.
-
----
-
-### Obligation 4: Finite gap lower comparison
-
-Old source appears through:
-
-```lean
-UniformGapLowerBoundAssumptions Gap Energy
-```
-
-and in the older atomic audit as:
-
-```lean
-finiteGapLower :
-  UniformGapLowerBoundAssumptions Gap Energy
-```
-
-Current status: this is dangerous because if `Gap` is defined incorrectly, the proof could accidentally write in the desired lower bound.
-
-Conclusion: must define `Gap n` independently and prove `Energy n <= Gap n` from the regulator spectral setup.
-
----
-
-### Obligation 5: Continuum survival
-
-Old source appears split into:
-
-```lean
-UniformFiniteGapLowerAssumptions Delta0 Gap
-EpsilonContinuumApproximationAssumptions DeltaYM Gap
-```
-
-and in the older atomic audit as:
-
-```lean
-continuumFiniteLower :
-  UniformFiniteGapLowerAssumptions Delta0 Gap
-
-continuumApproximation :
-  EpsilonContinuumApproximationAssumptions DeltaYM Gap
-```
-
-Current status: this is the most important remaining transfer-side proof. The old proof already recognized that continuum survival should be split into a uniform finite lower bound plus an epsilon/continuum approximation step.
-
-Conclusion: paper proof required first. Lean should only package it after the analytic argument is stable.
-
-
----
-
-# Updated Status After Paper-Audit Files
-
-The remaining proof burden has now been sharpened.
-
-## Obligation 1: Compact/nontrivial holonomy sector separation
-
-Status: reduced to a compact-sector or finite-resolution-sector separation lemma.
-
-Dedicated audit file:
-
-```text
-docs/ClayCompactHolonomySectorLemma.md
-```
-
-Current requirement:
-
-Define the admissible nontrivial sector (K) without using energy or a spectral lower bound. Then prove:
-
-1. (U_n\in K) for all (n).
-2. (1\notin K).
-3. (K) is compact, closed with positive separation, or finite-resolution separated from the identity sector.
-4. The distance map (U\mapsto |1-U|) is continuous.
-
-Risk: high.
-
-## Obligation 1 Update: Nontrivial Holonomy Sector Defined
-
-Dedicated definition file:
-
-```text
-docs/ClayNontrivialHolonomySectorDefinition.md
-```
-
-The nontrivial sector is now proposed as a finite-resolution holonomy-sector fiber:
-
-[
-K=q_{\mathrm{hol}}^{-1}(\lambda_*),
-\qquad
-\lambda_*\neq \lambda_{\mathrm{id}}.
-]
-
-Here (q_{\mathrm{hol}}) is a finite-resolution holonomy sector map
-
-[
-q_{\mathrm{hol}}:G^m\to\Lambda_{\mathrm{hol}},
-]
-
-and (\lambda_{\mathrm{id}}) is the resolved identity-sector label.
-
-This is safe because (K) is defined by resolved holonomy data, not by energy, confinement, or a spectral lower bound.
-
-The remaining paper burden for obligation 1 is now:
-
-1. define (q_{\mathrm{hol}}) precisely;
-2. prove the identity tuple (\mathbf 1) maps to (\lambda_{\mathrm{id}});
-3. choose (\lambda_*\neq\lambda_{\mathrm{id}});
-4. prove the regulator sequence satisfies (\operatorname{Hol}_{\Gamma}(A_n)\in K);
-5. prove (K) is compact, usually by proving it is a closed fiber of (q_{\mathrm{hol}}) inside compact (G^m);
-6. prove the resolved holonomy product map (U:K\to G) is continuous;
-7. prove (U(V)=1) forces the resolved identity sector, so (U(V)=1) cannot occur inside (K).
-
-Thus obligation 1 is reduced to a precise finite-resolution holonomy-sector theorem:
-
-[
-K=q_{\mathrm{hol}}^{-1}(\lambda_*),
-\qquad
-K\subseteq G^m\text{ compact},
-\qquad
-\mathbf 1\notin K
-]
-
-implies
-
-[
-\exists \delta>0,\quad
-\forall n,\quad
-\delta\leq|1-U_n|.
-]
-
-Status: reduced but not fully proved.
-
-Risk: still high, but localized.
-
-## Obligation 1 Direct-Sector Lean Update
-
-Dedicated Lean file:
-
-```text
-RussoYM/ClayDirectHolonomySector.lean
-```
-
-The direct finite-resolution sector condition
-
-∀n,2ϵ
-hol
-	​
-
-≤∥1−(links n).prod∥
-
-now Lean-verifies the holonomy separation obligation with witness
-
-δ=2ϵ
-hol
-	​
-
-.
-
-Thus the old compact-sector certificate is no longer the main formal route. The current route is:
-
-direct resolved nontrivial holonomy sector⇒holonomy separation.
-
-The remaining paper issue for obligation 1 is not algebraic. It is to justify the sector membership condition as a legitimate finite-resolution sector selection, not an energy or mass-gap assumption.
-
-Status: Lean-packaged under direct sector assumption.
-
-Remaining burden: justify direct sector membership in the paper.
----
-
-## Obligation 2: Holonomy-curvature control
-
-Status: reduced to uniform holonomy-curvature control in the energy norm.
-
-Dedicated audit file:
+Dedicated files:
 
 ```text
 docs/ClayHolonomyCurvatureControlLemma.md
-```
-
-Current requirement:
-
-Prove
-
-[
-|1-U_n|\leq C|F_n|_{E,n}
-]
-
-with (C) independent of (n).
-
-This should come from:
-
-1. local holonomy-curvature estimate,
-2. Cauchy--Schwarz,
-3. uniform regulator geometry,
-4. local-to-global energy comparison.
-
-Risk: medium.
-
-## Obligation 2 Lean Packaging Update
-
-Dedicated Lean file:
-
-```text
+docs/ClayHolonomyCurvatureControlProofPlan.md
+docs/ClayLocalHolonomyFluxEstimate.md
+docs/ClayFluxEnergyComparison.md
 RussoYM/ClayHolonomyCurvatureEnergyPackaging.lean
 ```
 
-The holonomy-curvature control obligation is now Lean-packaged from two paper-level estimates:
+Lean packages holonomy-curvature control from two paper-level estimates:
 
 [
-|1-U_n|\leq C_{\mathrm{loc}}\operatorname{FluxNorm}(n)
+|1-U_n|
+\leq
+C_{\mathrm{loc}}\operatorname{FluxNorm}(n),
 ]
 
 and
 
 [
-\operatorname{FluxNorm}(n)\leq A_{\mathrm{fac}}\operatorname{curvatureNorm}(n).
+\operatorname{FluxNorm}(n)
+\leq
+A_{\mathrm{fac}}\operatorname{curvatureNorm}(n).
 ]
 
 Lean verifies that these imply
@@ -567,22 +154,36 @@ Lean verifies that these imply
 \operatorname{curvatureNorm}(n).
 ]
 
-Thus the remaining paper burden for obligation 2 is no longer constant bookkeeping. It is exactly:
+## Status
 
-1. prove the local holonomy/flux estimate;
-2. prove flux-to-energy comparison;
-3. prove (C_{\mathrm{loc}}>0) and (A_{\mathrm{fac}}>0);
-4. ensure all constants are uniform in (n).
+Lean-packaged from local flux estimates.
 
-Status: Lean-packaged from local flux estimates.
+## Remaining burden
 
-Remaining burden: prove the geometric estimates on paper.
+Prove on paper:
+
+1. local holonomy/flux estimate;
+2. flux-to-energy comparison;
+3. positivity of (C_{\mathrm{loc}}) and (A_{\mathrm{fac}});
+4. uniformity of constants in (n).
+
+Risk: medium.
 
 ---
 
-## Obligation 3: Curvature coercivity
+# Obligation 3: Curvature Coercivity
 
-Status: definition-level discharged under the energy-norm convention.
+## Original target
+
+[
+\exists\mu>0,\quad
+\forall n,\quad
+\mu(\operatorname{curvatureNorm}(n))^2
+\leq
+\operatorname{Energy}(n).
+]
+
+## Current route
 
 Dedicated files:
 
@@ -592,216 +193,138 @@ docs/ClayEnergyNormConvention.md
 RussoYM/ClayEnergyNormCoercivity.lean
 ```
 
-Current convention:
+Use the energy-norm convention:
 
-\[
-\mathrm{curvatureNorm}(n)=\|F_n\|_{E,n},
+[
+\operatorname{curvatureNorm}(n)=|F_n|*{E,n},
 \qquad
-\mathrm{Energy}(n)=\|F_n\|_{E,n}^{2}.
-\]
+\operatorname{Energy}(n)=|F_n|*{E,n}^{2}.
+]
 
-Then coercivity holds with
+Then
+
+[
+\operatorname{Energy}(n)
+========================
+
+(\operatorname{curvatureNorm}(n))^2.
+]
+
+Lean verifies curvature coercivity with
 
 [
 \mu=1.
 ]
 
-Lean has verified the schematic implication:
+## Status
 
-[
-\forall n,\ \mathrm{Energy}(n)=(\mathrm{curvatureNorm}(n))^2
-\Rightarrow
-\texttt{ClayCurvatureCoercivityExistenceAssumptions}.
-]
+Definition-level discharged under the energy-norm convention.
 
-Risk: low, assuming the definitions are used consistently.
+Risk: low, assuming definitions are used consistently.
 
 ---
 
-## Obligation 4: Finite gap lower comparison
+# Obligation 4: Finite Gap Lower Comparison
 
-Status: direction issue identified and clarified.
+## Original target
 
-Dedicated audit file:
+[
+\forall n,\quad
+\operatorname{Energy}(n)\leq \operatorname{Gap}(n).
+]
+
+## Important correction
+
+The Lean variable `Energy n` should not be interpreted in the paper as an arbitrary energy value.
+
+It should be interpreted as a universal lower-bound scale:
+
+[
+\operatorname{Lower}(n).
+]
+
+Thus the Lean comparison should be read as
+
+[
+\operatorname{Lower}(n)\leq \operatorname{Gap}(n).
+]
+
+Dedicated files:
 
 ```text
 docs/ClayFiniteGapComparisonLemma.md
-```
-
-Current requirement:
-
-The Lean variable currently called `Energy n` must be interpreted in the paper as a universal lower-bound scale, not as an arbitrary energy value or an infimum over a smaller selected sector.
-
-Recommended paper notation:
-
-[
-\mathrm{Lower}(n)
-]
-
-instead of
-
-[
-\mathrm{Energy}(n).
-]
-
-The required comparison is:
-
-[
-\mathrm{Lower}(n)\leq \mathrm{Gap}(n).
-]
-
-This is valid only if (\mathrm{Lower}(n)) is proved to bound every normalized non-vacuum finite-regulator state from below.
-
-Risk: high.
-
-## Obligation 4 Update: Sector-Specific Theorem First
-
-Dedicated theorem file:
-
-```text
-docs/ClaySectorSpecificGapTheorem.md
-```
-
-The safe theorem currently supported by the proof mechanism is sector-specific.
-
-The proof route gives a positive lower bound inside a fixed resolved nontrivial holonomy sector:
-
-Gap
-λ
-∗
-	​
-
-	​
-
-(n)≥Δ
-λ
-∗
-	​
-
-	​
-
->0.
-
-This should not yet be identified with the full finite-regulator Yang--Mills gap
-
-Gap(n)=
-ψ∈N
-n
-	​
-
-inf
-	​
-
-⟨ψ,H
-n
-	​
-
-ψ⟩.
-
-The full finite-regulator gap requires a sector-coverage theorem showing that every normalized non-vacuum finite-regulator state is detected by a resolved nontrivial holonomy sector with a uniform lower-bound constant.
-
-Therefore the current honest paper structure is:
-
-sector-specific finite lower bound
-
-then
-
-sector coverage⇒full finite-regulator lower bound
-
-then
-
-continuum survival⇒continuum Yang–Mills gap.
-
-Status: safe sector-specific theorem stated.
-
-Remaining burden: sector coverage and continuum survival.
-
-## Obligation 4 Update: Universal Lower-Bound Interpretation
-
-Dedicated definition file:
-
-```text
 docs/ClayUniversalLowerBoundDefinition.md
+docs/ClaySectorSpecificGapTheorem.md
+docs/ClaySectorCoverageProblem.md
+docs/ClaySectorSpecificProofAssembly.md
+```
 
-The paper should no longer describe the Lean variable Energy n as an ordinary energy value.
+## Sector-specific safe theorem
 
-Instead, in the paper, it should be interpreted as a universal finite-regulator lower-bound scale:
+The proof currently supports a sector-specific result.
 
-Lower(n).
+Inside a fixed resolved nontrivial holonomy sector,
 
-The Lean comparison
+[
+\Delta_{\lambda_*}
+==================
 
-Energy(n)≤Gap(n)
+\left(
+\frac{2\epsilon_{\mathrm{hol}}}
+{C_{\mathrm{loc}}A_{\mathrm{fac}}}
+\right)^2
 
-should be read in the paper as
+> 0
+> ]
 
-Lower(n)≤Gap(n).
+and
 
-This direction is valid only if
+[
+\Delta_{\lambda_*}
+\leq
+\operatorname{Gap}*{\lambda**}(n).
+]
 
-∀ψ∈N
-n
-	​
+This is the strongest safe finite-regulator theorem before sector coverage is proved.
 
-,Lower(n)≤⟨ψ,H
-n
-	​
+## Full finite-regulator upgrade
 
-ψ⟩,
+To claim the full finite-regulator Yang--Mills gap, we need sector coverage:
 
-where
+[
+\mathcal N_n
+\subseteq
+\bigcup_{\lambda\neq\lambda_{\mathrm{id}}}
+\mathcal S_{n,\lambda}.
+]
 
-N
-n
-	​
+That is, every normalized non-vacuum state must be detected by some resolved nontrivial holonomy sector with uniform constants.
 
-={ψ∈H
-n
-	​
+## Status
 
-:∥ψ∥=1, P
-n
-	​
+Sector-specific theorem stated and assembled.
 
-ψ=0}.
-
-Thus the remaining burden for obligation 4 is not algebraic. It is a sector-coverage or universality theorem.
-
-The proof currently gives a lower bound inside the resolved nontrivial holonomy sector. To upgrade this to the full finite-regulator gap, we must prove one of the following:
-
-The theorem is sector-specific, using a sector gap
-
-Gap
-λ
-∗
-	​
-
-	​
-
-(n).
-Every normalized non-vacuum finite-regulator state is covered by resolved nontrivial holonomy sectors with a uniform lower-bound constant.
-
-Until this is proved, the safe statement is sector-specific.
-
-Status: reduced to universal lower-bound / sector-coverage problem.
+Full finite-regulator gap remains conditional on sector coverage.
 
 Risk: high.
 
 ---
 
-## Obligation 5: Continuum survival
+# Obligation 5: Continuum Survival
 
-Status: reduced to an operator-limit / spectral-lower-bound preservation theorem.
+## Target
 
-Dedicated audit file:
+[
+\Delta_0\leq \Delta_{\mathrm{YM}}.
+]
+
+Dedicated file:
 
 ```text
 docs/ClayContinuumSurvivalLemma.md
 ```
 
-Current requirement:
-
-Prove that a uniform finite-regulator lower bound survives the continuum limit:
+The desired operator-limit form is:
 
 [
 H_n\geq \Delta_0(I-P_n)
@@ -811,117 +334,93 @@ H_{\mathrm{YM}}\geq \Delta_0(I-P).
 
 This requires:
 
-1. a precise regulator convergence framework,
-2. convergence of vacuum projections (P_n\to P),
-3. no collapse of the non-vacuum sector,
+1. a precise regulator convergence framework;
+2. convergence of vacuum projections (P_n\to P);
+3. no collapse of non-vacuum states;
 4. preservation of lower spectral bounds.
+
+## Status
+
+Not proved.
 
 Risk: very high.
 
 ---
 
-# Sector-Specific Assembly Update
+# Current Lean-Packaged Components
 
-Dedicated assembly file:
+Lean now verifies:
+
+1. direct sector condition gives holonomy separation;
+2. energy-norm identity gives curvature coercivity with (\mu=1);
+3. local flux estimate plus flux-to-energy comparison gives holonomy-curvature control;
+4. the conditional chain from these packaged assumptions to the mass-gap endpoint remains available.
+
+---
+
+# Current Honest Mathematical Result
+
+The current safe result is:
+
+[
+\boxed{
+\text{sector-specific finite-regulator lower-bound mechanism}
+}
+]
+
+More explicitly, under the direct sector condition, local holonomy/flux estimate, flux-to-energy comparison, and energy-norm convention,
+
+[
+\operatorname{Gap}*{\lambda**}(n)
+\geq
+\Delta_{\lambda_*}>0.
+]
+
+This is not yet the full Clay theorem.
+
+---
+
+# Remaining Hard Theorems
+
+The remaining hard mathematical work is:
+
+1. prove the local holonomy/flux estimate;
+2. prove flux-to-energy comparison with uniform constants;
+3. prove sector coverage if claiming the full finite-regulator gap;
+4. prove continuum survival.
+
+The two hardest upgrades are:
+
+1. sector coverage;
+2. continuum survival.
+
+---
+
+# Paper 1 Claim Boundary
+
+Dedicated file:
 
 ```text
-docs/ClaySectorSpecificProofAssembly.md
+docs/ClayPaper1ClaimBoundary.md
 ```
 
-The current safe finite-regulator theorem has now been assembled.
+Paper 1 should be framed as:
 
-The proof route gives
+[
+\text{a Lean-verified conditional reduction and sector-specific gap mechanism.}
+]
 
-Δ
-λ
-∗
-	​
-
-	​
-
-=(
-C
-loc
-	​
-
-A
-fac
-	​
-
-2ϵ
-hol
-	​
-
-	​
-
-)
-2
->0
-
-and
-
-Δ
-λ
-∗
-	​
-
-	​
-
-≤Gap
-λ
-∗
-	​
-
-	​
-
-(n)
-
-inside a fixed resolved nontrivial holonomy sector.
-
-This is the strongest safe theorem currently supported before proving sector coverage and continuum survival.
-
-Remaining upgrades:
-
-prove local holonomy/flux estimate;
-prove flux-to-energy comparison;
-prove sector coverage;
-prove continuum survival.
-
-Status: sector-specific finite-regulator proof route assembled.
-
-Full Clay proof: still conditional on sector coverage and continuum survival.
-
-# Updated Effective Burden
-
-After the energy-norm convention, the proof is effectively reduced to four major analytic burdens:
-
-1. Define and separate the compact/nontrivial holonomy sector.
-2. Prove uniform holonomy-curvature control in the energy norm.
-3. Prove the universal finite lower-bound comparison (\mathrm{Lower}(n)\leq\mathrm{Gap}(n)).
-4. Prove continuum survival of the uniform lower bound.
-
-Curvature coercivity remains in the Lean theorem chain, but it is now discharged by definition with (\mu=1).
+It should not claim a completed Clay-level proof unless sector coverage and continuum survival are proved.
 
 ---
 
-# Immediate Work Plan
+# Current Status
 
-1. Locate the original proof paragraphs corresponding to each obligation.
-2. Paste them under each obligation.
-3. Mark each as:
+The project now has a clean conditional Lean scaffold and a safe sector-specific finite-regulator theorem.
 
-   * rigorous,
-   * needs clarification,
-   * needs new lemma,
-   * dangerous / may assume the conclusion.
-4. Only after this audit, decide what Lean should verify next.
+Full Clay proof status: not complete yet.
 
----
+Next meaningful work:
 
-# Current Lean Conclusion
-
-The current Lean state is strong enough that if the five obligations are proven honestly, then the mass-gap endpoint follows.
-
-Therefore the next work is not more wrapper construction.
-
-The next work is proving or repairing the five analytic obligations.
+1. Lean-package the sector-specific lower-bound algebra, or
+2. begin the paper proof of the local holonomy/flux estimate.
