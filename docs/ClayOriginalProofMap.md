@@ -480,7 +480,6 @@ Dedicated Lean file:
 
 ```text
 RussoYM/ClayDirectHolonomySector.lean
-```
 
 The direct finite-resolution sector condition
 
@@ -507,6 +506,81 @@ The remaining paper issue for obligation 1 is not algebraic. It is to justify th
 Status: Lean-packaged under direct sector assumption.
 
 Remaining burden: justify direct sector membership in the paper.
+
+
+Then replace the **Obligation 4 Update: Universal Lower-Bound Interpretation** section with:
+
+```markdown
+## Obligation 4 Update: Universal Lower-Bound Interpretation
+
+Dedicated definition file:
+
+```text
+docs/ClayUniversalLowerBoundDefinition.md
+
+The paper should no longer describe the Lean variable Energy n as an ordinary energy value.
+
+Instead, in the paper, it should be interpreted as a universal finite-regulator lower-bound scale:
+
+Lower(n).
+
+The Lean comparison
+
+Energy(n)≤Gap(n)
+
+should be read in the paper as
+
+Lower(n)≤Gap(n).
+
+This direction is valid only if
+
+∀ψ∈N
+n
+	​
+
+,Lower(n)≤⟨ψ,H
+n
+	​
+
+ψ⟩,
+
+where
+
+N
+n
+	​
+
+={ψ∈H
+n
+	​
+
+:∥ψ∥=1, P
+n
+	​
+
+ψ=0}.
+
+Thus the remaining burden for obligation 4 is not algebraic. It is a sector-coverage or universality theorem.
+
+The proof currently gives a lower bound inside the resolved nontrivial holonomy sector. To upgrade this to the full finite-regulator gap, we must prove one of the following:
+
+The theorem is sector-specific, using a sector gap
+
+Gap
+λ
+∗
+	​
+
+	​
+
+(n).
+Every normalized non-vacuum finite-regulator state is covered by resolved nontrivial holonomy sectors with a uniform lower-bound constant.
+
+Until this is proved, the safe statement is sector-specific.
+
+Status: reduced to universal lower-bound / sector-coverage problem.
+
+Risk: high.
 
 ---
 
