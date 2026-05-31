@@ -71,6 +71,7 @@ import RussoYM.ClayFinalDirectTheorem
 import RussoYM.ClayFinalDirectAssumptionAudit
 import RussoYM.ClayPrimitiveObligations
 import RussoYM.ClayScalePrimitive
+import RussoYM.ClayContinuumPrimitive
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5014,5 +5015,67 @@ theorem theorem_index_scale_primitive_implies_delta0_positive_from_holonomy
   exact
     ClayScalePrimitiveObligation.imply_delta0_positive_from_holonomy
       hHolonomy hScale
+
+/-
+Endpoint 261: direct inequality Delta0 <= DeltaYM constructs the continuum
+primitive obligation.
+-/
+theorem theorem_index_continuum_primitive_from_delta0_le_deltaYM
+    {DeltaYM Delta0 : Real}
+    (h : Delta0 <= DeltaYM) :
+    ClayContinuumPrimitiveObligation DeltaYM Delta0 := by
+  exact ClayContinuumPrimitiveObligation.of_delta0_le_deltaYM h
+
+/-
+Endpoint 262: continuum primitive obligation plus positivity of Delta0 gives
+continuum gap data.
+-/
+theorem theorem_index_continuum_primitive_to_gap_data_of_delta0_pos
+    {DeltaYM Delta0 : Real}
+    (hCont :
+      ClayContinuumPrimitiveObligation DeltaYM Delta0)
+    (hDelta0_pos : 0 < Delta0) :
+    Delta0 <= DeltaYM ∧ 0 < DeltaYM := by
+  exact
+    ClayContinuumPrimitiveObligation.imply_continuum_gap_data_of_delta0_pos
+      hCont hDelta0_pos
+
+/-
+Endpoint 263: continuum primitive obligation plus positivity of Delta0 gives a
+positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_continuum_primitive_to_positive_continuum_gap_of_delta0_pos
+    {DeltaYM Delta0 : Real}
+    (hCont :
+      ClayContinuumPrimitiveObligation DeltaYM Delta0)
+    (hDelta0_pos : 0 < Delta0) :
+    0 < DeltaYM := by
+  exact
+    ClayContinuumPrimitiveObligation.imply_positive_continuum_gap_of_delta0_pos
+      hCont hDelta0_pos
+
+/-
+Endpoint 264: holonomy, primitive scale, and primitive continuum survival imply
+a positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_continuum_primitive_to_positive_gap_from_holonomy_and_scale
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM Delta0 dUV C mu delta : Real}
+    (hHolonomy :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta)
+    (hScale :
+      ClayScalePrimitiveObligation
+        Delta0 (mu * (delta / C)^2) dUV)
+    (hCont :
+      ClayContinuumPrimitiveObligation DeltaYM Delta0) :
+    0 < DeltaYM := by
+  exact
+    ClayContinuumPrimitiveObligation.imply_positive_continuum_gap_from_holonomy_and_scale
+      hHolonomy hScale hCont
 
 end RussoYM
