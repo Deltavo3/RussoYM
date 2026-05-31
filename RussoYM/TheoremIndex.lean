@@ -106,6 +106,7 @@ import RussoYM.ClayRawHolonomyExistence
 import RussoYM.ClayAnalyticExistenceProgram
 import RussoYM.ClayRawTransferExistence
 import RussoYM.ClayTwoObligationTheorem
+import RussoYM.ClayHolonomyExistenceSubObligations
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -8564,5 +8565,158 @@ theorem theorem_index_two_obligations_concrete_witness_package
   exact
     clay_two_obligations_concrete_witness_package
       hHol hTransferForWitness
+
+/-
+Endpoint 452: holonomy separation existence exposes a delta witness.
+-/
+theorem theorem_index_holonomy_separation_existence_exists_delta_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    (h :
+      ClayHolonomySeparationExistenceAssumptions links) :
+    ∃ delta : Real,
+      0 < delta
+        ∧ forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact ClayHolonomySeparationExistenceAssumptions.exists_delta_witness h
+
+/-
+Endpoint 453: holonomy-curvature control existence exposes a C witness.
+-/
+theorem theorem_index_holonomy_curvature_control_existence_exists_C_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {curvatureNorm : Nat -> Real}
+    (h :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm) :
+    ∃ C : Real,
+      0 < C
+        ∧ forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n := by
+  exact ClayHolonomyCurvatureControlExistenceAssumptions.exists_C_witness h
+
+/-
+Endpoint 454: curvature coercivity existence exposes a mu witness.
+-/
+theorem theorem_index_curvature_coercivity_existence_exists_mu_witness
+    {Energy curvatureNorm : Nat -> Real}
+    (h :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm) :
+    ∃ mu : Real,
+      0 < mu
+        ∧ forall n, mu * (curvatureNorm n)^2 <= Energy n := by
+  exact ClayCurvatureCoercivityExistenceAssumptions.exists_mu_witness h
+
+/-
+Endpoint 455: finite gap lower comparison exposes the gap lower inequality.
+-/
+theorem theorem_index_finite_gap_lower_comparison_expose_gap_lower
+    {Gap Energy : Nat -> Real}
+    (h :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy) :
+    forall n, Energy n <= Gap n := by
+  exact ClayFiniteGapLowerComparisonAssumptions.expose_gap_lower h
+
+/-
+Endpoint 456: holonomy/coercivity sub-obligations imply raw holonomy existence.
+-/
+theorem theorem_index_holonomy_sub_obligations_to_raw_holonomy_existence
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    (hSep :
+      ClayHolonomySeparationExistenceAssumptions links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy) :
+    ClayRawHolonomyExistenceAssumptions
+      links Gap Energy curvatureNorm := by
+  exact
+    clay_holonomy_sub_obligations_to_raw_holonomy_existence
+      hSep hControl hCoercive hGap
+
+/-
+Endpoint 457: holonomy/coercivity sub-obligations plus transfer existence imply
+positive continuum Yang--Mills gap.
+-/
+theorem theorem_index_holonomy_sub_obligations_with_transfer_imply_mass_gap
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hSep :
+      ClayHolonomySeparationExistenceAssumptions links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    0 < DeltaYM := by
+  exact
+    clay_holonomy_sub_obligations_with_transfer_imply_mass_gap
+      hSep hControl hCoercive hGap hTransferForWitness
+
+/-
+Endpoint 458: holonomy/coercivity sub-obligations plus transfer existence imply
+the mass-gap summary.
+-/
+theorem theorem_index_holonomy_sub_obligations_with_transfer_imply_mass_gap_summary
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (hSep :
+      ClayHolonomySeparationExistenceAssumptions links)
+    (hControl :
+      ClayHolonomyCurvatureControlExistenceAssumptions
+        links curvatureNorm)
+    (hCoercive :
+      ClayCurvatureCoercivityExistenceAssumptions
+        Energy curvatureNorm)
+    (hGap :
+      ClayFiniteGapLowerComparisonAssumptions Gap Energy)
+    (hTransferForWitness :
+      forall C mu delta : Real,
+        0 < delta ->
+        (forall n, delta <= ‖1 - (links n).prod‖) ->
+        0 < C ->
+        (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n) ->
+        0 < mu ->
+        (forall n, mu * (curvatureNorm n)^2 <= Energy n) ->
+        (forall n, Energy n <= Gap n) ->
+        ClayRawTransferExistenceAssumptions DeltaYM C mu delta) :
+    (∃ Delta : Real, 0 < Delta ∧ forall n, Delta <= Gap n)
+      ∧ 0 < DeltaYM := by
+  exact
+    clay_holonomy_sub_obligations_with_transfer_imply_mass_gap_summary
+      hSep hControl hCoercive hGap hTransferForWitness
 
 end RussoYM
