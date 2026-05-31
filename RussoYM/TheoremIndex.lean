@@ -100,6 +100,7 @@ import RussoYM.ClayFullyRawAlgebraicTheorem
 import RussoYM.ClayExistentialFullyRawTheorem
 import RussoYM.ClayExistentialWitnessPackage
 import RussoYM.ClayExplicitRawDataTheorem
+import RussoYM.ClayExplicitRawDataWitnessPackage
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7907,5 +7908,127 @@ theorem theorem_index_explicit_raw_data_conditional_yang_mills_mass_gap
         links Gap Energy curvatureNorm DeltaYM) :
     0 < DeltaYM := by
   exact clay_explicit_raw_data_conditional_yang_mills_mass_gap h
+
+/-
+Endpoint 422: explicit raw-data assumptions expose explicit constants and the
+Schur loss witness.
+-/
+theorem theorem_index_explicit_raw_data_exists_explicit_raw_witness_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ DeltaFine Delta0 dUV C mu delta loss : Real,
+      0 < delta
+        ∧ (forall n, delta <= ‖1 - (links n).prod‖)
+        ∧ 0 < C
+        ∧ (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n)
+        ∧ 0 < mu
+        ∧ (forall n, mu * (curvatureNorm n)^2 <= Energy n)
+        ∧ (forall n, Energy n <= Gap n)
+        ∧ 0 < dUV
+        ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+        ∧ loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine
+        ∧ Delta0 <= DeltaYM := by
+  exact ClayExplicitRawDataAssumptions.exists_explicit_raw_witness_data h
+
+/-
+Endpoint 423: explicit raw-data assumptions give the explicit finite-gap
+witness.
+-/
+theorem theorem_index_explicit_raw_data_implies_exists_explicit_finite_gap_bound
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ Delta DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ Delta = mu * (delta / C)^2
+        ∧ 0 < Delta
+        ∧ forall n, Delta <= Gap n := by
+  exact ClayExplicitRawDataAssumptions.imply_exists_explicit_finite_gap_bound h
+
+/-
+Endpoint 424: explicit raw-data assumptions give the Delta0 transfer witness.
+-/
+theorem theorem_index_explicit_raw_data_implies_exists_delta0_transfer_witness
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ 0 < Delta0
+        ∧ Delta0 <= DeltaFine
+        ∧ Delta0 <= DeltaYM := by
+  exact ClayExplicitRawDataAssumptions.imply_exists_delta0_transfer_witness h
+
+/-
+Endpoint 425: explicit raw-data assumptions give the pointwise finite-gap chain.
+-/
+theorem theorem_index_explicit_raw_data_implies_exists_pointwise_gap_chain
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ (forall n,
+            delta / C <= curvatureNorm n
+              ∧ (delta / C)^2 <= (curvatureNorm n)^2
+              ∧ mu * (delta / C)^2 <= Energy n
+              ∧ mu * (delta / C)^2 <= Gap n) := by
+  exact ClayExplicitRawDataAssumptions.imply_exists_pointwise_gap_chain h
+
+/-
+Endpoint 426: explicit raw-data assumptions give the pointwise positivity chain.
+-/
+theorem theorem_index_explicit_raw_data_implies_exists_pointwise_positive_chain
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM : Real}
+    (h :
+      ClayExplicitRawDataAssumptions
+        links Gap Energy curvatureNorm DeltaYM) :
+    ∃ DeltaFine Delta0 dUV C mu delta : Real,
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta
+        ∧ 0 < delta / C
+        ∧ (forall n, 0 < curvatureNorm n)
+        ∧ 0 < mu * (delta / C)^2
+        ∧ (forall n, 0 < Energy n)
+        ∧ forall n, 0 < Gap n := by
+  exact ClayExplicitRawDataAssumptions.imply_exists_pointwise_positive_chain h
 
 end RussoYM
