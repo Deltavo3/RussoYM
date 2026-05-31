@@ -93,6 +93,7 @@ import RussoYM.ClayConcreteDelta0Witness
 import RussoYM.ClayRawHolonomyPointwise
 import RussoYM.ClayRawHolonomyPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseConsequences
+import RussoYM.ClayFullyRawPointwiseGapChain
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7205,5 +7206,124 @@ theorem theorem_index_fully_raw_implies_pointwise_positive_chain_via_raw_holonom
       ∧ (forall n, 0 < Energy n)
       ∧ forall n, 0 < Gap n := by
   exact ClayFullyRawAssumptions.imply_pointwise_positive_chain_via_raw_holonomy h
+
+/-
+Endpoint 385: fully raw assumptions imply the pointwise curvature lower bound.
+-/
+theorem theorem_index_fully_raw_implies_curvatureNorm_lower_bound_via_raw_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, delta / C <= curvatureNorm n := by
+  exact ClayFullyRawAssumptions.imply_curvatureNorm_lower_bound_via_raw_holonomy h
+
+/-
+Endpoint 386: fully raw assumptions imply the pointwise squared curvature lower
+bound.
+-/
+theorem theorem_index_fully_raw_implies_curvatureNorm_square_lower_bound_via_raw_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, (delta / C)^2 <= (curvatureNorm n)^2 := by
+  exact ClayFullyRawAssumptions.imply_curvatureNorm_square_lower_bound_via_raw_holonomy h
+
+/-
+Endpoint 387: fully raw assumptions imply the pointwise energy lower bound by
+the concrete witness.
+-/
+theorem theorem_index_fully_raw_implies_energy_lower_by_concrete_witness_via_raw_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, mu * (delta / C)^2 <= Energy n := by
+  exact ClayFullyRawAssumptions.imply_energy_lower_by_concrete_witness_via_raw_holonomy h
+
+/-
+Endpoint 388: fully raw assumptions imply the pointwise gap lower bound by the
+concrete witness.
+-/
+theorem theorem_index_fully_raw_implies_gap_lower_by_concrete_witness_pointwise_via_raw_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, mu * (delta / C)^2 <= Gap n := by
+  exact ClayFullyRawAssumptions.imply_gap_lower_by_concrete_witness_pointwise_via_raw_holonomy h
+
+/-
+Endpoint 389: fully raw assumptions imply the full pointwise finite-gap chain.
+-/
+theorem theorem_index_fully_raw_implies_pointwise_gap_chain_via_raw_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n,
+      delta / C <= curvatureNorm n
+        ∧ (delta / C)^2 <= (curvatureNorm n)^2
+        ∧ mu * (delta / C)^2 <= Energy n
+        ∧ mu * (delta / C)^2 <= Gap n := by
+  exact ClayFullyRawAssumptions.imply_pointwise_gap_chain_via_raw_holonomy h
+
+/-
+Endpoint 390: fully raw assumptions imply both the pointwise finite-gap chain
+and the pointwise positivity chain.
+-/
+theorem theorem_index_fully_raw_implies_pointwise_gap_and_positive_chains
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    (forall n,
+      delta / C <= curvatureNorm n
+        ∧ (delta / C)^2 <= (curvatureNorm n)^2
+        ∧ mu * (delta / C)^2 <= Energy n
+        ∧ mu * (delta / C)^2 <= Gap n)
+      ∧ (0 < delta / C
+          ∧ (forall n, 0 < curvatureNorm n)
+          ∧ 0 < mu * (delta / C)^2
+          ∧ (forall n, 0 < Energy n)
+          ∧ forall n, 0 < Gap n) := by
+  exact ClayFullyRawAssumptions.imply_pointwise_gap_and_positive_chains h
 
 end RussoYM

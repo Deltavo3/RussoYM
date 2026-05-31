@@ -101,3 +101,4 @@ import RussoYM.ClayConcreteDelta0Witness
 import RussoYM.ClayRawHolonomyPointwise
 import RussoYM.ClayRawHolonomyPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseConsequences
+import RussoYM.ClayFullyRawPointwiseGapChain
