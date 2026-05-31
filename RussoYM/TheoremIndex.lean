@@ -81,6 +81,7 @@ import RussoYM.ClayHolonomyExpandedRawTheorem
 import RussoYM.ClayHolonomyExpandedRawAudit
 import RussoYM.ClayHolonomySubpacketPrimitives
 import RussoYM.ClayFullyRawTheorem
+import RussoYM.ClayFullyRawAudit
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6005,5 +6006,223 @@ theorem theorem_index_fully_raw_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayFullyRawAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 319: fully raw assumptions expose positivity of delta.
+-/
+theorem theorem_index_fully_raw_audit_delta_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < delta := by
+  exact ClayFullyRawAssumptions.audit_delta_positive h
+
+/-
+Endpoint 320: fully raw assumptions expose holonomy separation.
+-/
+theorem theorem_index_fully_raw_audit_holonomy_separation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, delta <= ‖1 - (links n).prod‖ := by
+  exact ClayFullyRawAssumptions.audit_holonomy_separation h
+
+/-
+Endpoint 321: fully raw assumptions expose positivity of C.
+-/
+theorem theorem_index_fully_raw_audit_C_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < C := by
+  exact ClayFullyRawAssumptions.audit_C_positive h
+
+/-
+Endpoint 322: fully raw assumptions expose holonomy-curvature control.
+-/
+theorem theorem_index_fully_raw_audit_holonomy_control
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n := by
+  exact ClayFullyRawAssumptions.audit_holonomy_control h
+
+/-
+Endpoint 323: fully raw assumptions expose positivity of mu.
+-/
+theorem theorem_index_fully_raw_audit_mu_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < mu := by
+  exact ClayFullyRawAssumptions.audit_mu_positive h
+
+/-
+Endpoint 324: fully raw assumptions expose energy coercivity.
+-/
+theorem theorem_index_fully_raw_audit_energy_coercive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, mu * (curvatureNorm n)^2 <= Energy n := by
+  exact ClayFullyRawAssumptions.audit_energy_coercive h
+
+/-
+Endpoint 325: fully raw assumptions expose finite gap lower bound.
+-/
+theorem theorem_index_fully_raw_audit_gap_lower
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    forall n, Energy n <= Gap n := by
+  exact ClayFullyRawAssumptions.audit_gap_lower h
+
+/-
+Endpoint 326: fully raw assumptions expose UV positivity.
+-/
+theorem theorem_index_fully_raw_audit_uv_positive
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < dUV := by
+  exact ClayFullyRawAssumptions.audit_uv_positive h
+
+/-
+Endpoint 327: fully raw assumptions expose Delta0 normalization.
+-/
+theorem theorem_index_fully_raw_audit_delta0_definition
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV := by
+  exact ClayFullyRawAssumptions.audit_delta0_definition h
+
+/-
+Endpoint 328: fully raw assumptions expose raw Schur/Feshbach bounds.
+-/
+theorem theorem_index_fully_raw_audit_raw_schur_bounds
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ∃ loss : Real,
+      loss <= Delta0
+        ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine := by
+  exact ClayFullyRawAssumptions.audit_raw_schur_bounds h
+
+/-
+Endpoint 329: fully raw assumptions expose continuum survival.
+-/
+theorem theorem_index_fully_raw_audit_continuum_survival
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaYM := by
+  exact ClayFullyRawAssumptions.audit_continuum_survival h
+
+/-
+Endpoint 330: fully raw assumptions expose all current raw data.
+-/
+theorem theorem_index_fully_raw_audit_all_data
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < delta
+      ∧ (forall n, delta <= ‖1 - (links n).prod‖)
+      ∧ 0 < C
+      ∧ (forall n, ‖1 - (links n).prod‖ <= C * curvatureNorm n)
+      ∧ 0 < mu
+      ∧ (forall n, mu * (curvatureNorm n)^2 <= Energy n)
+      ∧ (forall n, Energy n <= Gap n)
+      ∧ 0 < dUV
+      ∧ Delta0 = (1 / 2) * min (mu * (delta / C)^2) dUV
+      ∧ (∃ loss : Real,
+          loss <= Delta0
+            ∧ min (mu * (delta / C)^2) dUV - loss <= DeltaFine)
+      ∧ Delta0 <= DeltaYM := by
+  exact ClayFullyRawAssumptions.audit_all_fully_raw_data h
 
 end RussoYM
