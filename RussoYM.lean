@@ -102,3 +102,4 @@ import RussoYM.ClayRawHolonomyPointwise
 import RussoYM.ClayRawHolonomyPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseGapChain
+import RussoYM.ClayRawSchurAlgebra

@@ -94,6 +94,7 @@ import RussoYM.ClayRawHolonomyPointwise
 import RussoYM.ClayRawHolonomyPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseConsequences
 import RussoYM.ClayFullyRawPointwiseGapChain
+import RussoYM.ClayRawSchurAlgebra
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -7325,5 +7326,120 @@ theorem theorem_index_fully_raw_implies_pointwise_gap_and_positive_chains
           ∧ (forall n, 0 < Energy n)
           ∧ forall n, 0 < Gap n) := by
   exact ClayFullyRawAssumptions.imply_pointwise_gap_and_positive_chains h
+
+/-
+Endpoint 391: raw Schur algebra transfers Delta0 into DeltaFine.
+-/
+theorem theorem_index_raw_schur_loss_transfer
+    {DeltaFine Delta0 dBlock dUV loss : Real}
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min dBlock dUV)
+    (hLoss :
+      loss <= Delta0)
+    (hLower :
+      min dBlock dUV - loss <= DeltaFine) :
+    Delta0 <= DeltaFine := by
+  exact raw_schur_loss_transfer hDelta0_def hLoss hLower
+
+/-
+Endpoint 392: raw Schur algebra gives positivity of DeltaFine.
+-/
+theorem theorem_index_raw_schur_loss_transfer_positive
+    {DeltaFine Delta0 dBlock dUV loss : Real}
+    (hDelta0_pos :
+      0 < Delta0)
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min dBlock dUV)
+    (hLoss :
+      loss <= Delta0)
+    (hLower :
+      min dBlock dUV - loss <= DeltaFine) :
+    0 < DeltaFine := by
+  exact raw_schur_loss_transfer_positive hDelta0_pos hDelta0_def hLoss hLower
+
+/-
+Endpoint 393: raw Schur algebra from an existential loss witness transfers
+Delta0 into DeltaFine.
+-/
+theorem theorem_index_raw_schur_exists_loss_transfer
+    {DeltaFine Delta0 dBlock dUV : Real}
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min dBlock dUV)
+    (hExists :
+      ∃ loss : Real,
+        loss <= Delta0
+          ∧ min dBlock dUV - loss <= DeltaFine) :
+    Delta0 <= DeltaFine := by
+  exact raw_schur_exists_loss_transfer hDelta0_def hExists
+
+/-
+Endpoint 394: raw Schur algebra from an existential loss witness gives
+positivity of DeltaFine.
+-/
+theorem theorem_index_raw_schur_exists_loss_transfer_positive
+    {DeltaFine Delta0 dBlock dUV : Real}
+    (hDelta0_pos :
+      0 < Delta0)
+    (hDelta0_def :
+      Delta0 = (1 / 2) * min dBlock dUV)
+    (hExists :
+      ∃ loss : Real,
+        loss <= Delta0
+          ∧ min dBlock dUV - loss <= DeltaFine) :
+    0 < DeltaFine := by
+  exact raw_schur_exists_loss_transfer_positive hDelta0_pos hDelta0_def hExists
+
+/-
+Endpoint 395: fully raw assumptions imply Delta0 <= DeltaFine by raw Schur
+algebra.
+-/
+theorem theorem_index_fully_raw_implies_delta0_le_deltaFine_by_raw_schur_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_delta0_le_deltaFine_by_raw_schur_algebra h
+
+/-
+Endpoint 396: fully raw assumptions imply positivity of DeltaFine by raw Schur
+algebra.
+-/
+theorem theorem_index_fully_raw_implies_deltaFine_positive_by_raw_schur_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    0 < DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_deltaFine_positive_by_raw_schur_algebra h
+
+/-
+Endpoint 397: fully raw assumptions imply fine-gap data by raw Schur algebra.
+-/
+theorem theorem_index_fully_raw_implies_fine_gap_data_by_raw_schur_algebra
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_fine_gap_data_by_raw_schur_algebra h
 
 end RussoYM
