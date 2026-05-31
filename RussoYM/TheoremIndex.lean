@@ -85,6 +85,7 @@ import RussoYM.ClayFullyRawAudit
 import RussoYM.ClayFullyRawSummary
 import RussoYM.ClayRawHolonomyFiniteGap
 import RussoYM.ClayFullyRawHolonomyBridge
+import RussoYM.ClayFullyRawFineGapBridge
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -6459,5 +6460,77 @@ theorem theorem_index_fully_raw_implies_gap_positive_at_each_n_via_raw_holonomy
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     forall n, 0 < Gap n := by
   exact ClayFullyRawAssumptions.imply_gap_positive_at_each_n_via_raw_holonomy h
+
+/-
+Endpoint 344: fully raw assumptions imply the primitive scale obligation.
+-/
+theorem theorem_index_fully_raw_to_scale_primitive_obligation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClayScalePrimitiveObligation
+      Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayFullyRawAssumptions.to_scale_primitive_obligation h
+
+/-
+Endpoint 345: fully raw assumptions imply the primitive Schur obligation.
+-/
+theorem theorem_index_fully_raw_to_schur_primitive_obligation
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    ClaySchurPrimitiveObligation
+      DeltaFine Delta0 (mu * (delta / C)^2) dUV := by
+  exact ClayFullyRawAssumptions.to_schur_primitive_obligation h
+
+/-
+Endpoint 346: fully raw assumptions imply Delta0 <= DeltaFine through the raw
+Schur route.
+-/
+theorem theorem_index_fully_raw_implies_delta0_le_deltaFine_via_raw_schur
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_delta0_le_deltaFine_via_raw_schur h
+
+/-
+Endpoint 347: fully raw assumptions imply Layer-One fine gap data through the
+raw Schur route.
+-/
+theorem theorem_index_fully_raw_implies_layer_one_fine_gap_data_via_raw_schur
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaYM DeltaFine Delta0 dUV C mu delta : Real}
+    (h :
+      ClayFullyRawAssumptions
+        links Gap Energy curvatureNorm
+        DeltaYM DeltaFine Delta0 dUV C mu delta) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact ClayFullyRawAssumptions.imply_layer_one_fine_gap_data_via_raw_schur h
 
 end RussoYM
