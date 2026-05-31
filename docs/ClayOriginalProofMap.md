@@ -887,6 +887,77 @@ Risk: very high.
 
 ---
 
+# Sector-Specific Assembly Update
+
+Dedicated assembly file:
+
+```text
+docs/ClaySectorSpecificProofAssembly.md
+```
+
+The current safe finite-regulator theorem has now been assembled.
+
+The proof route gives
+
+Δ
+λ
+∗
+	​
+
+	​
+
+=(
+C
+loc
+	​
+
+A
+fac
+	​
+
+2ϵ
+hol
+	​
+
+	​
+
+)
+2
+>0
+
+and
+
+Δ
+λ
+∗
+	​
+
+	​
+
+≤Gap
+λ
+∗
+	​
+
+	​
+
+(n)
+
+inside a fixed resolved nontrivial holonomy sector.
+
+This is the strongest safe theorem currently supported before proving sector coverage and continuum survival.
+
+Remaining upgrades:
+
+prove local holonomy/flux estimate;
+prove flux-to-energy comparison;
+prove sector coverage;
+prove continuum survival.
+
+Status: sector-specific finite-regulator proof route assembled.
+
+Full Clay proof: still conditional on sector coverage and continuum survival.
+
 # Updated Effective Burden
 
 After the energy-norm convention, the proof is effectively reduced to four major analytic burdens:
