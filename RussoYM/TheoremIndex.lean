@@ -73,6 +73,7 @@ import RussoYM.ClayPrimitiveObligations
 import RussoYM.ClayScalePrimitive
 import RussoYM.ClayContinuumPrimitive
 import RussoYM.ClayReducedPrimitiveObligations
+import RussoYM.ClaySchurPrimitive
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -5155,5 +5156,90 @@ theorem theorem_index_reduced_primitive_implies_positive_continuum_gap
         DeltaYM DeltaFine Delta0 dUV C mu delta) :
     0 < DeltaYM := by
   exact ClayReducedPrimitiveObligationAssumptions.imply_positive_continuum_gap h
+
+/-
+Endpoint 269: raw loss inequality constructs the Schur loss-budget packet.
+-/
+theorem theorem_index_schur_loss_budget_from_loss_le_delta0
+    {loss Delta0 : Real}
+    (hLoss : loss <= Delta0) :
+    SchurLossBudgetAssumptions loss Delta0 := by
+  exact SchurLossBudgetAssumptions.of_loss_le_delta0 hLoss
+
+/-
+Endpoint 270: raw Schur lower inequality constructs the Schur/Feshbach lower
+packet.
+-/
+theorem theorem_index_schur_loss_lower_from_raw_bound
+    {DeltaFine dBlock dUV loss : Real}
+    (hLower : min dBlock dUV - loss <= DeltaFine) :
+    SchurFeshbachLossLowerAssumptions DeltaFine dBlock dUV loss := by
+  exact SchurFeshbachLossLowerAssumptions.of_schur_loss_lower hLower
+
+/-
+Endpoint 271: loss budget plus Schur lower packet constructs the primitive
+Schur obligation.
+-/
+theorem theorem_index_schur_primitive_from_loss_budget_and_schur_lower
+    {DeltaFine Delta0 dBlock dUV loss : Real}
+    (hLossBudget :
+      SchurLossBudgetAssumptions loss Delta0)
+    (hSchur :
+      SchurFeshbachLossLowerAssumptions DeltaFine dBlock dUV loss) :
+    ClaySchurPrimitiveObligation DeltaFine Delta0 dBlock dUV := by
+  exact
+    ClaySchurPrimitiveObligation.of_loss_budget_and_schur_lower
+      hLossBudget hSchur
+
+/-
+Endpoint 272: raw loss bounds construct the primitive Schur obligation.
+-/
+theorem theorem_index_schur_primitive_from_raw_loss_bounds
+    {DeltaFine Delta0 dBlock dUV loss : Real}
+    (hLoss : loss <= Delta0)
+    (hLower : min dBlock dUV - loss <= DeltaFine) :
+    ClaySchurPrimitiveObligation DeltaFine Delta0 dBlock dUV := by
+  exact
+    ClaySchurPrimitiveObligation.of_raw_loss_bounds hLoss hLower
+
+/-
+Endpoint 273: primitive Schur obligation plus primitive scale data implies
+Delta0 <= DeltaFine.
+-/
+theorem theorem_index_schur_primitive_implies_delta0_le_deltaFine
+    {DeltaFine Delta0 dBlock dUV : Real}
+    (hScale :
+      ClayScalePrimitiveObligation Delta0 dBlock dUV)
+    (hSchur :
+      ClaySchurPrimitiveObligation DeltaFine Delta0 dBlock dUV) :
+    Delta0 <= DeltaFine := by
+  exact
+    ClaySchurPrimitiveObligation.imply_delta0_le_deltaFine
+      hScale hSchur
+
+/-
+Endpoint 274: holonomy + scale + Schur primitive data gives Layer-One fine gap
+data.
+-/
+theorem theorem_index_schur_primitive_to_layer_one_fine_gap_data_from_holonomy
+    {R : Type*}
+    [NormedRing R]
+    [NormOneClass R]
+    {links : Nat -> List R}
+    {Gap Energy curvatureNorm : Nat -> Real}
+    {DeltaFine Delta0 dUV C mu delta : Real}
+    (hHolonomy :
+      ClayHolonomyPrimitiveObligation
+        links Gap Energy curvatureNorm C mu delta)
+    (hScale :
+      ClayScalePrimitiveObligation
+        Delta0 (mu * (delta / C)^2) dUV)
+    (hSchur :
+      ClaySchurPrimitiveObligation
+        DeltaFine Delta0 (mu * (delta / C)^2) dUV) :
+    Delta0 <= DeltaFine ∧ 0 < Delta0 ∧ 0 < DeltaFine := by
+  exact
+    ClaySchurPrimitiveObligation.imply_layer_one_fine_gap_data_from_holonomy
+      hHolonomy hScale hSchur
 
 end RussoYM

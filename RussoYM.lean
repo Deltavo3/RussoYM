@@ -81,3 +81,4 @@ import RussoYM.ClayPrimitiveObligations
 import RussoYM.ClayScalePrimitive
 import RussoYM.ClayContinuumPrimitive
 import RussoYM.ClayReducedPrimitiveObligations
+import RussoYM.ClaySchurPrimitive
