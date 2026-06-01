@@ -119,6 +119,7 @@ import RussoYM.ClayEnergyNormCoercivity
 import RussoYM.ClayDirectHolonomySector
 import RussoYM.ClayHolonomyCurvatureEnergyPackaging
 import RussoYM.ClaySectorSpecificLowerBound
+import RussoYM.ClayStandardContinuumEndpoint
 
 set_option linter.style.whitespace false
 set_option linter.style.longLine false
@@ -10029,5 +10030,41 @@ theorem theorem_index_exists_sector_lower_bound_of_direct_control
   exact
     exists_sector_lower_bound_of_direct_control
       heps hsector hControl hEnergyDef hGap
+
+/-
+Endpoint 511: standard continuum endpoint from abstract continuum survival.
+-/
+theorem theorem_index_clay_standard_continuum_gap
+    (h : ClayStandardContinuumEndpointAssumptions) :
+    0 < h.DeltaYM := by
+  exact clay_standard_continuum_gap h
+
+/-
+Endpoint 512: standard continuum endpoint from scale-matched finite-regulator
+lower bound.
+-/
+theorem theorem_index_clay_standard_continuum_gap_from_scale_matched_bound
+    {DeltaYM eta C LambdaYM : Real}
+    (heta : 0 < eta)
+    (hC : 0 < C)
+    (hLambda : 0 < LambdaYM)
+    (hSurvive : (eta / C)^2 * LambdaYM <= DeltaYM) :
+    0 < DeltaYM := by
+  exact
+    clay_standard_continuum_gap_from_scale_matched_bound
+      heta hC hLambda hSurvive
+
+/-
+Endpoint 513: standard continuum endpoint from a uniform finite-regulator lower
+bound.
+-/
+theorem theorem_index_clay_standard_continuum_gap_from_uniform_bound
+    {DeltaYM Delta0 : Real}
+    (hDelta0_pos : 0 < Delta0)
+    (hSurvive : Delta0 <= DeltaYM) :
+    0 < DeltaYM := by
+  exact
+    clay_standard_continuum_gap_from_uniform_bound
+      hDelta0_pos hSurvive
 
 end RussoYM

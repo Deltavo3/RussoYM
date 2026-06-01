@@ -127,3 +127,4 @@ import RussoYM.ClayEnergyNormCoercivity
 import RussoYM.ClayDirectHolonomySector
 import RussoYM.ClayHolonomyCurvatureEnergyPackaging
 import RussoYM.ClaySectorSpecificLowerBound
+import RussoYM.ClayStandardContinuumEndpoint
