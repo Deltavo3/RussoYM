@@ -143,3 +143,4 @@ import RussoYM.ClayDobrushinTensorizationPlaceholder
 import RussoYM.ClayDownstreamPlaceholderEndpoint
 import RussoYM.ClayContinuumPlaceholderEndpoint
 import RussoYM.ClayDoeblinVarianceTarget
+import RussoYM.ClayFiniteMarkovKernelTarget
