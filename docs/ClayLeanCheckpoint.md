@@ -400,3 +400,48 @@ The placeholder file is warning-suppressed locally with:
 set_option linter.unusedVariables false
 
 The full project build succeeded after this file was included.
+
+---
+
+# 12. Downstream placeholder endpoint
+
+The finite-regulator downstream placeholder endpoint is now recorded in:
+
+```text
+RussoYM/ClayDownstreamPlaceholderEndpoint.lean
+```
+Main theorem names:
+
+globalPoincare_of_downstreamPlaceholderObligations
+finiteRegulatorMassGap_of_downstreamPlaceholderObligations
+finiteRegulatorMassGap_of_masterIDownstreamPlaceholder
+
+Current packaged chain:
+
+MasterIDownstreamSkeleton
+=>
+LocalToGlobalPoincareSkeleton
+=>
+GlobalFiniteRegulatorPoincare
+=>
+FiniteRegulatorMassGap C
+
+This packages the current placeholder downstream route into a clean endpoint.
+
+Status note:
+
+This is still conditional and placeholder-level. It depends on the current
+abstract downstream skeleton and placeholder finite-dimensional probability
+reductions.
+
+It does not yet prove the real Doeblin, Dobrushin, tensorization, or Poincare
+estimates.
+
+Current role in the proof architecture:
+
+MasterIDownstreamSkeleton
+=>
+FiniteRegulatorMassGap C
+
+This is the downstream finite-regulator endpoint that later needs to be replaced
+by real finite-dimensional probability and lattice-gauge estimates.
