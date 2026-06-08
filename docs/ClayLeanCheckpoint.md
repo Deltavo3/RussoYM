@@ -565,3 +565,78 @@ clay-continuum-placeholder-v1
 
 The goal from here is to gradually replace placeholder fields with actual
 finite-dimensional definitions and theorems.
+
+---
+
+# 15. Finite Markov kernel replacement target
+
+The finite Markov-kernel replacement target is now recorded in:
+
+```text
+RussoYM/ClayFiniteMarkovKernelTarget.lean
+```
+Main theorem names:
+
+finiteDoeblinVarianceTarget_of_finiteMarkovPackage
+blockPoincare_of_finiteMarkovPackage
+
+Current target chain:
+
+FiniteMarkovDoeblinVariancePackage
+=>
+FiniteDoeblinVarianceTarget
+=>
+BlockPoincare
+
+This is a sharper replacement target than the previous layer.
+
+The previous target was:
+
+FiniteDoeblinVarianceTarget
+=>
+BlockVarianceContraction
+=>
+BlockPoincare
+
+The new finite Markov-kernel package introduces named Lean structures for:
+
+FiniteStateSpaceData
+FiniteMarkovKernelOn
+FiniteInvariantMeasureOn
+FiniteMarkovKernelData
+FiniteVarianceFunctionalData
+FiniteDoeblinMinorizationData
+FiniteVarianceContractionData
+FiniteMarkovDoeblinVariancePackage
+
+Status note:
+
+This still does not prove the real finite-dimensional Markov-kernel theorem.
+
+It names the data that the future theorem must use:
+
+finite state space
+finite Markov kernel
+invariant probability measure
+variance functional
+Doeblin minorization data
+variance contraction data
+
+Current role in the proof architecture:
+
+FiniteMarkovDoeblinVariancePackage
+=>
+BlockPoincare
+
+Future replacement direction:
+
+replace Nat transition weights with nonnegative real probabilities
+prove row-stochasticity
+define invariant probability vectors
+define finite variance by sums
+state actual Doeblin minorization
+prove actual variance contraction
+derive BlockPoincare
+
+This is the first step where the proof target begins to look like a real
+finite-dimensional Markov-kernel theorem rather than only a placeholder.
