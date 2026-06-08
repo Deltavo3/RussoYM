@@ -344,3 +344,59 @@ The placeholder file is warning-suppressed locally with:
 set_option linter.unusedVariables false
 
 The full project build succeeded after this file was included.
+
+---
+
+# 11. Dobrushin tensorization placeholder layer
+
+The local-to-global finite-dimensional probability placeholder layer is now
+recorded in:
+
+```text
+RussoYM/ClayDobrushinTensorizationPlaceholder.lean
+```
+Main theorem names:
+
+dobrushinTensorization_of_influenceDecay_placeholder
+approximateTensorization_of_influenceDecay_placeholder
+globalPoincare_of_localToGlobalSkeleton_placeholder
+finiteMassGap_of_localToGlobalSkeleton_placeholder
+finiteMassGap_of_masterIDownstreamSkeleton_placeholder
+
+Current placeholder chain:
+
+DobrushinInfluenceDecay
+=>
+DobrushinTensorization
+
+and:
+
+LocalToGlobalPoincareSkeleton
+=>
+GlobalFiniteRegulatorPoincare
+=>
+FiniteRegulatorMassGap C
+
+Status note:
+
+At the current abstraction level, these structures still contain placeholder
+True fields, so Lean can prove this chain directly.
+
+This is not yet the real Dobrushin/tensorization proof.
+
+Future replacement target:
+
+formalize Dobrushin interdependence matrix
+formalize row-sum subcriticality
+prove contraction or uniqueness estimate
+derive approximate tensorization
+combine block Poincare inequalities
+control bounded-overlap energy comparison
+derive global finite-regulator Poincare
+derive finite-regulator mass gap
+
+The placeholder file is warning-suppressed locally with:
+
+set_option linter.unusedVariables false
+
+The full project build succeeded after this file was included.
