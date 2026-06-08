@@ -445,3 +445,56 @@ FiniteRegulatorMassGap C
 
 This is the downstream finite-regulator endpoint that later needs to be replaced
 by real finite-dimensional probability and lattice-gauge estimates.
+
+---
+
+# 13. Continuum placeholder endpoint
+
+The continuum-facing placeholder endpoint is now recorded in:
+
+```text
+RussoYM/ClayContinuumPlaceholderEndpoint.lean
+```
+Main theorem names:
+
+continuumMassGap_of_continuumPlaceholderObligations
+continuumGapPositive_of_continuumPlaceholderObligations
+clayYangMillsMassGap_of_downstreamPlaceholder_and_mosco
+clayYangMillsGapPositive_of_downstreamPlaceholder_and_mosco
+
+Current packaged chain:
+
+ClayDownstreamPlaceholderObligations
++
+MoscoBridgeSkeleton
+=>
+ContinuumMassGap C
+
+Equivalently:
+
+finite-regulator downstream placeholder endpoint
++
+refined Mosco continuum bridge
+=>
+continuum Yang-Mills mass gap endpoint
+
+Status note:
+
+This is still placeholder-level on the downstream finite-regulator side. It uses
+the current abstract Doeblin, Dobrushin, tensorization, block-Poincare, and
+local-to-global placeholder reductions.
+
+It does not yet prove the real finite-dimensional Markov-kernel estimates,
+Dobrushin estimates, lattice-gauge estimates, or continuum Mosco analytic
+theorems.
+
+Current role in the proof architecture:
+
+ClayDownstreamPlaceholderObligations
++
+MoscoBridgeSkeleton
+=>
+ContinuumMassGap C
+
+This is the cleanest current continuum-facing placeholder bridge. It shows where
+the downstream finite-regulator proof and the Mosco continuum-transfer proof meet.
