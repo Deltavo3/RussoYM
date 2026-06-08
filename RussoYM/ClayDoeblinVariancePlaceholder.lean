@@ -1,5 +1,7 @@
 import RussoYM.ClayMinorizationPoincareSkeleton
 
+set_option linter.unusedVariables false
+
 /-!
 # Clay Doeblin Variance Placeholder
 
