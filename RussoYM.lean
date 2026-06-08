@@ -142,3 +142,4 @@ import RussoYM.ClayDoeblinVariancePlaceholder
 import RussoYM.ClayDobrushinTensorizationPlaceholder
 import RussoYM.ClayDownstreamPlaceholderEndpoint
 import RussoYM.ClayContinuumPlaceholderEndpoint
+import RussoYM.ClayDoeblinVarianceTarget
