@@ -291,3 +291,56 @@ BlockVarianceContraction
 
 Both are finite-dimensional/probability steps and are safer than immediately
 formalizing lattice Uhlenbeck compactness or constructive RG.
+
+---
+
+# 10. Doeblin variance placeholder layer
+
+The finite-dimensional probability placeholder layer is now recorded in:
+
+```text
+RussoYM/ClayDoeblinVariancePlaceholder.lean
+```
+Main theorem names:
+
+varianceContraction_of_doeblin_placeholder
+positiveBlockGap_of_varianceContraction_placeholder
+blockPoincare_of_positiveBlockGap_placeholder
+blockPoincare_of_minorizationPoincareSkeleton_placeholder
+blockPoincare_of_kernelToBlockPoincareSkeleton_placeholder
+blockPoincare_of_kernelPoincarePackage_placeholder
+
+Current placeholder chain:
+
+DoeblinMinorization
++
+PositiveDoeblinConstant
+=>
+BlockVarianceContraction
+=>
+PositiveBlockSpectralGap
+=>
+BlockPoincare
+
+Status note:
+
+At the current abstraction level, the relevant structures still contain
+placeholder True fields, so Lean can prove this chain directly.
+
+This is not yet the real finite-dimensional Markov-kernel proof.
+
+Future replacement target:
+
+formalize finite Markov kernels
+formalize invariant probability measures
+formalize variance
+formalize Doeblin minorization
+prove actual variance contraction
+derive positive spectral gap
+derive block Poincare
+
+The placeholder file is warning-suppressed locally with:
+
+set_option linter.unusedVariables false
+
+The full project build succeeded after this file was included.
