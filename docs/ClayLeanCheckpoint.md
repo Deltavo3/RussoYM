@@ -9,90 +9,40 @@ It distinguishes:
 
 1. what is currently compiled in Lean;
 2. what is conditionally assembled;
-3. what remains an open analytic proof obligation.
+3. what has been refined into smaller skeletons;
+4. what remains an open analytic proof obligation.
 
 ---
 
 # 1. Current compiled Lean modules
 
-The current compiled Lean checkpoint consists of:
+The current Lean checkpoint consists of:
 
 ```text
 RussoYM/ClayBlockRGClosedLemmas.lean
 RussoYM/ClayMasterAssumptionLedger.lean
 RussoYM/ClayConditionalMasterTheorem.lean
 RussoYM/ClayEightObligations.lean
+RussoYM/ClayKernelPositivitySkeleton.lean
+RussoYM/ClayMinorizationPoincareSkeleton.lean
+RussoYM/ClayLocalToGlobalPoincareSkeleton.lean
+RussoYM/ClayMoscoBridgeSkeleton.lean
+RussoYM/ClayRefinedEndpoint.lean
+RussoYM/ClayFullyRefinedObligations.lean
 ```
 These are imported into the root project through:
 
 RussoYM.lean
 
-The full project build succeeded with the endpoint included.
+The full project build succeeded with these modules included.
 
-2. Main compiled theorem names
-Closed downstream skeleton
+2. Original conditional endpoint
 
-File:
+The original endpoint object is:
 
-RussoYM/ClayBlockRGClosedLemmas.lean
+ClayEightObligations
 
-Important theorem names:
-
-finiteMassGap_of_constructiveRG
-continuumMassGap_of_masterProblems
-continuumGapPositive_of_masterProblems
-
-Meaning:
-
-ConstructiveFixedScaleRG + MoscoContinuumBridge
-=>
-ContinuumMassGap
-Master assumption ledger
-
-File:
-
-RussoYM/ClayMasterAssumptionLedger.lean
-
-Important theorem names:
-
-constructiveRG_of_masterIInputs
-moscoBridge_of_masterIIInputs
-continuumMassGap_of_masterInputLedger
-continuumGapPositive_of_masterInputLedger
-
-Meaning:
-
-MasterIInputs + MasterIIInputs
-=>
-ContinuumMassGap
-
-where:
-
-MasterIInputs = A + B + C + D + E
-MasterIIInputs = F1 + F2 + F3
-Headline conditional theorem
-
-File:
-
-RussoYM/ClayConditionalMasterTheorem.lean
-
-Important theorem names:
-
-clayYangMillsMassGap_conditional
-clayYangMillsGapPositive_conditional
-
-Meaning:
-
-A + B + C + D + E + F1 + F2 + F3
-=>
-ContinuumMassGap
-Eight-obligation endpoint
-
-File:
-
-RussoYM/ClayEightObligations.lean
-
-Important theorem names:
+Main theorem names:
 
 continuumMassGap_of_eightObligations
 continuumGapPositive_of_eightObligations
@@ -103,9 +53,8 @@ Meaning:
 ClayEightObligations
 =>
 ContinuumMassGap
-3. The eight current obligations
 
-The current proof route has eight named analytic obligations:
+The eight obligations are:
 
 A  FixedScaleWilsonBlockLimits
 B  BlockKernelConvergencePositivity
@@ -115,68 +64,230 @@ E  QuasiLocalBoundaryInfluence
 F1 MoscoLiminfInput
 F2 MoscoRecoveryInput
 F3 VacuumProjectionConvergenceInput
+3. Refined Master I downstream skeleton
 
-Together these form:
+The finite-regulator downstream side has now been refined through these files:
 
-ClayEightObligations
-4. What Lean currently proves
+RussoYM/ClayKernelPositivitySkeleton.lean
+RussoYM/ClayMinorizationPoincareSkeleton.lean
+RussoYM/ClayLocalToGlobalPoincareSkeleton.lean
 
-Lean currently proves the conditional assembly:
+The refined chain is:
+
+KernelPositivitySkeleton
+=> FiniteRegulatorKernelMinorization
+
+DoeblinMinorization + PositiveDoeblinConstant
+=> BlockVarianceContraction
+=> PositiveBlockSpectralGap
+=> BlockPoincare
+
+KernelPositivityWithBlockPoincare
++ DobrushinInfluenceDecay
++ BoundedOverlapEnergy
+=> GlobalFiniteRegulatorPoincare
+=> FiniteRegulatorMassGap
+
+Important theorem names:
+
+finiteMinorization_of_kernelPositivitySkeleton
+blockKernelConvergencePositivity_of_kernelPositivitySkeleton
+blockPoincare_of_minorizationPoincareSkeleton
+blockPoincare_of_kernelToBlockPoincareSkeleton
+globalPoincare_of_localToGlobalSkeleton
+finiteMassGap_of_localToGlobalSkeleton
+finiteMassGap_of_masterIDownstreamSkeleton
+
+Current meaning:
+
+MasterIDownstreamSkeleton
+=>
+FiniteRegulatorMassGap
+
+This isolates the local-to-global finite-regulator part.
+
+4. Refined Master II Mosco skeleton
+
+The continuum-transfer side has now been refined through:
+
+RussoYM/ClayMoscoBridgeSkeleton.lean
+
+The refined chain is:
+
+ElectricLiminf
++ MagneticLiminf
++ LatticeUhlenbeckCompactness
++ GaussLawPassage
+=> MoscoLiminfInput
+
+SmoothGaussLawDensity
++ HolonomyEnergyRecovery
++ FluxEnergyRecovery
++ DiscreteGaussCorrection
+=> MoscoRecoveryInput
+
+FiniteZeroEnergyRigidity
++ ContinuumZeroEnergyRigidity
++ ProjectionConvergence
+=> VacuumProjectionConvergenceInput
+
+MoscoLiminfInput
++ MoscoRecoveryInput
++ VacuumProjectionConvergenceInput
+=> MoscoContinuumBridge
+
+Important theorem names:
+
+moscoLiminfInput_of_moscoLiminfSkeleton
+moscoRecoveryInput_of_moscoRecoverySkeleton
+vacuumProjectionInput_of_vacuumProjectionSkeleton
+masterIIInputs_of_moscoBridgeSkeleton
+moscoContinuumBridge_of_moscoBridgeSkeleton
+
+Current meaning:
+
+MoscoBridgeSkeleton
+=>
+MoscoContinuumBridge
+5. Refined endpoint
+
+The post-refinement endpoint is recorded in:
+
+RussoYM/ClayRefinedEndpoint.lean
+
+Main theorem names:
+
+clayYangMillsMassGap_refinedEndpoint
+clayYangMillsGapPositive_refinedEndpoint
+clayYangMillsMassGap_of_downstream_and_mosco
+clayYangMillsGapPositive_of_downstream_and_mosco
+
+Meaning:
+
+MasterIDownstreamSkeleton
++
+MoscoBridgeSkeleton
+=>
+ContinuumMassGap
+
+This is not yet the full constructive RG proof. It assumes the finite-regulator
+downstream skeleton directly.
+
+6. Fully refined obligation object
+
+The most integrated current endpoint is recorded in:
+
+RussoYM/ClayFullyRefinedObligations.lean
+
+Main theorem names:
+
+clayYangMillsMassGap_fullyRefined
+clayYangMillsGapPositive_fullyRefined
+
+Main object:
+
+ClayFullyRefinedObligations
+
+Meaning:
+
+ClayFullyRefinedObligations
+=>
+ContinuumMassGap
+
+where:
+
+ClayFullyRefinedObligations =
+ConstructiveRGUpstreamBookkeeping
++
+KernelPositivityWithBlockPoincare
++
+BoundedOverlapEnergy
++
+MoscoBridgeSkeleton
+
+The upstream bookkeeping contains:
+
+A fixed-scale Wilson/block limits
+C renormalized block potential regularity
+D C^2 irrelevant remainder control
+E quasi-local boundary influence
+
+The finite-regulator downstream package contains:
+
+kernel positivity / minorization / block-Poincare package
+bounded overlap
+Dobrushin influence decay
+
+The Mosco package contains:
+
+F1 liminf
+F2 recovery
+F3 vacuum projection convergence
+7. What Lean currently proves
+
+Lean currently proves several conditional assemblies, with increasing refinement.
+
+Original endpoint:
 
 ClayEightObligations
 =>
 ContinuumMassGap
 
-and:
+Refined endpoint:
 
-ClayEightObligations
+MasterIDownstreamSkeleton
++
+MoscoBridgeSkeleton
 =>
-0 < massGapConstant
+ContinuumMassGap
 
-In other words, the formal dependency chain is compiled.
+Fully refined endpoint:
 
-5. What Lean does not yet prove
+ClayFullyRefinedObligations
+=>
+ContinuumMassGap
 
-Lean does not yet prove the eight analytic obligations A--F3.
+Each also has a positive-gap corollary:
+
+... => 0 < massGapConstant
+8. What Lean does not yet prove
+
+Lean does not yet prove the hard analytic obligations.
 
 In particular, Lean does not yet prove:
 
-lattice Uhlenbeck compactness
 constructive fixed-scale RG convergence
 summable irrelevant remainder control
-quasi-local boundary-local RG influence
+C^2 fixed-scale block action convergence
+quasi-local boundary-local RG estimates
+Dobrushin influence decay from exact RG
+lattice Uhlenbeck compactness
 Mosco liminf
 Mosco recovery
 vacuum projection convergence
 
-Those remain mathematical proof obligations.
-
-6. Current honest status
-
-The current formal result is a conditional endpoint theorem.
-
-It is not yet a completed Clay proof.
+The current achievement is not a completed Clay proof.
 
 The current achievement is:
 
-The proof architecture is now formally compiled and auditable.
+The proof architecture is formally compiled and auditable.
+9. Best next direction
 
-The remaining work is to replace each obligation field with mathematical
-definitions and then prove the eight obligations one by one.
+The next safest Lean direction is to continue reducing abstract axioms in the
+finite-dimensional downstream chain before touching the hardest continuum
+analysis.
 
-7. Recommended next Lean direction
+Good next target:
 
-Best next target:
-
-B: block kernel convergence and positivity
-
-A good next file would be:
-
-RussoYM/ClayKernelPositivitySkeleton.lean
-
-Goal:
-
-StrictPositiveKernel + CompactBlockSpace + C1KernelConvergence
+DobrushinInfluenceDecay
 =>
-BlockMinorization
+DobrushinTensorization
 
+or:
+
+DoeblinMinorization + PositiveDoeblinConstant
+=>
+BlockVarianceContraction
+
+Both are finite-dimensional/probability steps and are safer than immediately
+formalizing lattice Uhlenbeck compactness or constructive RG.
