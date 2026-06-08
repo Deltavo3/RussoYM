@@ -131,3 +131,4 @@ import RussoYM.ClayStandardContinuumEndpoint
 import RussoYM.ClayBlockRGClosedLemmas
 import RussoYM.ClayMasterAssumptionLedger
 import RussoYM.ClayConditionalMasterTheorem
+import RussoYM.ClayEightObligations
