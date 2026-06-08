@@ -498,3 +498,70 @@ ContinuumMassGap C
 
 This is the cleanest current continuum-facing placeholder bridge. It shows where
 the downstream finite-regulator proof and the Mosco continuum-transfer proof meet.
+
+---
+
+# 14. Doeblin variance replacement target
+
+The first post-tag replacement target is now recorded in:
+
+```text
+RussoYM/ClayDoeblinVarianceTarget.lean
+```
+Main theorem names:
+
+varianceContraction_of_finiteDoeblinVarianceTarget
+blockPoincare_of_finiteDoeblinVarianceTarget
+minorizationPoincareSkeleton_of_finiteDoeblinVarianceTarget
+blockPoincare_of_finiteDoeblinVarianceTarget_compatible
+
+Current target chain:
+
+FiniteDoeblinVarianceTarget
+=>
+BlockVarianceContraction
+=>
+BlockPoincare
+
+This is different from the earlier pure placeholder layer.
+
+The earlier placeholder proved:
+
+DoeblinMinorization + PositiveDoeblinConstant
+=>
+BlockVarianceContraction
+
+only because BlockVarianceContraction was still represented by placeholder
+True data.
+
+The new replacement target makes the hidden proof step explicit:
+
+variance_contraction : BlockVarianceContraction
+
+Status note:
+
+This still does not prove the real finite-dimensional Markov-kernel theorem.
+Instead, it names the exact object that the real theorem must eventually produce.
+
+Future replacement target:
+
+finite state space
+Markov kernel
+invariant probability measure
+variance functional
+Doeblin minorization inequality
+positive Doeblin constant
+actual variance contraction estimate
+
+Current role in the proof architecture:
+
+FiniteDoeblinVarianceTarget
+=>
+BlockPoincare
+
+This is the first step after the tagged placeholder milestone:
+
+clay-continuum-placeholder-v1
+
+The goal from here is to gradually replace placeholder fields with actual
+finite-dimensional definitions and theorems.
