@@ -144,3 +144,4 @@ import RussoYM.ClayDownstreamPlaceholderEndpoint
 import RussoYM.ClayContinuumPlaceholderEndpoint
 import RussoYM.ClayDoeblinVarianceTarget
 import RussoYM.ClayFiniteMarkovKernelTarget
+import RussoYM.ClayFiniteProbabilityWeightTarget
