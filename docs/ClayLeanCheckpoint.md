@@ -719,3 +719,80 @@ clay-finite-markov-target-v1
 
 It moves the target closer to a real finite-dimensional probability theorem while
 still keeping the proof architecture lightweight and compiled.
+
+---
+
+# 17. Finite-sum probability target
+
+The finite-sum probability replacement target is now recorded in:
+
+```text
+RussoYM/ClayFiniteSumProbabilityTarget.lean
+```
+Main declaration names:
+
+FiniteSumDataOn
+ProbabilityVectorNormalized
+TransitionRowsNormalized
+FiniteSumProbabilityVectorOn
+FiniteSumTransitionProbabilityOn
+FiniteSumMarkovProbabilityKernelData
+FiniteSumVarianceData
+FiniteSumDoeblinData
+FiniteSumVarianceContractionData
+FiniteSumProbabilityMarkovDoeblinVariancePackage
+
+Main conversion names:
+
+probabilityVector_of_finiteSumProbabilityVector
+transitionProbability_of_finiteSumTransitionProbability
+probabilityKernelData_of_finiteSumKernelData
+probabilityPackage_of_finiteSumPackage
+
+Main theorem name:
+
+blockPoincare_of_finiteSumProbabilityPackage
+
+Current target chain:
+
+FiniteSumProbabilityMarkovDoeblinVariancePackage
+=>
+FiniteProbabilityMarkovDoeblinVariancePackage
+=>
+FiniteMarkovDoeblinVariancePackage
+=>
+FiniteDoeblinVarianceTarget
+=>
+BlockPoincare
+
+This improves the previous probability-weight target by replacing anonymous
+normalization markers with named finite-sum predicates:
+
+ProbabilityVectorNormalized
+TransitionRowsNormalized
+
+The finite-sum operator is still abstract:
+
+FiniteSumDataOn.sum_weight : (S.State -> Nat) -> Nat
+
+so this is still not the real finite-dimensional Markov theorem.
+
+Status note:
+
+This is the final small wrapper layer before switching strategy.
+
+From here, the project should stop expanding sideways and begin replacing
+placeholders with actual theorems.
+
+Next real theorem target:
+
+actual finite state space
++ actual finite sums
++ actual probability weights
++ actual Doeblin minorization inequality
+=>
+variance contraction
+=>
+block Poincare
+
+This is Monster 1 in the current Clay reduction.
