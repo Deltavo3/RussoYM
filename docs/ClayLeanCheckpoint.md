@@ -640,3 +640,82 @@ derive BlockPoincare
 
 This is the first step where the proof target begins to look like a real
 finite-dimensional Markov-kernel theorem rather than only a placeholder.
+
+---
+
+# 16. Finite probability-weight target
+
+The finite probability-weight replacement target is now recorded in:
+
+```text
+RussoYM/ClayFiniteProbabilityWeightTarget.lean
+```
+
+Main theorem names:
+
+finiteMarkovKernelOn_of_transitionProbability
+finiteInvariantMeasureOn_of_probabilityVector
+finiteMarkovKernelData_of_probabilityKernelData
+finiteMarkovPackage_of_probabilityPackage
+blockPoincare_of_probabilityPackage
+
+Current target chain:
+
+FiniteProbabilityMarkovDoeblinVariancePackage
+=>
+FiniteMarkovDoeblinVariancePackage
+=>
+FiniteDoeblinVarianceTarget
+=>
+BlockPoincare
+
+This refines the previous finite Markov-kernel target by adding probability-weight
+style data.
+
+The previous target introduced:
+
+FiniteMarkovDoeblinVariancePackage
+=>
+FiniteDoeblinVarianceTarget
+=>
+BlockPoincare
+
+The new probability-weight package introduces named Lean structures for:
+
+FiniteProbabilityVectorOn
+FiniteTransitionProbabilityOn
+FiniteMarkovProbabilityKernelData
+FiniteProbabilityVarianceData
+FiniteProbabilityDoeblinData
+FiniteProbabilityVarianceContractionData
+FiniteProbabilityMarkovDoeblinVariancePackage
+
+Status note:
+
+This still does not prove the real finite-dimensional Markov-kernel theorem.
+
+It is still a finite-dimensional data target, not real measure theory. The point
+is to separate probability-style data from raw natural-number transition weights.
+
+Current role in the proof architecture:
+
+FiniteProbabilityMarkovDoeblinVariancePackage
+=>
+BlockPoincare
+
+Future replacement direction:
+
+replace numerator/denominator markers with actual rational or nonnegative-real weights
+prove denominator positivity
+prove row normalization by finite sums
+prove invariant probability-vector conditions
+state Doeblin minorization as an actual inequality
+prove variance contraction from the minorization
+derive BlockPoincare
+
+This is the next refinement after:
+
+clay-finite-markov-target-v1
+
+It moves the target closer to a real finite-dimensional probability theorem while
+still keeping the proof architecture lightweight and compiled.
