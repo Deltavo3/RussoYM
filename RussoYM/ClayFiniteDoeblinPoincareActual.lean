@@ -224,5 +224,166 @@ theorem concreteFinitePoincare_of_target
       T.poincare_gap := by
   exact T.finite_poincare
 
+
+/-! ## Basic concrete finite-state lemmas -/
+
+/--
+A concrete probability vector has total mass one.
+-/
+theorem concreteProbability_totalMass
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S) :
+    finiteSumRat S pi.weight = 1 :=
+  pi.normalized
+
+/--
+A concrete probability vector has nonnegative weights.
+-/
+theorem concreteProbability_nonnegative
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (x : S.State) :
+    0 <= pi.weight x :=
+  pi.nonnegative x
+
+/--
+A concrete Markov kernel has row sums equal to one.
+-/
+theorem concreteMarkov_rowStochastic
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (x : S.State) :
+    finiteSumRat S (fun y => K.transition x y) = 1 :=
+  K.row_stochastic x
+
+/--
+A concrete Markov kernel has nonnegative transition weights.
+-/
+theorem concreteMarkov_nonnegative
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (x y : S.State) :
+    0 <= K.transition x y :=
+  K.nonnegative x y
+
+/--
+The Markov operator sends the constant-one function to the constant-one
+function.
+-/
+theorem markovApply_const_one
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (x : S.State) :
+    markovApply K (fun _ : S.State => (1 : Rat)) x = 1 := by
+  simpa [markovApply, finiteSumRat] using K.row_stochastic x
+
+/--
+The mean of the constant-one function is one.
+-/
+theorem concreteMean_const_one
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S) :
+    concreteMean pi (fun _ : S.State => (1 : Rat)) = 1 := by
+  simpa [concreteMean, finiteSumRat] using pi.normalized
+
+/--
+Extract positivity of the Doeblin constant.
+-/
+theorem concreteDoeblin_alpha_pos
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {alpha : Rat}
+    (h : ConcreteDoeblinMinorization pi K alpha) :
+    0 < alpha :=
+  h.1
+
+/--
+Extract the upper bound alpha <= 1 from the Doeblin condition.
+-/
+theorem concreteDoeblin_alpha_le_one
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {alpha : Rat}
+    (h : ConcreteDoeblinMinorization pi K alpha) :
+    alpha <= 1 :=
+  h.2.1
+
+/--
+Extract the pointwise Doeblin lower bound.
+-/
+theorem concreteDoeblin_lower_bound
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {alpha : Rat}
+    (h : ConcreteDoeblinMinorization pi K alpha)
+    (x y : S.State) :
+    alpha * pi.weight y <= K.transition x y :=
+  h.2.2 x y
+
+/--
+Extract nonnegativity of the variance contraction constant.
+-/
+theorem concreteVarianceContraction_constant_nonnegative
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {c : Rat}
+    (h : ConcreteVarianceContraction pi K c) :
+    0 <= c :=
+  h.1
+
+/--
+Extract strict subunitarity of the variance contraction constant.
+-/
+theorem concreteVarianceContraction_constant_lt_one
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {c : Rat}
+    (h : ConcreteVarianceContraction pi K c) :
+    c < 1 :=
+  h.2.1
+
+/--
+Extract the variance contraction inequality.
+-/
+theorem concreteVarianceContraction_bound
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {c : Rat}
+    (h : ConcreteVarianceContraction pi K c)
+    (f : S.State -> Rat) :
+    concreteVariance pi (fun x => markovApply K f x)
+      <= c * concreteVariance pi f :=
+  h.2.2 f
+
+/--
+Extract positivity of the Poincare gap.
+-/
+theorem concreteFinitePoincare_gap_pos
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {gap : Rat}
+    (h : ConcreteFinitePoincareInequality pi K gap) :
+    0 < gap :=
+  h.1
+
+/--
+Extract the finite Poincare inequality.
+-/
+theorem concreteFinitePoincare_bound
+    {S : ConcreteFiniteStateSpace.{u}}
+    {pi : ConcreteProbabilityVectorOn S}
+    {K : ConcreteMarkovKernelOn S}
+    {gap : Rat}
+    (h : ConcreteFinitePoincareInequality pi K gap)
+    (f : S.State -> Rat) :
+    gap * concreteVariance pi f <= concreteDirichlet pi K f :=
+  h.2 f
 end Clay
 end RussoYM
