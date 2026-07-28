@@ -445,5 +445,90 @@ theorem concreteDirichlet_const
     concreteDirichlet pi K (fun _ : S.State => a) = 0 := by
   simp [concreteDirichlet, markovApply_const K a, finiteSumRat]
 
+/-! ## Concrete linearity lemmas -/
+
+/--
+The Markov operator sends the zero function to zero.
+-/
+theorem markovApply_zero
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (x : S.State) :
+    markovApply K (fun _ : S.State => (0 : Rat)) x = 0 := by
+  simp [markovApply, finiteSumRat]
+
+/--
+The Markov operator preserves addition.
+-/
+theorem markovApply_add
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (f g : S.State -> Rat)
+    (x : S.State) :
+    markovApply K (fun y => f y + g y) x
+      = markovApply K f x + markovApply K g x := by
+  simp [markovApply, finiteSumRat, mul_add, Finset.sum_add_distrib]
+
+/--
+The Markov operator commutes with scalar multiplication.
+-/
+theorem markovApply_smul
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (a : Rat)
+    (f : S.State -> Rat)
+    (x : S.State) :
+    markovApply K (fun y => a * f y) x
+      = a * markovApply K f x := by
+  calc
+    markovApply K (fun y => a * f y) x
+        = finiteSumRat S (fun y => a * (K.transition x y * f y)) := by
+            simp [markovApply, finiteSumRat]
+            apply Finset.sum_congr rfl
+            intro y _
+            ring
+    _ = a * markovApply K f x := by
+            simp [markovApply, finiteSumRat, Finset.mul_sum]
+
+/--
+The mean of the zero function is zero.
+-/
+theorem concreteMean_zero
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S) :
+    concreteMean pi (fun _ : S.State => (0 : Rat)) = 0 := by
+  simp [concreteMean, finiteSumRat]
+
+/--
+The mean preserves addition.
+-/
+theorem concreteMean_add
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) :
+    concreteMean pi (fun x => f x + g x)
+      = concreteMean pi f + concreteMean pi g := by
+  simp [concreteMean, finiteSumRat, mul_add, Finset.sum_add_distrib]
+
+/--
+The mean commutes with scalar multiplication.
+-/
+theorem concreteMean_smul
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (a : Rat)
+    (f : S.State -> Rat) :
+    concreteMean pi (fun x => a * f x)
+      = a * concreteMean pi f := by
+  calc
+    concreteMean pi (fun x => a * f x)
+        = finiteSumRat S (fun x => a * (pi.weight x * f x)) := by
+            simp [concreteMean, finiteSumRat]
+            apply Finset.sum_congr rfl
+            intro x _
+            ring
+    _ = a * concreteMean pi f := by
+            simp [concreteMean, finiteSumRat, Finset.mul_sum]
+
 end Clay
 end RussoYM
