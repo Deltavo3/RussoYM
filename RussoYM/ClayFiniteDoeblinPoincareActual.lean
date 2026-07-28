@@ -385,5 +385,65 @@ theorem concreteFinitePoincare_bound
     (f : S.State -> Rat) :
     gap * concreteVariance pi f <= concreteDirichlet pi K f :=
   h.2 f
+/-! ## Constant-function concrete lemmas -/
+
+/--
+The Markov operator sends any constant function to the same constant.
+-/
+theorem markovApply_const
+    {S : ConcreteFiniteStateSpace.{u}}
+    (K : ConcreteMarkovKernelOn S)
+    (a : Rat)
+    (x : S.State) :
+    markovApply K (fun _ : S.State => a) x = a := by
+  calc
+    markovApply K (fun _ : S.State => a) x
+        = finiteSumRat S (fun y => K.transition x y * a) := rfl
+    _ = finiteSumRat S (fun y => K.transition x y) * a := by
+        simp [finiteSumRat, Finset.sum_mul]
+    _ = 1 * a := by
+        rw [K.row_stochastic x]
+    _ = a := by
+        ring
+
+/--
+The mean of any constant function is that constant.
+-/
+theorem concreteMean_const
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (a : Rat) :
+    concreteMean pi (fun _ : S.State => a) = a := by
+  calc
+    concreteMean pi (fun _ : S.State => a)
+        = finiteSumRat S (fun x => pi.weight x * a) := rfl
+    _ = finiteSumRat S (fun x => pi.weight x) * a := by
+        simp [finiteSumRat, Finset.sum_mul]
+    _ = 1 * a := by
+        rw [pi.normalized]
+    _ = a := by
+        ring
+
+/--
+The variance of a constant function is zero.
+-/
+theorem concreteVariance_const
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (a : Rat) :
+    concreteVariance pi (fun _ : S.State => a) = 0 := by
+  simp [concreteVariance, concreteMean_const pi a, finiteSumRat]
+
+/--
+The Dirichlet form of a constant function is zero for this concrete target.
+-/
+theorem concreteDirichlet_const
+    {S : ConcreteFiniteStateSpace.{u}}
+    (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S)
+    (a : Rat) :
+    concreteDirichlet pi K (fun _ : S.State => a) = 0 := by
+  simp [concreteDirichlet, markovApply_const K a, finiteSumRat]
+
 end Clay
 end RussoYM
