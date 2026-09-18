@@ -1056,5 +1056,127 @@ theorem concreteDirichlet_le_two_markovDirichlet
   rw [concreteMarkovDirichlet_pairwise_identity pi K hInv] at h
   exact h
 
+/-! ## Finite-state rigidity and eigenfunction consequences
+
+These statements concern the existing rational finite-state model. They do not
+assert existence of a Yang-Mills operator or a continuum spectral theorem.
+-/
+
+/-- Variance vanishes exactly when the function equals its mean on every
+state with positive probability. Zero-weight states need not satisfy this. -/
+theorem concreteVariance_eq_zero_iff_on_support
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteVariance pi f = 0 ↔
+      forall x : S.State, 0 < pi.weight x -> f x = concreteMean pi f := by
+  constructor
+  · intro h x hx
+    have hsum : (∑ y : S.State, pi.weight y * (f y - concreteMean pi f) ^ 2) = 0 := h
+    have hterms := (Finset.sum_eq_zero_iff_of_nonneg
+      (fun y (_ : y ∈ (Finset.univ : Finset S.State)) =>
+        mul_nonneg (pi.nonnegative y) (sq_nonneg (f y - concreteMean pi f)))).mp hsum
+    have hsq : (f x - concreteMean pi f) ^ 2 = 0 :=
+      (mul_eq_zero.mp (hterms x (Finset.mem_univ x))).resolve_left (ne_of_gt hx)
+    exact sub_eq_zero.mp (sq_eq_zero_iff.mp hsq)
+  · intro h
+    unfold concreteVariance finiteSumRat
+    apply Finset.sum_eq_zero
+    intro x _
+    by_cases hx : pi.weight x = 0
+    · simp only [hx, zero_mul]
+    · have hxpos : 0 < pi.weight x := lt_of_le_of_ne (pi.nonnegative x) (Ne.symm hx)
+      rw [h x hxpos, sub_self, zero_pow (by decide : 2 ≠ 0), mul_zero]
+
+/-- Two positive-probability states with different values force positive variance. -/
+theorem concreteVariance_pos_of_nonconstant_on_support
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat)
+    (hNonconstant : ∃ x y : S.State,
+      0 < pi.weight x ∧ 0 < pi.weight y ∧ f x ≠ f y) :
+    0 < concreteVariance pi f := by
+  have hne : concreteVariance pi f ≠ 0 := by
+    intro hz
+    obtain ⟨x, y, hx, hy, hxy⟩ := hNonconstant
+    have h := (concreteVariance_eq_zero_iff_on_support pi f).mp hz
+    exact hxy ((h x hx).trans (h y hy).symm)
+  exact lt_of_le_of_ne (concreteVariance_nonneg pi f) (Ne.symm hne)
+
+/-- Zero standard energy forces zero variance under the Doeblin hypotheses. -/
+theorem concreteVariance_eq_zero_of_markovDirichlet_eq_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) (hEnergy : concreteMarkovDirichlet pi K f = 0) :
+    concreteVariance pi f = 0 := by
+  have h := concreteMarkovDirichlet_doeblin_bound pi K hInv hD f
+  rw [hEnergy] at h
+  have hle : concreteVariance pi f <= 0 :=
+    (mul_le_mul_iff_right₀ hD.1).mp (by simpa only [mul_zero] using h)
+  exact le_antisymm hle (concreteVariance_nonneg pi f)
+
+/-- Zero energy implies constancy on the probability support. -/
+theorem concreteMarkovDirichlet_zero_rigidity
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) (hEnergy : concreteMarkovDirichlet pi K f = 0) :
+    forall x : S.State, 0 < pi.weight x -> f x = concreteMean pi f :=
+  (concreteVariance_eq_zero_iff_on_support pi f).mp
+    (concreteVariance_eq_zero_of_markovDirichlet_eq_zero pi K hInv hD f hEnergy)
+
+/-- With strictly positive weights, zero energy implies constancy everywhere. -/
+theorem concreteMarkovDirichlet_zero_rigidity_of_positive_weights
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hWeights : forall x : S.State, 0 < pi.weight x)
+    (f : S.State -> Rat) (hEnergy : concreteMarkovDirichlet pi K f = 0) :
+    forall x : S.State, f x = concreteMean pi f :=
+  fun x => concreteMarkovDirichlet_zero_rigidity pi K hInv hD f hEnergy x (hWeights x)
+
+/-- Fixed functions of the kernel are constant on the probability support. -/
+theorem concreteMarkov_fixed_function_rigidity
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) (hFixed : forall x, markovApply K f x = f x) :
+    forall x : S.State, 0 < pi.weight x -> f x = concreteMean pi f := by
+  apply concreteMarkovDirichlet_zero_rigidity pi K hInv hD f
+  simp only [concreteMarkovDirichlet, hFixed, sub_self, mul_zero]
+  exact concreteMean_zero pi
+
+/-- Every rational eigenvalue carried by a positive-variance eigenfunction
+has absolute value at most `1-alpha`. This is an eigenfunction consequence,
+not a claim to construct or classify the full complex spectrum. -/
+theorem concreteMarkov_eigenvalue_abs_bound
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) {eigenvalue : Rat}
+    (hEigen : forall x, markovApply K f x = eigenvalue * f x)
+    (hVariance : 0 < concreteVariance pi f) :
+    |eigenvalue| <= 1 - alpha := by
+  have h := concreteVariance_doeblin_bound pi K hInv hD f
+  simp only [hEigen, concreteVariance_smul] at h
+  have hsq : eigenvalue ^ 2 <= (1 - alpha) ^ 2 :=
+    (mul_le_mul_iff_left₀ hVariance).mp h
+  exact abs_le_of_sq_le_sq hsq (sub_nonneg.mpr hD.2.1)
+
+/-- For a nonconstant-on-support rational eigenfunction of `P`, the associated
+`I-P` eigenvalue is at least the positive Doeblin constant. -/
+theorem concreteMarkov_generator_eigenvalue_gap
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) {eigenvalue : Rat}
+    (hEigen : forall x, markovApply K f x = eigenvalue * f x)
+    (hNonconstant : ∃ x y : S.State,
+      0 < pi.weight x ∧ 0 < pi.weight y ∧ f x ≠ f y) :
+    alpha <= 1 - eigenvalue ∧ 0 < 1 - eigenvalue := by
+  have h := concreteMarkov_eigenvalue_abs_bound pi K hInv hD f hEigen
+    (concreteVariance_pos_of_nonconstant_on_support pi f hNonconstant)
+  have hupper := (abs_le.mp h).2
+  constructor <;> linarith [hD.1]
+
 end Clay
 end RussoYM
