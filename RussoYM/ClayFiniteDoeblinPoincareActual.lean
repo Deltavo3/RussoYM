@@ -1178,5 +1178,97 @@ theorem concreteMarkov_generator_eigenvalue_gap
   have hupper := (abs_le.mp h).2
   constructor <;> linarith [hD.1]
 
+/-! ## Reference-measure conversion for the block-kernel roadmap
+
+Finite rational counterpart of section 2 of
+`docs/ClayBlockRGConditionalMasterTheorem.md`:
+`K(x,y) >= a * reference(y)` and `pi(y) <= M * reference(y)` imply
+equilibrium minorization with coefficient `a / M`.
+No invariance of the reference probability is required. Invariance of `pi`
+is an explicit hypothesis of the Poincare consequences.
+-/
+
+/-- Normalization forces an upper density-comparison constant to be at least one. -/
+theorem concreteProbability_density_upper_ge_one
+    {S : ConcreteFiniteStateSpace.{u}} (pi reference : ConcreteProbabilityVectorOn S)
+    {M : Rat} (hDensity : forall y, pi.weight y <= M * reference.weight y) :
+    1 <= M := by
+  have hsum := Finset.sum_le_sum
+    (fun y (_ : y ∈ (Finset.univ : Finset S.State)) => hDensity y)
+  rw [← Finset.mul_sum] at hsum
+  change finiteSumRat S pi.weight <= M * finiteSumRat S reference.weight at hsum
+  simpa only [pi.normalized, reference.normalized, mul_one] using hsum
+
+/-- Reference minorization converts to equilibrium minorization using only
+an upper density bound. Positivity of `M` follows from normalization. -/
+theorem concreteDoeblin_of_reference_minorization
+    {S : ConcreteFiniteStateSpace.{u}} (pi reference : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) {a M : Rat}
+    (hReference : ConcreteDoeblinMinorization reference K a)
+    (hDensity : forall y, pi.weight y <= M * reference.weight y) :
+    ConcreteDoeblinMinorization pi K (a / M) := by
+  have hM := concreteProbability_density_upper_ge_one pi reference hDensity
+  have hMpos : 0 < M := lt_of_lt_of_le (by norm_num) hM
+  have hpos : 0 < a / M := div_pos hReference.1 hMpos
+  refine ⟨hpos, (div_le_one hMpos).mpr (le_trans hReference.2.1 hM), ?_⟩
+  intro x y
+  calc
+    (a / M) * pi.weight y <= (a / M) * (M * reference.weight y) :=
+      mul_le_mul_of_nonneg_left (hDensity y) hpos.le
+    _ = a * reference.weight y := by
+      rw [← mul_assoc, div_mul_cancel₀ _ (ne_of_gt hMpos)]
+    _ <= K.transition x y := hReference.2.2 x y
+
+/-- The finite block-reference hypotheses supply all three proved estimates:
+variance contraction, standard Markov Poincare, and squared-residual Poincare. -/
+theorem concreteBlock_bounds_of_reference_minorization
+    {S : ConcreteFiniteStateSpace.{u}} (pi reference : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {a M : Rat} (hReference : ConcreteDoeblinMinorization reference K a)
+    (hDensity : forall y, pi.weight y <= M * reference.weight y) :
+    ConcreteVarianceContraction pi K ((1 - a / M) ^ 2) ∧
+      ConcreteMarkovPoincareInequality pi K (a / M) ∧
+      ConcreteFinitePoincareInequality pi K ((a / M) ^ 2) := by
+  have hD := concreteDoeblin_of_reference_minorization pi reference K hReference hDensity
+  exact ⟨concreteVarianceContraction_of_doeblin pi K hInv hD,
+    concreteMarkovPoincare_of_doeblin pi K hInv hD,
+    concreteFinitePoincare_of_doeblin pi K hInv hD⟩
+
+/-- Shared reference and density constants give one positive standard-energy
+Poincare constant for a whole family, even when the finite state spaces vary.
+Uniformity of the input constants is assumed explicitly, not proved here. -/
+theorem concreteUniformBlockPoincare_of_reference_minorization
+    (S : Nat -> ConcreteFiniteStateSpace.{u})
+    (pi reference : (n : Nat) -> ConcreteProbabilityVectorOn (S n))
+    (K : (n : Nat) -> ConcreteMarkovKernelOn (S n))
+    (hInv : forall n, ConcreteInvariantMeasure (pi n) (K n))
+    {a M : Rat}
+    (hReference : forall n, ConcreteDoeblinMinorization (reference n) (K n) a)
+    (hDensity : forall n y, (pi n).weight y <= M * (reference n).weight y) :
+    0 < a / M ∧ forall n (f : (S n).State -> Rat),
+      (a / M) * concreteVariance (pi n) f <= concreteMarkovDirichlet (pi n) (K n) f := by
+  have hD (n : Nat) := concreteDoeblin_of_reference_minorization
+    (pi n) (reference n) (K n) (hReference n) (hDensity n)
+  exact ⟨(hD 0).1, fun n f =>
+    concreteMarkovDirichlet_doeblin_bound (pi n) (K n) (hInv n) (hD n) f⟩
+
+/-- Transfer a standard Markov bound to another energy only after an explicit
+comparison is supplied. This does not identify that energy with a YM Hamiltonian. -/
+theorem concreteBlockPoincare_of_energy_comparison
+    {S : ConcreteFiniteStateSpace.{u}} (pi reference : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {a M scale : Rat} (hReference : ConcreteDoeblinMinorization reference K a)
+    (hDensity : forall y, pi.weight y <= M * reference.weight y)
+    (hScale : 0 < scale) (energy : (S.State -> Rat) -> Rat)
+    (hEnergy : forall f, concreteMarkovDirichlet pi K f <= scale * energy f) :
+    0 < (a / M) / scale ∧ forall f,
+      ((a / M) / scale) * concreteVariance pi f <= energy f := by
+  have hD := concreteDoeblin_of_reference_minorization pi reference K hReference hDensity
+  refine ⟨div_pos hD.1 hScale, ?_⟩
+  intro f
+  have h := le_trans (concreteMarkovDirichlet_doeblin_bound pi K hInv hD f) (hEnergy f)
+  rw [div_mul_eq_mul_div]
+  exact (div_le_iff₀ hScale).mpr (by simpa only [mul_comm scale] using h)
+
 end Clay
 end RussoYM
