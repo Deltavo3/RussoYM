@@ -902,5 +902,159 @@ def concreteFiniteDoeblinPoincareTarget_of_doeblin
   poincare_gap := alpha ^ 2
   finite_poincare := concreteFinitePoincare_of_doeblin pi K hInv hD
 
+/-! ## Standard Markov Dirichlet energy
+
+The existing `concreteDirichlet` remains the squared-residual energy.
+The new energy below is the usual quadratic form `<f, (I-P)f>`.
+Under invariance it equals half the weighted squared-difference sum.
+-/
+
+/-- The usual Markov Dirichlet quadratic form, distinct from the original
+squared-residual energy `concreteDirichlet`. -/
+def concreteMarkovDirichlet
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (f : S.State -> Rat) : Rat :=
+  concreteMean pi (fun x => f x * (f x - markovApply K f x))
+
+/-- Expand a squared difference under a probability-weighted mean. -/
+theorem concreteMean_sq_sub
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) (a : Rat) :
+    concreteMean pi (fun y => (a - f y) ^ 2) =
+      a ^ 2 - 2 * a * concreteMean pi f + concreteMean pi (fun y => (f y) ^ 2) := by
+  have hfun : (fun y => (a - f y) ^ 2) =
+      (fun y => a ^ 2 - (2 * a) * f y + (f y) ^ 2) := by
+    funext y
+    ring
+  rw [hfun, concreteMean_add, concreteMean_sub, concreteMean_const, concreteMean_smul]
+
+/-- Variance is half the independent-pair squared-difference mean. -/
+theorem concreteVariance_pairwise_identity
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteMean pi (fun x => concreteMean pi (fun y => (f x - f y) ^ 2)) =
+      2 * concreteVariance pi f := by
+  simp_rw [concreteMean_sq_sub]
+  have hfun : (fun x => (f x) ^ 2 - 2 * f x * concreteMean pi f +
+      concreteMean pi (fun y => (f y) ^ 2)) =
+      (fun x => (f x) ^ 2 - (2 * concreteMean pi f) * f x +
+        concreteMean pi (fun y => (f y) ^ 2)) := by
+    funext x
+    ring
+  rw [hfun, concreteMean_add, concreteMean_sub, concreteMean_smul, concreteMean_const,
+    concreteVariance_eq_second_moment_sub]
+  ring
+
+/-- Expand a squared difference under a stochastic row. -/
+theorem markovApply_sq_sub
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S)
+    (f : S.State -> Rat) (a : Rat) (x : S.State) :
+    markovApply K (fun y => (a - f y) ^ 2) x =
+      a ^ 2 - 2 * a * markovApply K f x + markovApply K (fun y => (f y) ^ 2) x := by
+  have hfun : (fun y => (a - f y) ^ 2) =
+      (fun y => a ^ 2 - (2 * a) * f y + (f y) ^ 2) := by
+    funext y
+    ring
+  rw [hfun, markovApply_add, markovApply_sub, markovApply_const, markovApply_smul]
+
+/-- Expand the standard energy into a second moment and a mixed moment. -/
+theorem concreteMarkovDirichlet_eq_moments
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (f : S.State -> Rat) :
+    concreteMarkovDirichlet pi K f = concreteMean pi (fun x => (f x) ^ 2) -
+      concreteMean pi (fun x => f x * markovApply K f x) := by
+  unfold concreteMarkovDirichlet
+  have hfun : (fun x => f x * (f x - markovApply K f x)) =
+      (fun x => (f x) ^ 2 - f x * markovApply K f x) := by
+    funext x
+    ring
+  rw [hfun, concreteMean_sub]
+
+/-- For an invariant probability, the standard energy equals half the
+weighted squared-difference sum. Reversibility is not needed for this identity. -/
+theorem concreteMarkovDirichlet_pairwise_identity
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (f : S.State -> Rat) :
+    concreteMean pi (fun x => markovApply K (fun y => (f x - f y) ^ 2) x) =
+      2 * concreteMarkovDirichlet pi K f := by
+  simp_rw [markovApply_sq_sub]
+  have hfun : (fun x => (f x) ^ 2 - 2 * f x * markovApply K f x +
+      markovApply K (fun y => (f y) ^ 2) x) =
+      (fun x => (f x) ^ 2 - 2 * (f x * markovApply K f x) +
+        markovApply K (fun y => (f y) ^ 2) x) := by
+    funext x
+    ring
+  rw [hfun, concreteMean_add, concreteMean_sub, concreteMean_smul,
+    concreteMean_markovApply pi K hInv, concreteMarkovDirichlet_eq_moments]
+  ring
+
+/-- The standard Markov energy is nonnegative under invariance. -/
+theorem concreteMarkovDirichlet_nonneg
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (f : S.State -> Rat) : 0 <= concreteMarkovDirichlet pi K f := by
+  have hsum : 0 <= concreteMean pi
+      (fun x => markovApply K (fun y => (f x - f y) ^ 2) x) := by
+    unfold concreteMean markovApply finiteSumRat
+    exact Finset.sum_nonneg fun x _ => mul_nonneg (pi.nonnegative x)
+      (Finset.sum_nonneg fun y _ => mul_nonneg (K.nonnegative x y) (sq_nonneg _))
+  rw [concreteMarkovDirichlet_pairwise_identity pi K hInv] at hsum
+  linarith
+
+/-- Doeblin minorization gives the standard Markov Poincare bound with
+coefficient `alpha`, rather than the squared-residual coefficient `alpha^2`. -/
+theorem concreteMarkovDirichlet_doeblin_bound
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) :
+    alpha * concreteVariance pi f <= concreteMarkovDirichlet pi K f := by
+  have hrow (x : S.State) :
+      alpha * concreteMean pi (fun y => (f x - f y) ^ 2) <=
+        markovApply K (fun y => (f x - f y) ^ 2) x := by
+    unfold concreteMean markovApply finiteSumRat
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum
+    intro y _
+    have h := mul_le_mul_of_nonneg_right (hD.2.2 x y) (sq_nonneg (f x - f y))
+    simpa only [mul_assoc] using h
+  have h := concreteMean_mono pi hrow
+  rw [concreteMean_smul, concreteVariance_pairwise_identity,
+    concreteMarkovDirichlet_pairwise_identity pi K hInv] at h
+  linarith
+
+/-- Poincare target for the standard Markov quadratic form. -/
+def ConcreteMarkovPoincareInequality
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (gap : Rat) : Prop :=
+  0 < gap /\ forall f : S.State -> Rat,
+    gap * concreteVariance pi f <= concreteMarkovDirichlet pi K f
+
+/-- The standard finite Markov Poincare target follows from invariance and
+Doeblin minorization alone. -/
+theorem concreteMarkovPoincare_of_doeblin
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha) :
+    ConcreteMarkovPoincareInequality pi K alpha :=
+  ⟨hD.1, concreteMarkovDirichlet_doeblin_bound pi K hInv hD⟩
+
+/-- The old squared-residual energy is bounded by twice the standard Markov
+energy under invariance. This explicitly relates the two retained definitions. -/
+theorem concreteDirichlet_le_two_markovDirichlet
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (f : S.State -> Rat) :
+    concreteDirichlet pi K f <= 2 * concreteMarkovDirichlet pi K f := by
+  have hrow (x : S.State) : (f x - markovApply K f x) ^ 2 <=
+      markovApply K (fun y => (f x - f y) ^ 2) x := by
+    have h := markovApply_sq_le K (fun y => f x - f y) x
+    rw [markovApply_sub, markovApply_const] at h
+    exact h
+  have h := concreteMean_mono pi hrow
+  rw [concreteMarkovDirichlet_pairwise_identity pi K hInv] at h
+  exact h
+
 end Clay
 end RussoYM
