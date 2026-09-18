@@ -22,8 +22,14 @@ finite Markov placeholder language with actual finite-state probability data:
 
 Status note:
 
-This file is not yet the proof that Doeblin minorization implies Poincare.
-It is the first real mathematical target language for that theorem.
+This file proves finite rational Doeblin variance contraction with factor
+`(1 - alpha)^2` and the squared-residual Poincare inequality with gap
+`alpha^2`, assuming the stated invariant probability and minorization.
+See `concreteVarianceContraction_of_doeblin` and
+`concreteFinitePoincare_of_doeblin`. The original target package is retained,
+and `concreteFiniteDoeblinPoincareTarget_of_doeblin` constructs it from those
+hypotheses. This does not yet construct a Yang-Mills kernel, prove a
+regulator-uniform minorization constant, or establish a continuum limit.
 -/
 
 namespace RussoYM
@@ -147,7 +153,8 @@ def concreteDirichlet
 /--
 Concrete variance contraction target.
 
-Eventually this should be proved from the Doeblin minorization condition.
+Proved below from minorization and invariance by
+`concreteVarianceContraction_of_doeblin`.
 -/
 def ConcreteVarianceContraction
     {S : ConcreteFiniteStateSpace.{u}}
@@ -163,7 +170,8 @@ def ConcreteVarianceContraction
 /--
 Concrete finite Poincare target.
 
-Eventually this should be derived from variance contraction.
+Derived below by `concreteFinitePoincare_of_varianceContraction`;
+the direct Doeblin theorem gives the stronger explicit gap `alpha^2`.
 -/
 def ConcreteFinitePoincareInequality
     {S : ConcreteFiniteStateSpace.{u}}
@@ -177,7 +185,7 @@ def ConcreteFinitePoincareInequality
 /--
 The full actual finite Doeblin-Poincare target package.
 
-This packages the real theorem we need to prove next:
+This packages the finite-state theorem chain proved below:
 
 Doeblin minorization
 =>
@@ -185,8 +193,9 @@ variance contraction
 =>
 finite Poincare.
 
-For now the implication is represented by explicit fields.  Future work should
-replace the final two fields with actual theorems.
+The explicit fields remain for compatibility. The constructor
+`concreteFiniteDoeblinPoincareTarget_of_doeblin` supplies the final two fields
+using proved theorems rather than additional hypotheses.
 -/
 structure ConcreteFiniteDoeblinPoincareTarget where
   state_space : ConcreteFiniteStateSpace.{u}
@@ -529,6 +538,369 @@ theorem concreteMean_smul
             ring
     _ = a * concreteMean pi f := by
             simp [concreteMean, finiteSumRat, Finset.mul_sum]
+
+/-! ## Centering and variance identities -/
+
+/-- The Markov operator preserves subtraction. -/
+theorem markovApply_sub
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S)
+    (f g : S.State -> Rat) (x : S.State) :
+    markovApply K (fun y => f y - g y) x =
+      markovApply K f x - markovApply K g x := by
+  simp [markovApply, finiteSumRat, mul_sub, Finset.sum_sub_distrib]
+
+/-- The mean preserves subtraction. -/
+theorem concreteMean_sub
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) :
+    concreteMean pi (fun x => f x - g x) =
+      concreteMean pi f - concreteMean pi g := by
+  simp [concreteMean, finiteSumRat, mul_sub, Finset.sum_sub_distrib]
+
+/-- Subtracting the mean produces a function of mean zero. -/
+theorem concreteMean_center
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteMean pi (fun x => f x - concreteMean pi f) = 0 := by
+  rw [concreteMean_sub, concreteMean_const, sub_self]
+
+/-- A stochastic kernel commutes with subtraction of the original mean. -/
+theorem markovApply_center
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (f : S.State -> Rat) (x : S.State) :
+    markovApply K (fun y => f y - concreteMean pi f) x =
+      markovApply K f x - concreteMean pi f := by
+  rw [markovApply_sub, markovApply_const]
+
+/-- Invariance of the probability vector makes the Markov operator preserve means. -/
+theorem concreteMean_markovApply
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (f : S.State -> Rat) :
+    concreteMean pi (fun x => markovApply K f x) = concreteMean pi f := by
+  unfold concreteMean markovApply finiteSumRat
+  simp_rw [Finset.mul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro y _
+  simp_rw [← mul_assoc]
+  rw [← Finset.sum_mul]
+  rw [show (∑ x : S.State, pi.weight x * K.transition x y) = pi.weight y from hInv y]
+
+/-- Variance is nonnegative because each probability weight and square is nonnegative. -/
+theorem concreteVariance_nonneg
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) : 0 <= concreteVariance pi f := by
+  unfold concreteVariance finiteSumRat
+  exact Finset.sum_nonneg fun x _ => mul_nonneg (pi.nonnegative x) (sq_nonneg _)
+
+/-- Subtracting any constant leaves the variance unchanged. -/
+theorem concreteVariance_sub_const
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) (a : Rat) :
+    concreteVariance pi (fun x => f x - a) = concreteVariance pi f := by
+  unfold concreteVariance
+  rw [concreteMean_sub, concreteMean_const]
+  unfold finiteSumRat
+  apply Finset.sum_congr rfl
+  intro x _
+  ring
+
+/-- Centering leaves the variance unchanged. -/
+theorem concreteVariance_center
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteVariance pi (fun x => f x - concreteMean pi f) = concreteVariance pi f :=
+  concreteVariance_sub_const pi f (concreteMean pi f)
+
+/-- For a mean-zero function, variance is its weighted square sum. -/
+theorem concreteVariance_of_mean_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) (hMean : concreteMean pi f = 0) :
+    concreteVariance pi f = finiteSumRat S (fun x => pi.weight x * (f x) ^ 2) := by
+  simp only [concreteVariance, hMean, sub_zero]
+
+/-- Variance scales quadratically under multiplication by a rational scalar. -/
+theorem concreteVariance_smul
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) (a : Rat) :
+    concreteVariance pi (fun x => a * f x) = a ^ 2 * concreteVariance pi f := by
+  unfold concreteVariance
+  rw [concreteMean_smul]
+  unfold finiteSumRat
+  rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro x _
+  ring
+
+/-- The squared-residual energy is nonnegative. -/
+theorem concreteDirichlet_nonneg
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (f : S.State -> Rat) :
+    0 <= concreteDirichlet pi K f := by
+  unfold concreteDirichlet finiteSumRat
+  exact Finset.sum_nonneg fun x _ => mul_nonneg (pi.nonnegative x) (sq_nonneg _)
+
+/-- Centering does not change the squared-residual energy. -/
+theorem concreteDirichlet_center
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (f : S.State -> Rat) :
+    concreteDirichlet pi K (fun x => f x - concreteMean pi f) =
+      concreteDirichlet pi K f := by
+  unfold concreteDirichlet
+  simp_rw [markovApply_center]
+  unfold finiteSumRat
+  apply Finset.sum_congr rfl
+  intro x _
+  ring
+
+/-- Probability-weighted means preserve pointwise inequalities. -/
+theorem concreteMean_mono
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    {f g : S.State -> Rat} (h : forall x, f x <= g x) :
+    concreteMean pi f <= concreteMean pi g := by
+  unfold concreteMean finiteSumRat
+  exact Finset.sum_le_sum fun x _ => mul_le_mul_of_nonneg_left (h x) (pi.nonnegative x)
+
+/-- Variance equals the second moment minus the square of the mean. -/
+theorem concreteVariance_eq_second_moment_sub
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteVariance pi f =
+      concreteMean pi (fun x => (f x) ^ 2) - (concreteMean pi f) ^ 2 := by
+  change concreteMean pi (fun x => (f x - concreteMean pi f) ^ 2) = _
+  have hfun : (fun x => (f x - concreteMean pi f) ^ 2) =
+      (fun x => (f x) ^ 2 - (2 * concreteMean pi f) * f x + (concreteMean pi f) ^ 2) := by
+    funext x
+    ring
+  rw [hfun, concreteMean_add, concreteMean_sub, concreteMean_smul, concreteMean_const]
+  ring
+
+/-- Finite weighted Jensen inequality for the square function. -/
+theorem concreteMean_sq_le
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    (concreteMean pi f) ^ 2 <= concreteMean pi (fun x => (f x) ^ 2) := by
+  have h := concreteVariance_nonneg pi f
+  rw [concreteVariance_eq_second_moment_sub] at h
+  exact sub_nonneg.mp h
+
+/-- Each stochastic row satisfies the square-function Jensen inequality. -/
+theorem markovApply_sq_le
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S)
+    (f : S.State -> Rat) (x : S.State) :
+    (markovApply K f x) ^ 2 <= markovApply K (fun y => (f y) ^ 2) x := by
+  let row : ConcreteProbabilityVectorOn S := {
+    weight := K.transition x
+    nonnegative := K.nonnegative x
+    normalized := K.row_stochastic x
+  }
+  exact concreteMean_sq_le row f
+
+/-- An invariant stochastic kernel cannot increase variance.
+This does not yet give the strict contraction supplied by Doeblin minorization. -/
+theorem concreteVariance_markovApply_le
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (f : S.State -> Rat) :
+    concreteVariance pi (fun x => markovApply K f x) <= concreteVariance pi f := by
+  rw [concreteVariance_eq_second_moment_sub, concreteVariance_eq_second_moment_sub,
+    concreteMean_markovApply pi K hInv]
+  apply sub_le_sub_right
+  calc
+    concreteMean pi (fun x => (markovApply K f x) ^ 2)
+        <= concreteMean pi (fun x => markovApply K (fun y => (f y) ^ 2) x) :=
+      concreteMean_mono pi (markovApply_sq_le K f)
+    _ = concreteMean pi (fun y => (f y) ^ 2) :=
+      concreteMean_markovApply pi K hInv (fun y => (f y) ^ 2)
+
+/-! ## Doeblin variance contraction -/
+
+/-- Weighted Cauchy-Schwarz, allowing weights of arbitrary total mass. -/
+theorem finiteSumRat_weighted_sq_le
+    {S : ConcreteFiniteStateSpace.{u}} (w f : S.State -> Rat)
+    (hw : forall x, 0 <= w x) :
+    (finiteSumRat S (fun x => w x * f x)) ^ 2 <=
+      finiteSumRat S w * finiteSumRat S (fun x => w x * (f x) ^ 2) := by
+  unfold finiteSumRat
+  exact Finset.sum_sq_le_sum_mul_sum_of_sq_eq_mul Finset.univ
+    (fun x _ => hw x)
+    (fun x _ => mul_nonneg (hw x) (sq_nonneg (f x)))
+    (fun x _ => by ring)
+
+/-- For a mean-zero function, subtract the minorizing probability component
+before applying weighted Cauchy-Schwarz. No division by `1 - alpha` is needed. -/
+theorem markovApply_sq_le_of_doeblin_of_mean_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) {alpha : Rat}
+    (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) (hMean : concreteMean pi f = 0) (x : S.State) :
+    (markovApply K f x) ^ 2 <=
+      (1 - alpha) *
+        (markovApply K (fun y => (f y) ^ 2) x -
+          alpha * concreteMean pi (fun y => (f y) ^ 2)) := by
+  have hmass : finiteSumRat S (fun y => K.transition x y - alpha * pi.weight y) =
+      1 - alpha := by
+    simp only [finiteSumRat, Finset.sum_sub_distrib, ← Finset.mul_sum]
+    change finiteSumRat S (K.transition x) - alpha * finiteSumRat S pi.weight = _
+    rw [K.row_stochastic x, pi.normalized, mul_one]
+  have happly (g : S.State -> Rat) :
+      finiteSumRat S (fun y => (K.transition x y - alpha * pi.weight y) * g y) =
+        markovApply K g x - alpha * concreteMean pi g := by
+    simp only [finiteSumRat, sub_mul, Finset.sum_sub_distrib, mul_assoc, ← Finset.mul_sum]
+    rfl
+  have hCS := finiteSumRat_weighted_sq_le
+    (fun y => K.transition x y - alpha * pi.weight y) f
+    (fun y => sub_nonneg.mpr (hD.2.2 x y))
+  rw [hmass, happly f, happly (fun y => (f y) ^ 2), hMean, mul_zero, sub_zero] at hCS
+  exact hCS
+
+/-- Invariance and Doeblin minorization give the explicit squared contraction
+factor `(1 - alpha)^2`, also when `alpha = 1`. -/
+theorem concreteVariance_doeblin_bound
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (f : S.State -> Rat) :
+    concreteVariance pi (fun x => markovApply K f x) <=
+      (1 - alpha) ^ 2 * concreteVariance pi f := by
+  let g : S.State -> Rat := fun x => f x - concreteMean pi f
+  have hg : concreteMean pi g = 0 := concreteMean_center pi f
+  have hPg : concreteMean pi (fun x => markovApply K g x) = 0 := by
+    rw [concreteMean_markovApply pi K hInv, hg]
+  have hbound := concreteMean_mono pi
+    (markovApply_sq_le_of_doeblin_of_mean_zero pi K hD g hg)
+  rw [concreteMean_smul, concreteMean_sub, concreteMean_markovApply pi K hInv,
+    concreteMean_const] at hbound
+  have hvar : concreteVariance pi (fun x => markovApply K g x) <=
+      (1 - alpha) ^ 2 * concreteVariance pi g := by
+    rw [concreteVariance_of_mean_zero pi _ hPg, concreteVariance_of_mean_zero pi g hg]
+    change concreteMean pi (fun x => (markovApply K g x) ^ 2) <=
+      (1 - alpha) ^ 2 * concreteMean pi (fun x => (g x) ^ 2)
+    nlinarith [hbound]
+  simpa only [g, markovApply_center, concreteVariance_sub_const] using hvar
+
+/-- The explicit Doeblin bound is a strict variance-contraction certificate. -/
+theorem concreteVarianceContraction_of_doeblin
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha) :
+    ConcreteVarianceContraction pi K ((1 - alpha) ^ 2) := by
+  refine ⟨sq_nonneg _, ?_, concreteVariance_doeblin_bound pi K hInv hD⟩
+  have hpos := hD.1
+  have hle := hD.2.1
+  nlinarith [mul_nonneg (le_of_lt hpos) (sub_nonneg.mpr hle)]
+
+/-! ## Poincare inequality for the existing squared-residual energy -/
+
+/-- A variance bound with factor `r^2`, for `0 <= r < 1`, gives the
+squared-residual Poincare gap `(1-r)^2`. Invariance supplies the centering step. -/
+theorem concreteFinitePoincare_of_squared_contraction
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {r : Rat} (hr0 : 0 <= r) (hr1 : r < 1)
+    (hBound : forall f : S.State -> Rat,
+      concreteVariance pi (fun x => markovApply K f x) <= r ^ 2 * concreteVariance pi f) :
+    ConcreteFinitePoincareInequality pi K ((1 - r) ^ 2) := by
+  refine ⟨sq_pos_of_pos (sub_pos.mpr hr1), ?_⟩
+  intro f
+  let g : S.State -> Rat := fun x => f x - concreteMean pi f
+  have hg : concreteMean pi g = 0 := concreteMean_center pi f
+  have hPg : concreteMean pi (fun x => markovApply K g x) = 0 := by
+    rw [concreteMean_markovApply pi K hInv, hg]
+  have hV : concreteMean pi (fun x => (g x) ^ 2) = concreteVariance pi f := by
+    change finiteSumRat S (fun x => pi.weight x * (g x) ^ 2) = _
+    rw [← concreteVariance_of_mean_zero pi g hg]
+    exact concreteVariance_center pi f
+  have hP : concreteMean pi (fun x => (markovApply K g x) ^ 2) =
+      concreteVariance pi (fun x => markovApply K g x) :=
+    (concreteVariance_of_mean_zero pi _ hPg).symm
+  have hE : concreteMean pi (fun x => (g x - markovApply K g x) ^ 2) =
+      concreteDirichlet pi K f := concreteDirichlet_center pi K f
+  have hB : concreteVariance pi (fun x => markovApply K g x) <=
+      r ^ 2 * concreteVariance pi f := by
+    simpa only [g, concreteVariance_sub_const] using hBound g
+  by_cases hrzero : r = 0
+  · have hPzero : concreteVariance pi (fun x => markovApply K g x) = 0 :=
+      le_antisymm (by simpa only [hrzero, zero_pow (by decide : 2 ≠ 0), zero_mul] using hB)
+        (concreteVariance_nonneg pi _)
+    have hsum : (∑ x : S.State, pi.weight x * (markovApply K g x) ^ 2) = 0 :=
+      hP.trans hPzero
+    have hterms := (Finset.sum_eq_zero_iff_of_nonneg
+      (fun x (_ : x ∈ (Finset.univ : Finset S.State)) =>
+        mul_nonneg (pi.nonnegative x) (sq_nonneg (markovApply K g x)))).mp hsum
+    have hEq : concreteMean pi (fun x => (g x - markovApply K g x) ^ 2) =
+        concreteMean pi (fun x => (g x) ^ 2) := by
+      unfold concreteMean finiteSumRat
+      apply Finset.sum_congr rfl
+      intro x _
+      rcases mul_eq_zero.mp (hterms x (Finset.mem_univ x)) with hw | hp
+      · simp only [hw, zero_mul]
+      · have hpzero : markovApply K g x = 0 := sq_eq_zero_iff.mp hp
+        simp only [hpzero, sub_zero]
+    rw [hE, hV] at hEq
+    simpa only [hrzero, sub_zero, one_pow, one_mul] using le_of_eq hEq.symm
+  · have hrpos : 0 < r := lt_of_le_of_ne hr0 (Ne.symm hrzero)
+    have hYoung := concreteMean_mono pi (fun x =>
+      show r * (1 - r) * (g x) ^ 2 <=
+        r * (g x - markovApply K g x) ^ 2 + (1 - r) * (markovApply K g x) ^ 2 by
+        nlinarith [sq_nonneg (r * g x - markovApply K g x)])
+    rw [concreteMean_smul, concreteMean_add, concreteMean_smul,
+      concreteMean_smul, hV, hE, hP] at hYoung
+    have hBmul := mul_le_mul_of_nonneg_left hB (sub_nonneg.mpr hr1.le)
+    have hfinal : r * ((1 - r) ^ 2 * concreteVariance pi f) <=
+        r * concreteDirichlet pi K f := by
+      nlinarith [hYoung, hBmul]
+    exact (mul_le_mul_iff_right₀ hrpos).mp hfinal
+
+/-- Any strict variance contraction yields a positive rational Poincare gap.
+The coefficient `(1-c)^2/4` avoids adjoining a square root to `Rat`; it is not
+claimed to be optimal. -/
+theorem concreteFinitePoincare_of_varianceContraction
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {c : Rat} (hC : ConcreteVarianceContraction pi K c) :
+    ConcreteFinitePoincareInequality pi K ((1 - c) ^ 2 / 4) := by
+  have hc0 := hC.1
+  have hc1 := hC.2.1
+  have hr0 : 0 <= (1 + c) / 2 := by linarith
+  have hr1 : (1 + c) / 2 < 1 := by linarith
+  have hcr : c <= ((1 + c) / 2) ^ 2 := by nlinarith [sq_nonneg (1 - c)]
+  have h := concreteFinitePoincare_of_squared_contraction pi K hInv hr0 hr1
+    (fun f => le_trans (hC.2.2 f)
+      (mul_le_mul_of_nonneg_right hcr (concreteVariance_nonneg pi f)))
+  convert h using 1; ring
+
+/-- Doeblin minorization and invariance prove the existing finite Poincare
+target with gap `alpha^2`, without assuming contraction or Poincare separately. -/
+theorem concreteFinitePoincare_of_doeblin
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha : Rat} (hD : ConcreteDoeblinMinorization pi K alpha) :
+    ConcreteFinitePoincareInequality pi K (alpha ^ 2) := by
+  have hr0 : 0 <= 1 - alpha := sub_nonneg.mpr hD.2.1
+  have hr1 : 1 - alpha < 1 := by linarith [hD.1]
+  have h := concreteFinitePoincare_of_squared_contraction pi K hInv hr0 hr1
+    (concreteVariance_doeblin_bound pi K hInv hD)
+  simpa only [sub_sub_cancel] using h
+
+/-- Build the original target package using the proved finite-state chain.
+Its contraction and Poincare fields are now supplied by theorems. -/
+def concreteFiniteDoeblinPoincareTarget_of_doeblin
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (alpha : Rat) (hD : ConcreteDoeblinMinorization pi K alpha) :
+    ConcreteFiniteDoeblinPoincareTarget.{u} where
+  state_space := S
+  invariant_probability := pi
+  kernel := K
+  invariant_measure := hInv
+  alpha := alpha
+  doeblin := hD
+  contraction_constant := (1 - alpha) ^ 2
+  variance_contraction := concreteVarianceContraction_of_doeblin pi K hInv hD
+  poincare_gap := alpha ^ 2
+  finite_poincare := concreteFinitePoincare_of_doeblin pi K hInv hD
 
 end Clay
 end RussoYM
