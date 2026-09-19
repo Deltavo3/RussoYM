@@ -1475,5 +1475,135 @@ theorem concreteScaledMarkovGenerator_weighted_symmetry
   rw [concreteMarkov_weighted_symmetry pi K hB f g,
     concreteWeightedInner_symm pi (markovApply K f) g, concreteWeightedInner_symm pi f g]
 
+/-- Projection onto the constant functions using the invariant probability mean.
+This is an actual linear map, not a placeholder vacuum projection. Identifying
+it with a physical vacuum projection is a separate construction problem. -/
+def concreteConstantProjection
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S) :
+    (S.State -> Rat) →ₗ[Rat] (S.State -> Rat) where
+  toFun f := fun _ => concreteMean pi f
+  map_add' f g := by
+    funext x
+    exact concreteMean_add pi f g
+  map_smul' a f := by
+    funext x
+    simpa only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply] using concreteMean_smul pi a f
+
+/-- Applying the constant projection twice has the same effect as applying it once. -/
+theorem concreteConstantProjection_idempotent
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteConstantProjection pi (concreteConstantProjection pi f) =
+      concreteConstantProjection pi f := by
+  funext x
+  exact concreteMean_const pi (concreteMean pi f)
+
+/-- The centered component is orthogonal to every projected function in the
+weighted pairing; no positivity of individual weights is needed for this identity. -/
+theorem concreteConstantProjection_orthogonal
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) :
+    concreteWeightedInner pi (f - concreteConstantProjection pi f)
+      (concreteConstantProjection pi g) = 0 := by
+  change concreteMean pi (fun x => (f x - concreteMean pi f) * concreteMean pi g) = 0
+  have heq : (fun x => (f x - concreteMean pi f) * concreteMean pi g) =
+      (fun x => concreteMean pi g * (f x - concreteMean pi f)) := by
+    funext x
+    ring
+  rw [heq, concreteMean_smul, concreteMean_center, mul_zero]
+
+/-- The generator annihilates the projected component. -/
+theorem concreteScaledMarkovGenerator_constantProjection
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (tau : Rat) (f : S.State -> Rat) :
+    concreteScaledMarkovGenerator K tau (concreteConstantProjection pi f) = 0 :=
+  concreteScaledMarkovGenerator_const K tau (concreteMean pi f)
+
+/-- Invariance puts the generator's image in the mean-zero sector. -/
+theorem concreteConstantProjection_scaledMarkovGenerator
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (tau : Rat) (f : S.State -> Rat) :
+    concreteConstantProjection pi (concreteScaledMarkovGenerator K tau f) = 0 := by
+  funext x
+  change concreteMean pi (fun y => (1 / tau) * (f y - markovApply K f y)) = 0
+  rw [concreteMean_smul, concreteMean_sub, concreteMean_markovApply pi K hInv,
+    sub_self, mul_zero]
+
+/-- Under positive weights and Doeblin minorization, the generator kernel is
+exactly the range of the constant projection. -/
+theorem concreteScaledMarkovGenerator_zero_iff_projected
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (hWeights : forall x, 0 < pi.weight x)
+    (f : S.State -> Rat) :
+    concreteScaledMarkovGenerator K tau f = 0 ↔ f = concreteConstantProjection pi f := by
+  constructor
+  · intro hz
+    have hFixed : forall x, markovApply K f x = f x := by
+      intro x
+      have hx := congrFun hz x
+      change (1 / tau) * (f x - markovApply K f x) = 0 at hx
+      have hd := (mul_eq_zero.mp hx).resolve_left (one_div_ne_zero (ne_of_gt hTau))
+      exact (sub_eq_zero.mp hd).symm
+    funext x
+    exact concreteMarkov_fixed_function_rigidity pi K hInv hD f hFixed x (hWeights x)
+  · intro hf
+    calc
+      _ = concreteScaledMarkovGenerator K tau (concreteConstantProjection pi f) :=
+        congrArg (concreteScaledMarkovGenerator K tau) hf
+      _ = 0 := concreteScaledMarkovGenerator_constantProjection pi K tau f
+
+/-- The finite gap on all functions, with the constant projection explicitly
+removed. It holds as a weighted quadratic-form inequality even with zero weights;
+positive weights are required to identify the full function-space kernel above. -/
+theorem concreteScaledMarkovGenerator_projected_gap
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (f : S.State -> Rat) :
+    (alpha / tau) * concreteWeightedInner pi
+        (f - concreteConstantProjection pi f) (f - concreteConstantProjection pi f) ≤
+      concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau f) := by
+  have hnorm : concreteWeightedInner pi
+      (f - concreteConstantProjection pi f) (f - concreteConstantProjection pi f) =
+      concreteVariance pi f := by
+    change concreteWeightedInner pi (fun x => f x - concreteMean pi f)
+      (fun x => f x - concreteMean pi f) = concreteVariance pi f
+    rw [concreteWeightedInner_self_of_mean_zero pi _ (concreteMean_center pi f),
+      concreteVariance_center]
+  rw [hnorm, concreteWeightedInner_scaledGenerator]
+  have h := mul_le_mul_of_nonneg_left
+    (concreteMarkovDirichlet_doeblin_bound pi K hInv hD f)
+    (le_of_lt (one_div_pos.mpr hTau))
+  convert h using 1
+  ring
+
+/-- Under the same full-support Doeblin assumptions, zero quadratic energy is
+equivalent to membership in the generator kernel. No continuum claim is involved. -/
+theorem concreteScaledMarkovGenerator_energy_zero_iff
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (hWeights : forall x, 0 < pi.weight x)
+    (f : S.State -> Rat) :
+    concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau f) = 0 ↔
+      concreteScaledMarkovGenerator K tau f = 0 := by
+  constructor
+  · intro he
+    rw [concreteWeightedInner_scaledGenerator] at he
+    have hDzero : concreteMarkovDirichlet pi K f = 0 :=
+      (mul_eq_zero.mp he).resolve_left (one_div_ne_zero (ne_of_gt hTau))
+    apply (concreteScaledMarkovGenerator_zero_iff_projected pi K hInv hD hTau hWeights f).2
+    funext x
+    exact concreteMarkovDirichlet_zero_rigidity_of_positive_weights
+      pi K hInv hD hWeights f hDzero x
+  · intro hz
+    rw [hz]
+    change concreteMean pi (fun x => f x * 0) = 0
+    simp only [mul_zero]
+    exact concreteMean_zero pi
+
 end Clay
 end RussoYM
