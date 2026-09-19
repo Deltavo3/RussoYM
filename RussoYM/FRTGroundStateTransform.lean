@@ -172,5 +172,147 @@ theorem unnormalized_stationary_density
   norm_num at h
   exact h.resolve_left hhbar
 
+/-- First-order differential expression `hbar * d/dx + S'`. -/
+noncomputable def groundStateOperator (hbar : Real) (S1 psi : Real -> Real) : Real -> Real :=
+  fun x => hbar * deriv psi x + S1 x * psi x
+
+/-- Formal differential adjoint. This name does not assert a Hilbert-space
+adjoint identity: that requires a measure, domain, and boundary conditions. -/
+noncomputable def groundStateFormalAdjoint (hbar : Real) (S1 f : Real -> Real) : Real -> Real :=
+  fun x => -hbar * deriv f x + S1 x * f x
+
+/-- Factorization `H = Q^dagger Q / (2*m)` at the level of differential expressions. -/
+theorem flatHamiltonian_factorization
+    (S1 S2 psi psi1 psi2 : Real -> Real) (hbar mass x : Real)
+    (hPsi : forall y, HasDerivAt psi (psi1 y) y)
+    (hS1 : HasDerivAt S1 (S2 x) x) (hPsi1 : HasDerivAt psi1 (psi2 x) x) :
+    flatHamiltonian hbar mass S1 S2 psi x =
+      groundStateFormalAdjoint hbar S1 (groundStateOperator hbar S1 psi) x / (2 * mass) := by
+  have hfirst : deriv psi = psi1 := funext fun y => (hPsi y).deriv
+  have hq : HasDerivAt (groundStateOperator hbar S1 psi)
+      (hbar * psi2 x + (S2 x * psi x + S1 x * psi1 x)) x := by
+    change HasDerivAt (fun y => hbar * deriv psi y + S1 y * psi y) _ x
+    rw [hfirst]
+    exact
+      (hPsi1.const_mul hbar).add (hS1.mul (hPsi x))
+  unfold flatHamiltonian groundStateFormalAdjoint
+  rw [hq.deriv, hfirst, hPsi1.deriv]
+  simp only [groundStateOperator, hfirst]
+  ring
+
+/-- The positive candidate `exp(-S/hbar)` is annihilated by `Q`.
+This is a pointwise statement; no square-integrability is claimed. -/
+theorem groundStateOperator_exponential
+    (S S1 : Real -> Real) (hbar x : Real) (hhbar : hbar ≠ 0)
+    (hS : HasDerivAt S (S1 x) x) :
+    groundStateOperator hbar S1 (exponentialTilt S (fun _ => 1) hbar (-1)) x = 0 := by
+  have hd := (exponentialTilt_hasDerivAt S S1 (fun _ => 1) (fun _ => 0)
+    hbar (-1) x hS (hasDerivAt_const x 1)).deriv
+  unfold groundStateOperator
+  rw [hd]
+  dsimp [exponentialTilt]
+  field_simp [hhbar]
+  ring
+
+/-- The same candidate solves the zero-energy differential equation.
+Calling it a Hilbert-space ground state additionally requires domain and
+normalization results, and a lower bound for the operator realization. -/
+theorem flatHamiltonian_exponential_zero
+    (S S1 S2 : Real -> Real) (hbar mass x : Real) (hhbar : hbar ≠ 0)
+    (hS : forall y, HasDerivAt S (S1 y) y) (hS1 : HasDerivAt S1 (S2 x) x) :
+    flatHamiltonian hbar mass S1 S2 (exponentialTilt S (fun _ => 1) hbar (-1)) x = 0 := by
+  unfold flatHamiltonian
+  rw [exponentialTilt_second_deriv S S1 S2 (fun _ => 1) (fun _ => 0)
+    (fun _ => 0) hbar (-1) x hS (fun y => hasDerivAt_const y 1)
+    hS1 (hasDerivAt_const x 0)]
+  dsimp [exponentialTilt]
+  field_simp [hhbar]
+  ring
+
+/-- Local energy identity, retaining the full boundary derivative.
+After justified integration, the last term becomes a boundary contribution;
+positivity follows only when that contribution vanishes and `mass > 0`. -/
+theorem flatHamiltonian_energy_identity
+    (S1 S2 psi psi1 psi2 : Real -> Real) (hbar mass x : Real)
+    (hPsi : forall y, HasDerivAt psi (psi1 y) y)
+    (hS1 : HasDerivAt S1 (S2 x) x) (hPsi1 : HasDerivAt psi1 (psi2 x) x) :
+    psi x * flatHamiltonian hbar mass S1 S2 psi x =
+      (groundStateOperator hbar S1 psi x) ^ 2 / (2 * mass) -
+      hbar / (2 * mass) * deriv (fun y => psi y * groundStateOperator hbar S1 psi y) x := by
+  have hfirst : deriv psi = psi1 := funext fun y => (hPsi y).deriv
+  have hq : HasDerivAt (groundStateOperator hbar S1 psi)
+      (hbar * psi2 x + (S2 x * psi x + S1 x * psi1 x)) x := by
+    change HasDerivAt (fun y => hbar * deriv psi y + S1 y * psi y) _ x
+    rw [hfirst]
+    exact
+      (hPsi1.const_mul hbar).add (hS1.mul (hPsi x))
+  have hprod := ((hPsi x).mul hq).deriv
+  change deriv (fun y => psi y * groundStateOperator hbar S1 psi y) x = _ at hprod
+  rw [hprod]
+  unfold flatHamiltonian groundStateOperator
+  rw [hfirst, hPsi1.deriv]
+  ring
+
+/-- Integrated energy identity on a finite interval. Integrability is explicit,
+and the boundary term is retained rather than silently discarded. -/
+theorem flatHamiltonian_interval_energy
+    (S1 S2 psi psi1 psi2 : Real -> Real) (hbar mass a b : Real)
+    (hPsi : forall y, HasDerivAt psi (psi1 y) y)
+    (hS1 : forall y, HasDerivAt S1 (S2 y) y)
+    (hPsi1 : forall y, HasDerivAt psi1 (psi2 y) y)
+    (hsq : IntervalIntegrable (fun y => (groundStateOperator hbar S1 psi y) ^ 2)
+      MeasureTheory.volume a b)
+    (hboundary : IntervalIntegrable
+      (deriv (fun y => psi y * groundStateOperator hbar S1 psi y))
+      MeasureTheory.volume a b) :
+    (∫ y in a..b, psi y * flatHamiltonian hbar mass S1 S2 psi y) =
+      (1 / (2 * mass)) * (∫ y in a..b, (groundStateOperator hbar S1 psi y) ^ 2) -
+      hbar / (2 * mass) *
+        (psi b * groundStateOperator hbar S1 psi b -
+          psi a * groundStateOperator hbar S1 psi a) := by
+  have hfirst : deriv psi = psi1 := funext fun y => (hPsi y).deriv
+  have hdiff : forall y, DifferentiableAt Real
+      (fun z => psi z * groundStateOperator hbar S1 psi z) y := by
+    intro y
+    have hq : HasDerivAt (groundStateOperator hbar S1 psi)
+        (hbar * psi2 y + (S2 y * psi y + S1 y * psi1 y)) y := by
+      change HasDerivAt (fun z => hbar * deriv psi z + S1 z * psi z) _ y
+      rw [hfirst]
+      exact ((hPsi1 y).const_mul hbar).add ((hS1 y).mul (hPsi y))
+    exact ((hPsi y).mul hq).differentiableAt
+  have hFTC := intervalIntegral.integral_deriv_eq_sub (fun y _ => hdiff y) hboundary
+  have heq : (fun y => psi y * flatHamiltonian hbar mass S1 S2 psi y) =
+      (fun y => (1 / (2 * mass)) * (groundStateOperator hbar S1 psi y) ^ 2 -
+        (hbar / (2 * mass)) *
+          deriv (fun z => psi z * groundStateOperator hbar S1 psi z) y) := by
+    funext y
+    rw [flatHamiltonian_energy_identity S1 S2 psi psi1 psi2 hbar mass y
+      hPsi (hS1 y) (hPsi1 y)]
+    ring
+  rw [heq, intervalIntegral.integral_sub (hsq.const_mul _) (hboundary.const_mul _),
+    intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul, hFTC]
+
+/-- Nonnegative integrated energy for positive mass when endpoint boundary
+contributions agree. For example, vanishing endpoint values of `psi` suffice.
+This is a quadratic-form bound, not a positive spectral gap. -/
+theorem flatHamiltonian_interval_energy_nonneg
+    (S1 S2 psi psi1 psi2 : Real -> Real) (hbar mass a b : Real)
+    (hmass : 0 < mass) (hab : a ≤ b)
+    (hPsi : forall y, HasDerivAt psi (psi1 y) y)
+    (hS1 : forall y, HasDerivAt S1 (S2 y) y)
+    (hPsi1 : forall y, HasDerivAt psi1 (psi2 y) y)
+    (hsq : IntervalIntegrable (fun y => (groundStateOperator hbar S1 psi y) ^ 2)
+      MeasureTheory.volume a b)
+    (hboundary : IntervalIntegrable
+      (deriv (fun y => psi y * groundStateOperator hbar S1 psi y))
+      MeasureTheory.volume a b)
+    (hend : psi b * groundStateOperator hbar S1 psi b =
+      psi a * groundStateOperator hbar S1 psi a) :
+    0 ≤ ∫ y in a..b, psi y * flatHamiltonian hbar mass S1 S2 psi y := by
+  rw [flatHamiltonian_interval_energy S1 S2 psi psi1 psi2 hbar mass a b
+    hPsi hS1 hPsi1 hsq hboundary, hend, sub_self, mul_zero, sub_zero]
+  exact mul_nonneg (by positivity)
+    (intervalIntegral.integral_nonneg_of_forall hab (fun y => sq_nonneg _))
+
 end FRTGroundState
 end RussoYM
