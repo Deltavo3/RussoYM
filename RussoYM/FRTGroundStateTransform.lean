@@ -592,5 +592,77 @@ theorem weighted_interval_gap_coefficient_pos (hbar mass a b lo hi : Real)
   exact div_pos (div_pos (sq_pos_of_pos hhbar) (mul_pos (by norm_num) hmass))
     (mul_pos (div_pos hhi hlo) (sq_pos_of_pos (sub_pos.mpr hab)))
 
+/-- Bounds on the potential give explicit positive bounds on its exponential weight. -/
+theorem exponential_weight_bounds (S : Real -> Real) (hbar smin smax x : Real)
+    (hhbar : 0 < hbar) (hmin : smin ≤ S x) (hmax : S x ≤ smax) :
+    Real.exp (-2 * smax / hbar) ≤ Real.exp (-2 * S x / hbar) ∧
+      Real.exp (-2 * S x / hbar) ≤ Real.exp (-2 * smin / hbar) := by
+  constructor
+  · apply Real.exp_le_exp.mpr
+    apply (div_le_div_iff_of_pos_right hhbar).mpr
+    linarith
+  · apply Real.exp_le_exp.mpr
+    apply (div_le_div_iff_of_pos_right hhbar).mpr
+    linarith
+
+/-- Rewrite the weight-ratio coefficient in terms of the potential's range. -/
+theorem oscillation_gap_coefficient_identity (hbar mass a b smin smax : Real) :
+    hbar ^ 2 / (2 * mass) /
+        ((Real.exp (-2 * smin / hbar) / Real.exp (-2 * smax / hbar)) * (b - a) ^ 2) =
+      hbar ^ 2 / (2 * mass * (b - a) ^ 2) *
+        Real.exp (-2 * (smax - smin) / hbar) := by
+  rw [← Real.exp_sub]
+  have he : -2 * smin / hbar - -2 * smax / hbar =
+      2 * (smax - smin) / hbar := by ring
+  rw [he]
+  simp only [div_eq_mul_inv, mul_inv_rev, ← Real.exp_neg]
+  have hn : -(2 * (smax - smin) * hbar⁻¹) =
+      -2 * (smax - smin) * hbar⁻¹ := by ring
+  rw [hn]
+  ring
+
+/-- The oscillation-dependent coefficient is positive on a nondegenerate interval. -/
+theorem oscillation_gap_coefficient_pos (hbar mass a b smin smax : Real)
+    (hhbar : 0 < hbar) (hmass : 0 < mass) (hab : a < b) :
+    0 < hbar ^ 2 / (2 * mass * (b - a) ^ 2) *
+      Real.exp (-2 * (smax - smin) / hbar) := by
+  exact mul_pos (div_pos (sq_pos_of_pos hhbar)
+    (mul_pos (mul_pos (by norm_num) hmass) (sq_pos_of_pos (sub_pos.mpr hab))))
+    (Real.exp_pos _)
+
+/-- Apply the proved interval gap using potential bounds instead of separately
+postulated density bounds. The dependence on interval length and potential
+range remains explicit; no uniform Yang-Mills gap is claimed. -/
+theorem flatHamiltonian_oscillation_interval_gap
+    (S S1 S2 f f1 psi1 psi2 : Real -> Real) (hbar mass a b smin smax : Real)
+    (hhbar : 0 < hbar) (hmass : 0 < mass) (hab : a < b)
+    (hS : forall y, HasDerivAt S (S1 y) y)
+    (hF : forall y, HasDerivAt f (f1 y) y) (hf1 : Continuous f1)
+    (hPsi : forall y, HasDerivAt (exponentialTilt S f hbar (-1)) (psi1 y) y)
+    (hS1 : forall y, HasDerivAt S1 (S2 y) y)
+    (hPsi1 : forall y, HasDerivAt psi1 (psi2 y) y)
+    (hbounds : ∀ x ∈ Set.Icc a b, smin ≤ S x ∧ S x ≤ smax)
+    (horth : (∫ x in a..b, exponentialTilt S (fun _ => 1) hbar (-1) x *
+      exponentialTilt S f hbar (-1) x) = 0)
+    (hboundary : IntervalIntegrable
+      (deriv (fun y => exponentialTilt S f hbar (-1) y *
+        groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) y))
+      MeasureTheory.volume a b)
+    (hend : exponentialTilt S f hbar (-1) b *
+        groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) b =
+      exponentialTilt S f hbar (-1) a *
+        groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) a) :
+    (hbar ^ 2 / (2 * mass * (b - a) ^ 2) * Real.exp (-2 * (smax - smin) / hbar)) *
+        (∫ x in a..b, (exponentialTilt S f hbar (-1) x) ^ 2) ≤
+      ∫ x in a..b, exponentialTilt S f hbar (-1) x *
+        flatHamiltonian hbar mass S1 S2 (exponentialTilt S f hbar (-1)) x := by
+  have h := flatHamiltonian_weighted_interval_gap S S1 S2 f f1 psi1 psi2 hbar mass a b
+    (Real.exp (-2 * smax / hbar)) (Real.exp (-2 * smin / hbar))
+    hhbar hmass hab (Real.exp_pos _) hS hF hf1 hPsi hS1 hPsi1
+    (fun x hx => exponential_weight_bounds S hbar smin smax x hhbar
+      (hbounds x hx).1 (hbounds x hx).2) horth hboundary hend
+  rw [oscillation_gap_coefficient_identity] at h
+  exact h
+
 end FRTGroundState
 end RussoYM
