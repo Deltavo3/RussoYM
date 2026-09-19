@@ -1270,5 +1270,128 @@ theorem concreteBlockPoincare_of_energy_comparison
   rw [div_mul_eq_mul_div]
   exact (div_le_iff₀ hScale).mpr (by simpa only [mul_comm scale] using h)
 
+/-! ## Explicit finite linear-operator bridge for the FRT/YM route
+
+The kernel, equilibrium weights, uniform constants, and physical energy
+comparison must ultimately come from the proposed FRT/YM construction.
+This section gives their finite rational operator interface. The scaled
+operator `(I-P)/tau` is defined here; no identification with a Yang-Mills
+Hamiltonian or with `-log(P)/tau` is asserted.
+-/
+
+/-- Weighted rational pairing. It can be degenerate when some weights vanish;
+we do not install an inner-product-space instance without positive weights. -/
+def concreteWeightedInner
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) : Rat :=
+  concreteMean pi (fun x => f x * g x)
+
+/-- Orthogonality to the constant-one function is precisely the mean-zero condition. -/
+theorem concreteWeightedInner_one_left
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteWeightedInner pi (fun _ => 1) f = concreteMean pi f := by
+  simp only [concreteWeightedInner, one_mul]
+
+/-- On mean-zero functions the weighted square norm equals variance. -/
+theorem concreteWeightedInner_self_of_mean_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) (hMean : concreteMean pi f = 0) :
+    concreteWeightedInner pi f f = concreteVariance pi f := by
+  simp only [concreteWeightedInner, ← pow_two]
+  exact (concreteVariance_of_mean_zero pi f hMean).symm
+
+/-- The stochastic kernel acts as an actual rational linear map on functions. -/
+def concreteMarkovLinearMap
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S) :
+    (S.State -> Rat) →ₗ[Rat] (S.State -> Rat) where
+  toFun := markovApply K
+  map_add' f g := by
+    funext x
+    exact markovApply_add K f g x
+  map_smul' a f := by
+    funext x
+    simpa only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply] using markovApply_smul K a f x
+
+/-- The scaled finite Markov generator `(I-P)/tau`. Positivity statements
+below require `tau > 0`. This is not defined as the physical YM Hamiltonian. -/
+def concreteScaledMarkovGenerator
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S) (tau : Rat) :
+    (S.State -> Rat) →ₗ[Rat] (S.State -> Rat) :=
+  (1 / tau) • (LinearMap.id - concreteMarkovLinearMap K)
+
+/-- Pointwise formula for the scaled generator. -/
+theorem concreteScaledMarkovGenerator_apply
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S)
+    (tau : Rat) (f : S.State -> Rat) (x : S.State) :
+    concreteScaledMarkovGenerator K tau f x =
+      (1 / tau) * (f x - markovApply K f x) := rfl
+
+/-- Constant functions lie in the kernel of the scaled generator. -/
+theorem concreteScaledMarkovGenerator_const
+    {S : ConcreteFiniteStateSpace.{u}} (K : ConcreteMarkovKernelOn S)
+    (tau a : Rat) :
+    concreteScaledMarkovGenerator K tau (fun _ => a) = (fun _ => 0) := by
+  funext x
+  simp only [concreteScaledMarkovGenerator_apply, markovApply_const, sub_self, mul_zero]
+
+/-- The quadratic form of the scaled generator is the standard Markov energy
+scaled by the inverse time parameter. -/
+theorem concreteWeightedInner_scaledGenerator
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (tau : Rat) (f : S.State -> Rat) :
+    concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau f) =
+      (1 / tau) * concreteMarkovDirichlet pi K f := by
+  unfold concreteWeightedInner concreteMarkovDirichlet
+  simp only [concreteScaledMarkovGenerator_apply]
+  have hfun : (fun x => f x * ((1 / tau) * (f x - markovApply K f x))) =
+      (fun x => (1 / tau) * (f x * (f x - markovApply K f x))) := by
+    funext x
+    ring
+  rw [hfun, concreteMean_smul]
+
+/-- A proved finite generator-form gap on the constant-orthogonal sector.
+This is an inequality of weighted quadratic forms, without a self-adjointness
+or continuum identification claim. -/
+theorem concreteScaledMarkovGenerator_gap
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) :
+    0 < alpha / tau ∧ forall f : S.State -> Rat, concreteMean pi f = 0 ->
+      (alpha / tau) * concreteWeightedInner pi f f <=
+        concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau f) := by
+  refine ⟨div_pos hD.1 hTau, ?_⟩
+  intro f hMean
+  rw [concreteWeightedInner_self_of_mean_zero pi f hMean, concreteWeightedInner_scaledGenerator]
+  have h := mul_le_mul_of_nonneg_left
+    (concreteMarkovDirichlet_doeblin_bound pi K hInv hD f)
+    (le_of_lt (one_div_pos.mpr hTau))
+  convert h using 1; ring
+
+/-- Conditional finite operator bridge: reference minorization and an explicit
+quadratic-form comparison imply a gap on the mean-zero sector of a candidate
+linear operator `H`. The comparison is required only on that sector.
+Identifying `H` with an FRT/YM Hamiltonian is a remaining construction task. -/
+theorem concreteOperatorGap_of_reference_comparison
+    {S : ConcreteFiniteStateSpace.{u}} (pi reference : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (H : (S.State -> Rat) →ₗ[Rat] (S.State -> Rat))
+    {a M scale : Rat} (hReference : ConcreteDoeblinMinorization reference K a)
+    (hDensity : forall y, pi.weight y <= M * reference.weight y)
+    (hScale : 0 < scale)
+    (hForm : forall f : S.State -> Rat, concreteMean pi f = 0 ->
+      concreteMarkovDirichlet pi K f <= scale * concreteWeightedInner pi f (H f)) :
+    0 < (a / M) / scale ∧ forall f : S.State -> Rat, concreteMean pi f = 0 ->
+      ((a / M) / scale) * concreteWeightedInner pi f f <=
+        concreteWeightedInner pi f (H f) := by
+  have hD := concreteDoeblin_of_reference_minorization pi reference K hReference hDensity
+  refine ⟨div_pos hD.1 hScale, ?_⟩
+  intro f hMean
+  have h := le_trans (concreteMarkovDirichlet_doeblin_bound pi K hInv hD f) (hForm f hMean)
+  rw [← concreteWeightedInner_self_of_mean_zero pi f hMean] at h
+  rw [div_mul_eq_mul_div]
+  exact (div_le_iff₀ hScale).mpr (by simpa only [mul_comm scale] using h)
+
 end Clay
 end RussoYM
