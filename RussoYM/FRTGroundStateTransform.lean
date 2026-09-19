@@ -314,5 +314,93 @@ theorem flatHamiltonian_interval_energy_nonneg
   exact mul_nonneg (by positivity)
     (intervalIntegral.integral_nonneg_of_forall hab (fun y => sq_nonneg _))
 
+/-- Multiplication by the ground-state factor removes the potential term in `Q`.
+This is the first-order identity behind the weighted energy representation. -/
+theorem groundStateOperator_tilt
+    (S S1 f f1 : Real -> Real) (hbar x : Real) (hhbar : hbar ≠ 0)
+    (hS : HasDerivAt S (S1 x) x) (hF : HasDerivAt f (f1 x) x) :
+    groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) x =
+      hbar * Real.exp (-S x / hbar) * f1 x := by
+  unfold groundStateOperator
+  rw [(exponentialTilt_hasDerivAt S S1 f f1 hbar (-1) x hS hF).deriv]
+  dsimp [exponentialTilt]
+  simp only [neg_one_mul]
+  field_simp [hhbar]
+  ring
+
+/-- The squared ground-state multiplier is the stationary density weight. -/
+theorem exponentialTilt_sq (S f : Real -> Real) (hbar x : Real) :
+    (exponentialTilt S f hbar (-1) x) ^ 2 =
+      Real.exp (-2 * S x / hbar) * (f x) ^ 2 := by
+  have hw : Real.exp (-S x / hbar) ^ 2 = Real.exp (-2 * S x / hbar) := by
+    rw [sq, ← Real.exp_add]
+    congr 1
+    ring
+  simp only [exponentialTilt, neg_one_mul, mul_pow, hw]
+
+/-- Ground-state orthogonality becomes a weighted mean-zero condition after
+integration, provided the relevant integrals and Hilbert-space domain exist. -/
+theorem exponentialTilt_groundState_product (S f : Real -> Real) (hbar x : Real) :
+    exponentialTilt S (fun _ => 1) hbar (-1) x * exponentialTilt S f hbar (-1) x =
+      Real.exp (-2 * S x / hbar) * f x := by
+  dsimp [exponentialTilt]
+  simp only [neg_one_mul, mul_one]
+  rw [← mul_assoc, ← Real.exp_add]
+  congr 2
+  ring
+
+/-- The square in the energy factorization is a weighted derivative square. -/
+theorem groundStateOperator_tilt_sq
+    (S S1 f f1 : Real -> Real) (hbar x : Real) (hhbar : hbar ≠ 0)
+    (hS : HasDerivAt S (S1 x) x) (hF : HasDerivAt f (f1 x) x) :
+    (groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) x) ^ 2 =
+      hbar ^ 2 * (Real.exp (-2 * S x / hbar) * (f1 x) ^ 2) := by
+  rw [groundStateOperator_tilt S S1 f f1 hbar x hhbar hS hF]
+  have hw := exponentialTilt_sq S f1 hbar x
+  simp only [exponentialTilt, neg_one_mul, mul_pow] at hw
+  calc
+    _ = hbar ^ 2 * (Real.exp (-S x / hbar) ^ 2 * (f1 x) ^ 2) := by ring
+    _ = _ := by rw [hw]
+
+/-- Weighted energy identity on a finite interval, with the boundary flux retained.
+The derivatives of the transformed function and all integrability requirements
+are explicit. This does not supply a weighted Poincare inequality. -/
+theorem flatHamiltonian_weighted_interval_energy
+    (S S1 S2 f f1 psi1 psi2 : Real -> Real) (hbar mass a b : Real)
+    (hhbar : hbar ≠ 0)
+    (hS : forall y, HasDerivAt S (S1 y) y)
+    (hF : forall y, HasDerivAt f (f1 y) y)
+    (hPsi : forall y, HasDerivAt (exponentialTilt S f hbar (-1)) (psi1 y) y)
+    (hS1 : forall y, HasDerivAt S1 (S2 y) y)
+    (hPsi1 : forall y, HasDerivAt psi1 (psi2 y) y)
+    (hw : IntervalIntegrable (fun y => Real.exp (-2 * S y / hbar) * (f1 y) ^ 2)
+      MeasureTheory.volume a b)
+    (hboundary : IntervalIntegrable
+      (deriv (fun y => exponentialTilt S f hbar (-1) y *
+        groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) y))
+      MeasureTheory.volume a b) :
+    (∫ y in a..b, exponentialTilt S f hbar (-1) y *
+      flatHamiltonian hbar mass S1 S2 (exponentialTilt S f hbar (-1)) y) =
+      hbar ^ 2 / (2 * mass) *
+        (∫ y in a..b, Real.exp (-2 * S y / hbar) * (f1 y) ^ 2) -
+      hbar / (2 * mass) *
+        (exponentialTilt S f hbar (-1) b *
+            groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) b -
+          exponentialTilt S f hbar (-1) a *
+            groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) a) := by
+  have heq : (fun y => (groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) y) ^ 2) =
+      (fun y => hbar ^ 2 * (Real.exp (-2 * S y / hbar) * (f1 y) ^ 2)) := by
+    funext y
+    exact groundStateOperator_tilt_sq S S1 f f1 hbar y hhbar (hS y) (hF y)
+  have hsq : IntervalIntegrable
+      (fun y => (groundStateOperator hbar S1 (exponentialTilt S f hbar (-1)) y) ^ 2)
+      MeasureTheory.volume a b := by
+    rw [heq]
+    exact hw.const_mul _
+  rw [flatHamiltonian_interval_energy S1 S2 (exponentialTilt S f hbar (-1)) psi1 psi2
+    hbar mass a b hPsi hS1 hPsi1 hsq hboundary, heq,
+    intervalIntegral.integral_const_mul]
+  ring
+
 end FRTGroundState
 end RussoYM
