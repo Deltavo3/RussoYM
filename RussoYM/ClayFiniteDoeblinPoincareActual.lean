@@ -1393,5 +1393,87 @@ theorem concreteOperatorGap_of_reference_comparison
   rw [div_mul_eq_mul_div]
   exact (div_le_iff₀ hScale).mpr (by simpa only [mul_comm scale] using h)
 
+/-- Detailed balance is an explicit equality of weighted transition probabilities.
+It is additional data to verify for a proposed FRT/YM kernel, not an axiom. -/
+def ConcreteDetailedBalance
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) : Prop :=
+  forall x y, pi.weight x * K.transition x y = pi.weight y * K.transition y x
+
+/-- Detailed balance and stochastic rows imply invariance of the probability vector. -/
+theorem concreteInvariantMeasure_of_detailedBalance
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hB : ConcreteDetailedBalance pi K) :
+    ConcreteInvariantMeasure pi K := by
+  intro y
+  unfold finiteSumRat
+  rw [show (∑ x : S.State, pi.weight x * K.transition x y) =
+      ∑ x : S.State, pi.weight y * K.transition y x from
+    Finset.sum_congr rfl (fun x _ => hB x y)]
+  rw [← Finset.mul_sum]
+  have hr : (∑ x : S.State, K.transition y x) = 1 := K.row_stochastic y
+  rw [hr, mul_one]
+
+/-- Symmetry of the rational weighted pairing, even when some weights vanish. -/
+theorem concreteWeightedInner_symm
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) : concreteWeightedInner pi f g = concreteWeightedInner pi g f := by
+  unfold concreteWeightedInner
+  congr 1
+  funext x
+  ring
+
+/-- Detailed balance makes the actual finite Markov operator symmetric in the
+weighted pairing. This does not assert an identification with the YM Hamiltonian. -/
+theorem concreteMarkov_weighted_symmetry
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hB : ConcreteDetailedBalance pi K)
+    (f g : S.State -> Rat) :
+    concreteWeightedInner pi f (markovApply K g) =
+      concreteWeightedInner pi (markovApply K f) g := by
+  unfold concreteWeightedInner concreteMean markovApply finiteSumRat
+  simp_rw [Finset.mul_sum, Finset.sum_mul]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro y _
+  simp_rw [Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro x _
+  calc
+    pi.weight x * (f x * (K.transition x y * g y)) =
+        (pi.weight x * K.transition x y) * (f x * g y) := by ring
+    _ = (pi.weight y * K.transition y x) * (f x * g y) := by rw [hB x y]
+    _ = _ := by ring
+
+/-- Bilinear form of the scaled generator on two possibly different functions. -/
+theorem concreteWeightedInner_scaledGenerator_bilinear
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (tau : Rat) (f g : S.State -> Rat) :
+    concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau g) =
+      (1 / tau) * (concreteWeightedInner pi f g -
+        concreteWeightedInner pi f (markovApply K g)) := by
+  unfold concreteWeightedInner
+  simp only [concreteScaledMarkovGenerator_apply]
+  have heq : (fun x => f x * ((1 / tau) * (g x - markovApply K g x))) =
+      (fun x => (1 / tau) * (f x * g x - f x * markovApply K g x)) := by
+    funext x
+    ring
+  rw [heq, concreteMean_smul, concreteMean_sub]
+
+/-- The scaled generator inherits weighted symmetry from detailed balance.
+For strictly positive weights this pairing is nondegenerate; zero weights
+require a support restriction or quotient before calling it an inner product. -/
+theorem concreteScaledMarkovGenerator_weighted_symmetry
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hB : ConcreteDetailedBalance pi K)
+    (tau : Rat) (f g : S.State -> Rat) :
+    concreteWeightedInner pi f (concreteScaledMarkovGenerator K tau g) =
+      concreteWeightedInner pi (concreteScaledMarkovGenerator K tau f) g := by
+  rw [concreteWeightedInner_symm pi (concreteScaledMarkovGenerator K tau f) g]
+  rw [concreteWeightedInner_scaledGenerator_bilinear,
+    concreteWeightedInner_scaledGenerator_bilinear]
+  rw [concreteMarkov_weighted_symmetry pi K hB f g,
+    concreteWeightedInner_symm pi (markovApply K f) g, concreteWeightedInner_symm pi f g]
+
 end Clay
 end RussoYM
