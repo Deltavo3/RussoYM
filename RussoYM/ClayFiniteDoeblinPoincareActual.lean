@@ -1705,5 +1705,59 @@ theorem concretePoisson_solvable_iff_mean_zero
     obtain ⟨f, hf, _⟩ := concretePoisson_exists_unique_mean_zero pi K hInv hD hTau hWeights g hg
     exact ⟨f, hf.2⟩
 
+/-- The weighted pairing is nonnegative on the diagonal. -/
+theorem concreteWeightedInner_self_nonneg
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) : 0 ≤ concreteWeightedInner pi f f := by
+  unfold concreteWeightedInner concreteMean finiteSumRat
+  exact Finset.sum_nonneg (fun x _ => mul_nonneg (pi.nonnegative x) (mul_self_nonneg (f x)))
+
+/-- Cauchy-Schwarz for the rational weighted pairing, including zero weights. -/
+theorem concreteWeightedInner_sq_le
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f g : S.State -> Rat) :
+    (concreteWeightedInner pi f g) ^ 2 ≤
+      concreteWeightedInner pi f f * concreteWeightedInner pi g g := by
+  unfold concreteWeightedInner concreteMean finiteSumRat
+  exact Finset.sum_sq_le_sum_mul_sum_of_sq_eq_mul Finset.univ
+    (fun x _ => mul_nonneg (pi.nonnegative x) (mul_self_nonneg (f x)))
+    (fun x _ => mul_nonneg (pi.nonnegative x) (mul_self_nonneg (g x)))
+    (fun x _ => by ring)
+
+/-- Quantitative stability of a mean-zero finite Poisson solution.
+The inverse estimate depends explicitly on `tau/alpha`; it is not a
+regulator-uniform bound unless those parameters are controlled uniformly. -/
+theorem concretePoisson_solution_sq_bound
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (f g : S.State -> Rat)
+    (hf : concreteMean pi f = 0)
+    (hEq : concreteScaledMarkovGenerator K tau f = g) :
+    concreteWeightedInner pi f f ≤
+      (tau / alpha) ^ 2 * concreteWeightedInner pi g g := by
+  have hgap := (concreteScaledMarkovGenerator_gap pi K hInv hD hTau).2 f hf
+  rw [hEq] at hgap
+  have hA := concreteWeightedInner_self_nonneg pi f
+  have hC := concreteWeightedInner_self_nonneg pi g
+  have hCS := concreteWeightedInner_sq_le pi f g
+  have hd : 0 < alpha / tau := div_pos hD.1 hTau
+  by_cases hz : concreteWeightedInner pi f f = 0
+  · rw [hz]
+    exact mul_nonneg (sq_nonneg _) hC
+  have hAp : 0 < concreteWeightedInner pi f f := lt_of_le_of_ne hA (Ne.symm hz)
+  have hs := mul_self_le_mul_self (mul_nonneg hd.le hA) hgap
+  have hp : concreteWeightedInner pi f f *
+      ((alpha / tau) ^ 2 * concreteWeightedInner pi f f) ≤
+      concreteWeightedInner pi f f * concreteWeightedInner pi g g := by
+    nlinarith [hs, hCS]
+  have hb : (alpha / tau) ^ 2 * concreteWeightedInner pi f f ≤
+      concreteWeightedInner pi g g := (mul_le_mul_iff_right₀ hAp).mp hp
+  have hdiv : concreteWeightedInner pi f f ≤
+      concreteWeightedInner pi g g / (alpha / tau) ^ 2 :=
+    (le_div_iff₀ (sq_pos_of_pos hd)).2 (by simpa only [mul_comm] using hb)
+  convert hdiv using 1
+  field_simp
+
 end Clay
 end RussoYM
