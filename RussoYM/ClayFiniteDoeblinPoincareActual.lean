@@ -1605,5 +1605,105 @@ theorem concreteScaledMarkovGenerator_energy_zero_iff
     simp only [mul_zero]
     exact concreteMean_zero pi
 
+/-- The explicit constant projection vanishes exactly on mean-zero functions. -/
+theorem concreteConstantProjection_eq_zero_iff
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (f : S.State -> Rat) :
+    concreteConstantProjection pi f = 0 ↔ concreteMean pi f = 0 := by
+  constructor
+  · intro h
+    have hm := congrArg (concreteMean pi) h
+    change concreteMean pi (fun _ => concreteMean pi f) = concreteMean pi (fun _ => 0) at hm
+    simpa only [concreteMean_const] using hm
+  · intro h
+    funext x
+    exact h
+
+/-- Adding the constant projection removes the generator's constant kernel.
+This is an auxiliary finite linear map, not a physical Hamiltonian definition. -/
+def concreteAugmentedGenerator
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (tau : Rat) :
+    (S.State -> Rat) →ₗ[Rat] (S.State -> Rat) :=
+  concreteScaledMarkovGenerator K tau + concreteConstantProjection pi
+
+/-- The augmented generator preserves the constant projection. -/
+theorem concreteConstantProjection_augmentedGenerator
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    (tau : Rat) (f : S.State -> Rat) :
+    concreteConstantProjection pi (concreteAugmentedGenerator pi K tau f) =
+      concreteConstantProjection pi f := by
+  change concreteConstantProjection pi
+    (concreteScaledMarkovGenerator K tau f + concreteConstantProjection pi f) = _
+  rw [map_add, concreteConstantProjection_scaledMarkovGenerator pi K hInv,
+    concreteConstantProjection_idempotent, zero_add]
+
+/-- Full-support Doeblin minorization makes the augmented finite generator bijective.
+Surjectivity uses finite-dimensional linear algebra, not an assumed inverse. -/
+theorem concreteAugmentedGenerator_bijective
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (hWeights : forall x, 0 < pi.weight x) :
+    Function.Bijective (concreteAugmentedGenerator pi K tau) := by
+  have hinj : Function.Injective (concreteAugmentedGenerator pi K tau) := by
+    apply LinearMap.ker_eq_bot.mp
+    apply LinearMap.ker_eq_bot'.mpr
+    intro f hf
+    have hP : concreteConstantProjection pi f = 0 := by
+      rw [← concreteConstantProjection_augmentedGenerator pi K hInv tau f, hf, map_zero]
+    have hG : concreteScaledMarkovGenerator K tau f = 0 := by
+      change concreteScaledMarkovGenerator K tau f + concreteConstantProjection pi f = 0 at hf
+      simpa only [hP, add_zero] using hf
+    exact ((concreteScaledMarkovGenerator_zero_iff_projected pi K hInv hD hTau hWeights f).1
+      hG).trans hP
+  exact ⟨hinj, LinearMap.surjective_of_injective hinj⟩
+
+/-- Every mean-zero forcing has a unique mean-zero solution of the finite Poisson
+ equation `((I-P)/tau) f = g`. All hypotheses concern the actual finite kernel. -/
+theorem concretePoisson_exists_unique_mean_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (hWeights : forall x, 0 < pi.weight x)
+    (g : S.State -> Rat) (hg : concreteMean pi g = 0) :
+    ∃! f : S.State -> Rat,
+      concreteMean pi f = 0 ∧ concreteScaledMarkovGenerator K tau f = g := by
+  have hbij := concreteAugmentedGenerator_bijective pi K hInv hD hTau hWeights
+  obtain ⟨f, hf⟩ := hbij.2 g
+  have hP : concreteConstantProjection pi f = 0 := by
+    rw [← concreteConstantProjection_augmentedGenerator pi K hInv tau f, hf]
+    exact (concreteConstantProjection_eq_zero_iff pi g).2 hg
+  have hG : concreteScaledMarkovGenerator K tau f = g := by
+    change concreteScaledMarkovGenerator K tau f + concreteConstantProjection pi f = g at hf
+    simpa only [hP, add_zero] using hf
+  refine ⟨f, ⟨(concreteConstantProjection_eq_zero_iff pi f).1 hP, hG⟩, ?_⟩
+  intro u hu
+  apply hbij.1
+  rw [hf]
+  change concreteScaledMarkovGenerator K tau u + concreteConstantProjection pi u = g
+  rw [hu.2, (concreteConstantProjection_eq_zero_iff pi u).2 hu.1, add_zero]
+
+/-- Exact solvability criterion: the finite Poisson equation has a solution if
+and only if its forcing has zero invariant mean. Uniqueness requires fixing
+the additive constant, as in the preceding theorem. -/
+theorem concretePoisson_solvable_iff_mean_zero
+    {S : ConcreteFiniteStateSpace.{u}} (pi : ConcreteProbabilityVectorOn S)
+    (K : ConcreteMarkovKernelOn S) (hInv : ConcreteInvariantMeasure pi K)
+    {alpha tau : Rat} (hD : ConcreteDoeblinMinorization pi K alpha)
+    (hTau : 0 < tau) (hWeights : forall x, 0 < pi.weight x)
+    (g : S.State -> Rat) :
+    (∃ f : S.State -> Rat, concreteScaledMarkovGenerator K tau f = g) ↔
+      concreteMean pi g = 0 := by
+  constructor
+  · rintro ⟨f, hf⟩
+    apply (concreteConstantProjection_eq_zero_iff pi g).1
+    rw [← hf]
+    exact concreteConstantProjection_scaledMarkovGenerator pi K hInv tau f
+  · intro hg
+    obtain ⟨f, hf, _⟩ := concretePoisson_exists_unique_mean_zero pi K hInv hD hTau hWeights g hg
+    exact ⟨f, hf.2⟩
+
 end Clay
 end RussoYM
