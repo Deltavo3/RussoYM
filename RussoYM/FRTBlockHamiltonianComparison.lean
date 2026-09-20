@@ -411,6 +411,109 @@ theorem conditionalBlockAverage_cross_energy_loss (p : X → Y → Real)
   have hn : 0 ≤ d * (A + B) := mul_nonneg hd (add_nonneg hA hB)
   change 2 * |t| ≤ d * (A + B)
   nlinarith only [hsq, hn, abs_nonneg t]
+
+/-- Retained and discarded functions are orthogonal in the fiber weights. -/
+theorem conditionalBlockAverage_weighted_orthogonal (p : X → Y → Real)
+    (u v : X × Y → Real) (x : X)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    (∑ y, p x y * u (x, y) * v (x, y)) = 0 := by
+  have h := conditionalBlockAverage_weighted_symmetry p u v x
+  simpa only [hu, hv, mul_zero, Finset.sum_const_zero] using h
+
+/-- Pythagoras for the explicit retained/discarded fiber decomposition. -/
+theorem conditionalBlockAverage_weighted_norm_split (p : X → Y → Real)
+    (u v : X × Y → Real) (x : X)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    (∑ y, p x y * (u (x, y) + v (x, y)) ^ 2) =
+      (∑ y, p x y * u (x, y) ^ 2) + ∑ y, p x y * v (x, y) ^ 2 := by
+  have ho := conditionalBlockAverage_weighted_orthogonal p u v x hu hv
+  calc
+    _ = (∑ y, p x y * u (x, y) ^ 2) + (∑ y, p x y * v (x, y) ^ 2) +
+        2 * ∑ y, p x y * u (x, y) * v (x, y) := by
+      simp only [Finset.mul_sum, ← Finset.sum_add_distrib]
+      apply Finset.sum_congr rfl
+      intro y _
+      ring
+    _ = _ := by rw [ho]; ring
+
+/-- A reference operator commuting with the conditional average has no
+retained/discarded cross term. The discarded condition is global because the
+reference operator may couple different fibers. -/
+theorem conditionalBlockAverage_reference_cross_zero (p : X → Y → Real)
+    (R : (X × Y → Real) →ₗ[Real] (X × Y → Real))
+    (hComm : ∀ f, conditionalBlockAverage p (R f) = R (conditionalBlockAverage p f))
+    (u v : X × Y → Real) (x : X)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : conditionalBlockAverage p v = 0) :
+    (∑ y, p x y * u (x, y) * R v (x, y)) = 0 := by
+  have hz : conditionalBlockAverage p (R v) = 0 := by
+    rw [hComm v, hv, map_zero]
+  have hs := conditionalBlockAverage_weighted_symmetry p u (R v) x
+  simpa only [hu, hz, Pi.zero_apply, mul_zero, Finset.sum_const_zero] using hs
+
+/-- For a reference operator plus a multiplication potential, commutation
+derives the cross-term identification required by the energy comparison. -/
+theorem conditionalBlockAverage_operator_cross_eq_potential (p : X → Y → Real)
+    (H R : (X × Y → Real) →ₗ[Real] (X × Y → Real))
+    (hComm : ∀ f, conditionalBlockAverage p (R f) = R (conditionalBlockAverage p f))
+    (W u v : X × Y → Real) (x : X)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : conditionalBlockAverage p v = 0)
+    (hSplit : ∀ y, H v (x, y) = R v (x, y) + W (x, y) * v (x, y)) :
+    (∑ y, p x y * u (x, y) * H v (x, y)) =
+      ∑ y, p x y * u (x, y) * (W (x, y) * v (x, y)) := by
+  simp only [hSplit, mul_add, Finset.sum_add_distrib]
+  rw [conditionalBlockAverage_reference_cross_zero p R hComm u v x hu hv, zero_add]
+/-- Conditional finite-model operator energy comparison. Sector estimates and
+identification of the operator cross term with the multiplication interaction
+are hypotheses. In particular, this theorem does not establish that
+identification or these sector estimates for a physical gauge Hamiltonian. -/
+theorem conditionalBlockAverage_operator_energy_lower (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (H : (X × Y → Real) →ₗ[Real] (X × Y → Real))
+    (W u v : X × Y → Real) (x : X) (a b d : Real) (hd : 0 ≤ d)
+    (hW : ∀ y z, |W (x, z) - W (x, y)| ≤ d)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0)
+    (hSym : (∑ y, p x y * v (x, y) * H u (x, y)) =
+      ∑ y, p x y * u (x, y) * H v (x, y))
+    (hCross : (∑ y, p x y * u (x, y) * H v (x, y)) =
+      ∑ y, p x y * u (x, y) * (W (x, y) * v (x, y)))
+    (hU : a * (∑ y, p x y * u (x, y) ^ 2) ≤
+      ∑ y, p x y * u (x, y) * H u (x, y))
+    (hV : b * (∑ y, p x y * v (x, y) ^ 2) ≤
+      ∑ y, p x y * v (x, y) * H v (x, y)) :
+    (min a b - d) * (∑ y, p x y * (u (x, y) + v (x, y)) ^ 2) ≤
+      ∑ y, p x y * (u (x, y) + v (x, y)) * H (u + v) (x, y) := by
+  have hn := conditionalBlockAverage_weighted_norm_split p u v x hu hv
+  have hl := conditionalBlockAverage_cross_energy_loss p hp hpn W u v x d hd hW hu hv
+  have hA : 0 ≤ ∑ y, p x y * u (x, y) ^ 2 :=
+    Finset.sum_nonneg fun y _ => mul_nonneg (hp x y) (sq_nonneg _)
+  have hB : 0 ≤ ∑ y, p x y * v (x, y) ^ 2 :=
+    Finset.sum_nonneg fun y _ => mul_nonneg (hp x y) (sq_nonneg _)
+  have ha := mul_le_mul_of_nonneg_right (min_le_left a b) hA
+  have hb := mul_le_mul_of_nonneg_right (min_le_right a b) hB
+  have he :
+      (∑ y, p x y * (u (x, y) + v (x, y)) * H (u + v) (x, y)) =
+      (∑ y, p x y * u (x, y) * H u (x, y)) +
+      (∑ y, p x y * v (x, y) * H v (x, y)) +
+      2 * ∑ y, p x y * u (x, y) * (W (x, y) * v (x, y)) := by
+    rw [map_add]
+    calc
+      _ = (∑ y, p x y * u (x, y) * H u (x, y)) +
+          (∑ y, p x y * v (x, y) * H v (x, y)) +
+          (∑ y, p x y * u (x, y) * H v (x, y)) +
+          (∑ y, p x y * v (x, y) * H u (x, y)) := by
+        simp only [Pi.add_apply, ← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro y _
+        ring
+      _ = _ := by rw [hSym, hCross]; ring
+  rw [hn, he]
+  have hab := neg_abs_le (∑ y, p x y * u (x, y) * (W (x, y) * v (x, y)))
+  nlinarith only [hU, hV, ha, hb, hl, hab]
 end ConditionalAverage
 end BlockHamiltonian
 end RussoYM
