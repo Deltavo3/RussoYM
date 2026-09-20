@@ -136,5 +136,54 @@ theorem projected_energy_lower_of_commuting (H Q : E →L[Real] E)
   have h := projected_energy_lower_of_commutator H Q hH hQ hIdem a b hRetained hDiscarded x
   simpa only [hComm, norm_zero, sub_zero] using h
 
+/-- If the reference operator commutes with the projection, only the interaction
+contributes to a retained/discarded cross term. -/
+theorem cross_term_eq_interaction (H0 V Q : E →L[Real] E)
+    (hQ : ∀ u v, inner (𝕜 := Real) (Q u) v = inner (𝕜 := Real) u (Q v))
+    (hComm : blockCommutator H0 Q = 0)
+    (u v : E) (hu : Q u = u) (hv : Q v = 0) :
+    inner (𝕜 := Real) u ((H0 + V) v) = inner (𝕜 := Real) u (V v) := by
+  have hc := congrArg (fun A : E →L[Real] E => A v) hComm
+  change Q (H0 v) - H0 (Q v) = 0 at hc
+  rw [hv, map_zero, sub_zero] at hc
+  have hz : inner (𝕜 := Real) u (H0 v) = 0 := by
+    calc
+      _ = inner (𝕜 := Real) (Q u) (H0 v) := by rw [hu]
+      _ = inner (𝕜 := Real) u (Q (H0 v)) := hQ u (H0 v)
+      _ = 0 := by rw [hc, inner_zero_right]
+  change inner (𝕜 := Real) u (H0 v + V v) = _
+  rw [inner_add_right, hz, zero_add]
+
+/-- Mixing is bounded by the interaction norm, without a factor from a
+commutator triangle inequality. The reference operator contributes no cross term. -/
+theorem cross_term_le_interaction_norm (H0 V Q : E →L[Real] E)
+    (hQ : ∀ u v, inner (𝕜 := Real) (Q u) v = inner (𝕜 := Real) u (Q v))
+    (hComm : blockCommutator H0 Q = 0)
+    (u v : E) (hu : Q u = u) (hv : Q v = 0) :
+    |inner (𝕜 := Real) u ((H0 + V) v)| ≤ ‖V‖ * ‖u‖ * ‖v‖ := by
+  rw [cross_term_eq_interaction H0 V Q hQ hComm u v hu hv]
+  calc
+    _ ≤ ‖u‖ * ‖V v‖ := abs_real_inner_le_norm _ _
+    _ ≤ ‖u‖ * (‖V‖ * ‖v‖) :=
+      mul_le_mul_of_nonneg_left (V.le_opNorm v) (norm_nonneg u)
+    _ = _ := by ring
+
+/-- Interaction-controlled comparison. The sector bounds here concern the full
+operator `H0 + V`, not just `H0`. Boundedness and commutation remain explicit;
+no smallness or regulator-uniform estimate for a gauge interaction is assumed proved. -/
+theorem projected_energy_lower_of_interaction (H0 V Q : E →L[Real] E)
+    (hH : ∀ u v, inner (𝕜 := Real) ((H0 + V) u) v =
+      inner (𝕜 := Real) u ((H0 + V) v))
+    (hQ : ∀ u v, inner (𝕜 := Real) (Q u) v = inner (𝕜 := Real) u (Q v))
+    (hIdem : ∀ u, Q (Q u) = Q u) (hComm : blockCommutator H0 Q = 0)
+    (a b : Real)
+    (hRetained : ∀ u, Q u = u → a * ‖u‖ ^ 2 ≤ inner (𝕜 := Real) u ((H0 + V) u))
+    (hDiscarded : ∀ v, Q v = 0 → b * ‖v‖ ^ 2 ≤ inner (𝕜 := Real) v ((H0 + V) v))
+    (x : E) :
+    (min a b - ‖V‖) * ‖x‖ ^ 2 ≤ inner (𝕜 := Real) x ((H0 + V) x) := by
+  exact projected_energy_lower (H0 + V).toLinearMap Q.toLinearMap hH hQ hIdem
+    a b ‖V‖ (norm_nonneg _) hRetained hDiscarded
+    (fun u v hu hv => cross_term_le_interaction_norm H0 V Q hQ hComm u v hu hv) x
+
 end BlockHamiltonian
 end RussoYM
