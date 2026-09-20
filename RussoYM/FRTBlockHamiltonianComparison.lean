@@ -568,6 +568,57 @@ theorem conditionalBlockAverage_local_interaction_energy_loss
     (Finset.sum_nonneg hd)
     (interaction_sum_oscillation_le_active V active x d hInactive hActive) hu hv
 
+
+omit [Fintype Y] in
+/-- Bounded local incidence gives a block-size oscillation bound. The union
+contains each affected interaction once, even if it touches several coordinates.
+Uniformity in total system size requires the displayed constants to be uniform. -/
+theorem interaction_sum_oscillation_le_local_degree
+    {J : Type*} [DecidableEq I]
+    (V : I → X × Y → Real) (block : Finset J) (touch : J → Finset I)
+    (D : Nat) (hDegree : ∀ j ∈ block, (touch j).card ≤ D)
+    (x : X) (delta : Real) (hdelta : 0 ≤ delta)
+    (hInactive : ∀ i, i ∉ block.biUnion touch →
+      ∀ y z, V i (x, z) = V i (x, y))
+    (hActive : ∀ i ∈ block.biUnion touch,
+      ∀ y z, |V i (x, z) - V i (x, y)| ≤ delta)
+    (y z : Y) :
+    |(∑ i, V i (x, z)) - (∑ i, V i (x, y))| ≤
+      (block.card : Real) * D * delta := by
+  have hc : ((block.biUnion touch).card : Real) ≤ (block.card : Real) * D := by
+    exact_mod_cast Finset.card_biUnion_le_card_mul block touch D hDegree
+  calc
+    _ ≤ ∑ i ∈ block.biUnion touch, delta :=
+      interaction_sum_oscillation_le_active V (block.biUnion touch) x
+        (fun _ => delta) hInactive hActive y z
+    _ = ((block.biUnion touch).card : Real) * delta := by
+      simp only [Finset.sum_const, nsmul_eq_mul]
+    _ ≤ _ := mul_le_mul_of_nonneg_right hc hdelta
+
+/-- Conditional energy mixing bounded by block size, local interaction degree,
+and single-interaction oscillation. Locality and all three uniform bounds
+remain hypotheses, not assertions about an unconstructed gauge model. -/
+theorem conditionalBlockAverage_local_degree_energy_loss
+    {J : Type*} [DecidableEq I]
+    (p : X → Y → Real) (hp : ∀ x z, 0 ≤ p x z)
+    (hpn : ∀ x, ∑ z, p x z = 1)
+    (V : I → X × Y → Real) (block : Finset J) (touch : J → Finset I)
+    (D : Nat) (hDegree : ∀ j ∈ block, (touch j).card ≤ D)
+    (u v : X × Y → Real) (x : X) (delta : Real) (hdelta : 0 ≤ delta)
+    (hInactive : ∀ i, i ∉ block.biUnion touch →
+      ∀ y z, V i (x, z) = V i (x, y))
+    (hActive : ∀ i ∈ block.biUnion touch,
+      ∀ y z, |V i (x, z) - V i (x, y)| ≤ delta)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    2 * |∑ y, p x y * u (x, y) * ((∑ i, V i (x, y)) * v (x, y))| ≤
+      ((block.card : Real) * D * delta) *
+        ((∑ y, p x y * u (x, y) ^ 2) + ∑ y, p x y * v (x, y) ^ 2) := by
+  exact conditionalBlockAverage_cross_energy_loss p hp hpn
+    (fun q => ∑ i, V i q) u v x ((block.card : Real) * D * delta)
+    (mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)) hdelta)
+    (interaction_sum_oscillation_le_local_degree V block touch D hDegree x
+      delta hdelta hInactive hActive) hu hv
 end LocalInteractions
 end ConditionalAverage
 end BlockHamiltonian
