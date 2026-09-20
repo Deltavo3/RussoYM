@@ -3,6 +3,7 @@ import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Abel
+import Mathlib.Logic.Function.DependsOn
 
 /-!
 # Block / Hamiltonian comparison: actual operator estimates
@@ -621,5 +622,67 @@ theorem conditionalBlockAverage_local_degree_energy_loss
       delta hdelta hInactive hActive) hu hv
 end LocalInteractions
 end ConditionalAverage
+
+section CoordinateLocality
+variable {J G K : Type*} [DecidableEq J]
+
+/-- Replace the coordinates in a block, leaving the exterior configuration fixed. -/
+def blockConfiguration (block : Finset J) (outside inside : J → G) : J → G :=
+  fun j => if j ∈ block then inside j else outside j
+
+/-- An interaction supported outside the block is unchanged by block replacement. -/
+theorem blockConfiguration_interaction_unchanged (block support : Finset J)
+    (V : (J → G) → Real) (hLocal : DependsOn V (support : Set J))
+    (hAway : ∀ j ∈ support, j ∉ block) (outside inside₁ inside₂ : J → G) :
+    V (blockConfiguration block outside inside₁) =
+      V (blockConfiguration block outside inside₂) := by
+  apply hLocal
+  intro j hj
+  simp only [blockConfiguration, if_neg (hAway j hj)]
+
+variable [Fintype K] [DecidableEq K]
+
+/-- Interaction indices incident to at least one coordinate in the block. -/
+def blockTouchingInteractions (block : Finset J) (support : K → Finset J) : Finset K :=
+  block.biUnion (fun j => Finset.univ.filter (fun i => j ∈ support i))
+
+/-- Locality derives the inactive-interaction hypothesis used in the block bounds. -/
+theorem blockConfiguration_inactive_interaction (block : Finset J)
+    (support : K → Finset J) (V : K → (J → G) → Real)
+    (hLocal : ∀ i, DependsOn (V i) (support i : Set J))
+    (i : K) (hi : i ∉ blockTouchingInteractions block support)
+    (outside inside₁ inside₂ : J → G) :
+    V i (blockConfiguration block outside inside₁) =
+      V i (blockConfiguration block outside inside₂) := by
+  apply blockConfiguration_interaction_unchanged block (support i) (V i) (hLocal i)
+  intro j hj hjb
+  apply hi
+  exact Finset.mem_biUnion.mpr
+    ⟨j, hjb, Finset.mem_filter.mpr ⟨Finset.mem_univ i, hj⟩⟩
+
+/-- Local coordinate dependence and bounded incidence imply the previously
+used block-size oscillation estimate for the explicitly assembled potential.
+This does not assert locality or bounded incidence for a renormalized model. -/
+theorem interaction_oscillation_from_coordinate_support (block : Finset J)
+    (support : K → Finset J) (V : K → (J → G) → Real)
+    (hLocal : ∀ i, DependsOn (V i) (support i : Set J))
+    (D : Nat)
+    (hDegree : ∀ j ∈ block, (Finset.univ.filter (fun i => j ∈ support i)).card ≤ D)
+    (outside : J → G) (delta : Real) (hdelta : 0 ≤ delta)
+    (hActive : ∀ i ∈ blockTouchingInteractions block support, ∀ y z : J → G,
+      |V i (blockConfiguration block outside z) -
+        V i (blockConfiguration block outside y)| ≤ delta)
+    (y z : J → G) :
+    |(∑ i, V i (blockConfiguration block outside z)) -
+      (∑ i, V i (blockConfiguration block outside y))| ≤
+      (block.card : Real) * D * delta := by
+  exact interaction_sum_oscillation_le_local_degree
+    (fun i (q : (J → G) × (J → G)) => V i (blockConfiguration block q.1 q.2))
+    block (fun j => Finset.univ.filter (fun i => j ∈ support i)) D hDegree
+    outside delta hdelta
+    (fun i hi y z => blockConfiguration_inactive_interaction block support V hLocal
+      i hi outside z y) hActive y z
+
+end CoordinateLocality
 end BlockHamiltonian
 end RussoYM
