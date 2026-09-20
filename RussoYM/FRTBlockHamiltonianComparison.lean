@@ -5,6 +5,9 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Abel
 import Mathlib.Tactic.NormNum
 import Mathlib.Logic.Function.DependsOn
+import Mathlib.LinearAlgebra.UnitaryGroup
+import Mathlib.LinearAlgebra.Matrix.Trace
+import Mathlib.Tactic.Group
 
 /-!
 # Block / Hamiltonian comparison: actual operator estimates
@@ -739,5 +742,85 @@ theorem interaction_oscillation_from_coordinate_support (block : Finset J)
       i hi outside z y) hActive y z
 
 end CoordinateLocality
+
+/-! Concrete magnetic interaction for special-unitary link variables.
+The coefficient beta below is the coefficient of the normalized Wilson term.
+This constructs the magnetic potential only: the electric operator, its domain,
+physical gauge-invariant Hilbert space, and blocked transition kernel remain open.
+Reference: D'Andrea et al., Phys. Rev. D 109 (2024), 074501, section II. -/
+section WilsonPlaquette
+variable {N L P : Type*} [Fintype N] [DecidableEq N]
+
+/-- Oriented square holonomy: edges run 0→1, 1→2, 3→2, and 0→3. -/
+def squareHolonomy {G : Type*} [Group G] (a b c d : G) : G :=
+  a * b * c⁻¹ * d⁻¹
+
+/-- The four vertex gauge factors cancel except for conjugation at the base vertex. -/
+theorem squareHolonomy_gauge_covariant {G : Type*} [Group G]
+    (a b c d g0 g1 g2 g3 : G) :
+    squareHolonomy (g0 * a * g1⁻¹) (g1 * b * g2⁻¹)
+      (g3 * c * g2⁻¹) (g0 * d * g3⁻¹) =
+      g0 * squareHolonomy a b c d * g0⁻¹ := by
+  unfold squareHolonomy
+  group
+
+/-- Normalized Wilson magnetic term on an actual special-unitary matrix.
+Use nonempty N for the usual physical normalization. -/
+noncomputable def wilsonMagneticTerm (beta : Real)
+    (U : Matrix.specialUnitaryGroup N Complex) : Real :=
+  beta * (1 - (Matrix.trace U.val).re / Fintype.card N)
+
+theorem specialUnitary_trace_conjugate
+    (g U : Matrix.specialUnitaryGroup N Complex) :
+    Matrix.trace (g * U * g⁻¹).val = Matrix.trace U.val := by
+  have hi : (g⁻¹).val * g.val = (1 : Matrix N N Complex) :=
+    congrArg Subtype.val (inv_mul_cancel g)
+  change Matrix.trace (g.val * U.val * (g⁻¹).val) = _
+  rw [Matrix.trace_mul_cycle, hi, one_mul]
+
+/-- Gauge invariance of the concrete Wilson plaquette term. -/
+theorem wilsonMagneticTerm_square_gauge_invariant (beta : Real)
+    (a b c d g0 g1 g2 g3 : Matrix.specialUnitaryGroup N Complex) :
+    wilsonMagneticTerm beta
+      (squareHolonomy (g0 * a * g1⁻¹) (g1 * b * g2⁻¹)
+        (g3 * c * g2⁻¹) (g0 * d * g3⁻¹)) =
+      wilsonMagneticTerm beta (squareHolonomy a b c d) := by
+  rw [squareHolonomy_gauge_covariant]
+  unfold wilsonMagneticTerm
+  rw [specialUnitary_trace_conjugate]
+
+/-- The four specified links determine the plaquette interaction. -/
+noncomputable def wilsonPlaquette (beta : Real) (edges : Fin 4 → L)
+    (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  wilsonMagneticTerm beta
+    (squareHolonomy (U (edges 0)) (U (edges 1)) (U (edges 2)) (U (edges 3)))
+
+/-- Coordinate support of a Wilson plaquette is derived from its formula. -/
+theorem wilsonPlaquette_dependsOn (beta : Real) (edges : Fin 4 → L) :
+    DependsOn (wilsonPlaquette (N := N) beta edges) (Set.range edges) := by
+  intro U V h
+  unfold wilsonPlaquette squareHolonomy
+  rw [h (edges 0) ⟨0, rfl⟩, h (edges 1) ⟨1, rfl⟩,
+    h (edges 2) ⟨2, rfl⟩, h (edges 3) ⟨3, rfl⟩]
+
+/-- Exact cancellation of a concrete Wilson plaquette under replacement of
+a block disjoint from all four links. No finiteness of the gauge group is used. -/
+theorem wilsonPlaquette_block_unchanged [DecidableEq L]
+    (beta : Real) (edges : Fin 4 → L) (block : Finset L)
+    (hAway : ∀ k, edges k ∉ block)
+    (outside inside₁ inside₂ : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonPlaquette beta edges (blockConfiguration block outside inside₁) =
+      wilsonPlaquette beta edges (blockConfiguration block outside inside₂) := by
+  apply wilsonPlaquette_dependsOn beta edges
+  rintro _ ⟨k, rfl⟩
+  simp only [blockConfiguration, if_neg (hAway k)]
+/-- Explicit finite sum of normalized Wilson magnetic plaquette terms.
+This is not, by itself, the full Yang-Mills Hamiltonian. -/
+noncomputable def finiteWilsonMagneticPotential [Fintype P]
+    (beta : Real) (plaquettes : P → Fin 4 → L)
+    (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  ∑ p, wilsonPlaquette beta (plaquettes p) U
+
+end WilsonPlaquette
 end BlockHamiltonian
 end RussoYM
