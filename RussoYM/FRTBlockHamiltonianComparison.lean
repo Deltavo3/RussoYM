@@ -8,6 +8,9 @@ import Mathlib.Logic.Function.DependsOn
 import Mathlib.LinearAlgebra.UnitaryGroup
 import Mathlib.LinearAlgebra.Matrix.Trace
 import Mathlib.Tactic.Group
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Measure.WithDensity
+import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-!
 # Block / Hamiltonian comparison: actual operator estimates
@@ -904,5 +907,153 @@ theorem finiteWilsonMagneticPotential_block_oscillation
   · intro p _ y z
     exact wilsonMagneticTerm_oscillation beta hbeta _ _
 end WilsonPlaquette
+
+section GibbsNormalization
+open MeasureTheory
+variable {A : Type*} [MeasurableSpace A]
+variable (mu : Measure A) [IsProbabilityMeasure mu]
+
+/-- Gibbs partition function relative to a probability reference measure.
+For compact link groups the intended reference is normalized product Haar. -/
+noncomputable def gibbsPartition (W : A → Real) : Real :=
+  ∫ z, Real.exp (-W z) ∂mu
+
+noncomputable def gibbsDensity (W : A → Real) (z : A) : Real :=
+  Real.exp (-W z) / gibbsPartition mu W
+
+/-- Actual measure defined by the normalized Boltzmann density. -/
+noncomputable def gibbsMeasure (W : A → Real) : Measure A :=
+  mu.withDensity (fun z => ENNReal.ofReal (gibbsDensity mu W z))
+
+theorem gibbsPartition_pos (W : A → Real)
+    (hW : Integrable (fun z => Real.exp (-W z)) mu) :
+    0 < gibbsPartition mu W :=
+  integral_exp_pos hW
+
+theorem gibbsDensity_positive (W : A → Real)
+    (hW : Integrable (fun z => Real.exp (-W z)) mu) (z : A) :
+    0 < gibbsDensity mu W z :=
+  div_pos (Real.exp_pos _) (gibbsPartition_pos mu W hW)
+
+theorem gibbsDensity_integral_one (W : A → Real)
+    (hW : Integrable (fun z => Real.exp (-W z)) mu) :
+    (∫ z, gibbsDensity mu W z ∂mu) = 1 := by
+  simp only [gibbsDensity, integral_div]
+  exact div_self (ne_of_gt (gibbsPartition_pos mu W hW))
+
+theorem gibbsMeasure_isProbability (W : A → Real)
+    (hW : Integrable (fun z => Real.exp (-W z)) mu) :
+    IsProbabilityMeasure (gibbsMeasure mu W) := by
+  constructor
+  rw [gibbsMeasure, withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+  have hi : Integrable (gibbsDensity mu W) mu := hW.div_const (gibbsPartition mu W)
+  rw [← ofReal_integral_eq_lintegral_ofReal
+    hi
+    (Filter.Eventually.of_forall (fun z => (gibbsDensity_positive mu W hW z).le))]
+  rw [gibbsDensity_integral_one mu W hW]
+  simp
+
+/-- Oscillation controls normalized Gibbs density with the sharp elementary
+factor exp(C), with no assumed spectral or Hamiltonian comparison. -/
+theorem gibbsDensity_bounds_of_oscillation (W : A → Real)
+    (hW : Integrable (fun z => Real.exp (-W z)) mu)
+    (C : Real) (hOsc : ∀ y z, |W y - W z| ≤ C) (x : A) :
+    Real.exp (-C) ≤ gibbsDensity mu W x ∧
+      gibbsDensity mu W x ≤ Real.exp C := by
+  have hupper : gibbsPartition mu W ≤ Real.exp (C - W x) := by
+    have h := integral_mono hW (integrable_const (Real.exp (C - W x))) (fun y => by
+      apply Real.exp_le_exp.mpr
+      have hy := (abs_le.mp (hOsc x y)).2
+      linarith only [hy])
+    simpa [gibbsPartition] using h
+  have hlower : Real.exp (-C - W x) ≤ gibbsPartition mu W := by
+    have h := integral_mono (integrable_const (Real.exp (-C - W x))) hW (fun y => by
+      apply Real.exp_le_exp.mpr
+      have hy := (abs_le.mp (hOsc y x)).2
+      linarith only [hy])
+    simpa [gibbsPartition] using h
+  have hZ := gibbsPartition_pos mu W hW
+  constructor
+  · apply (le_div_iff₀ hZ).mpr
+    calc
+      _ ≤ Real.exp (-C) * Real.exp (C - W x) :=
+        mul_le_mul_of_nonneg_left hupper (Real.exp_pos _).le
+      _ = Real.exp (-W x) := by rw [← Real.exp_add]; congr 1; ring
+  · apply (div_le_iff₀ hZ).mpr
+    calc
+      Real.exp (-W x) = Real.exp C * Real.exp (-C - W x) := by
+        rw [← Real.exp_add]; congr 1; ring
+      _ ≤ _ := mul_le_mul_of_nonneg_left hlower (Real.exp_pos _).le
+
+/-- A measurable nonnegative action has an integrable Boltzmann weight on a
+probability reference space, since that weight is bounded by one. -/
+theorem gibbsWeight_integrable_of_nonneg (W : A → Real)
+    (hMeas : Measurable W) (hNonneg : ∀ z, 0 ≤ W z) :
+    Integrable (fun z => Real.exp (-W z)) mu := by
+  apply (integrable_const (1 : Real)).mono' hMeas.neg.exp.aestronglyMeasurable
+  apply Filter.Eventually.of_forall
+  intro z
+  rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+  exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (hNonneg z))
+end GibbsNormalization
+
+section WilsonGibbs
+open MeasureTheory
+variable {N L P : Type*} [Fintype N] [DecidableEq N] [Nonempty N]
+  [Fintype P] [DecidableEq L]
+variable [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+variable (mu : Measure (L → Matrix.specialUnitaryGroup N Complex)) [IsProbabilityMeasure mu]
+
+/-- Conditional Wilson Gibbs measure for a fixed exterior configuration.
+Measurability of the action and the probability reference measure are explicit;
+the intended Haar reference has not been constructed by this definition. -/
+noncomputable def wilsonBlockGibbsMeasure (beta : Real) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :=
+  gibbsMeasure mu (fun inside => finiteWilsonMagneticPotential beta plaquettes
+    (blockConfiguration block outside inside))
+
+theorem wilsonBlockGibbs_integrable (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (hMeas : Measurable (fun inside => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside inside))) :
+    Integrable (fun inside => Real.exp (-finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside inside))) mu := by
+  apply gibbsWeight_integrable_of_nonneg mu _ hMeas
+  intro inside
+  exact Finset.sum_nonneg fun p _ => (wilsonMagneticTerm_bounds beta hbeta _).1
+
+theorem wilsonBlockGibbs_isProbability (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (hMeas : Measurable (fun inside => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside inside))) :
+    IsProbabilityMeasure (wilsonBlockGibbsMeasure mu beta plaquettes block outside) :=
+  gibbsMeasure_isProbability mu _
+    (wilsonBlockGibbs_integrable mu beta hbeta plaquettes block outside hMeas)
+
+/-- Explicit density minorization/majorization for the constructed Wilson
+conditional measure, with C = 2 beta * block size * plaquette incidence bound.
+This is an equilibrium resampling density, not yet physical-time evolution. -/
+theorem wilsonBlockGibbs_density_bounds (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside inside : L → Matrix.specialUnitaryGroup N Complex)
+    (hMeas : Measurable (fun z => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside z))) :
+    Real.exp (-((block.card : Real) * D * (2 * beta))) ≤
+      gibbsDensity mu (fun z => finiteWilsonMagneticPotential beta plaquettes
+        (blockConfiguration block outside z)) inside ∧
+    gibbsDensity mu (fun z => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside z)) inside ≤
+      Real.exp ((block.card : Real) * D * (2 * beta)) := by
+  apply gibbsDensity_bounds_of_oscillation mu _
+    (wilsonBlockGibbs_integrable mu beta hbeta plaquettes block outside hMeas)
+  intro y z
+  exact finiteWilsonMagneticPotential_block_oscillation beta hbeta plaquettes
+    block D hDegree outside z y
+
+end WilsonGibbs
 end BlockHamiltonian
 end RussoYM
