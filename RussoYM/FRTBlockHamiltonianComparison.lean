@@ -185,5 +185,82 @@ theorem projected_energy_lower_of_interaction (H0 V Q : E →L[Real] E)
     a b ‖V‖ (norm_nonneg _) hRetained hDiscarded
     (fun u v hu hv => cross_term_le_interaction_norm H0 V Q hQ hComm u v hu hv) x
 
+
+/-! Explicit finite conditional averaging. These algebraic identities do not
+identify this model with a gauge Hamiltonian or supply a Hilbert-space norm bound. -/
+section ConditionalAverage
+variable {X Y : Type*} [Fintype Y]
+
+/-- Average the discarded coordinate, keeping the retained coordinate fixed. -/
+def conditionalBlockAverage (p : X → Y → Real) (f : X × Y → Real)
+    (q : X × Y) : Real :=
+  ∑ z, p q.1 z * f (q.1, z)
+
+/-- A normalized conditional average is a projection. -/
+theorem conditionalBlockAverage_idempotent (p : X → Y → Real)
+    (hp : ∀ x, ∑ z, p x z = 1) (f : X × Y → Real) :
+    conditionalBlockAverage p (conditionalBlockAverage p f) =
+      conditionalBlockAverage p f := by
+  funext q
+  simp only [conditionalBlockAverage]
+  rw [← Finset.sum_mul, hp q.1, one_mul]
+
+/-- The commutator with multiplication depends only on potential differences
+within each conditional fiber. -/
+theorem conditionalBlockAverage_commutator (p : X → Y → Real)
+    (W f : X × Y → Real) (q : X × Y) :
+    conditionalBlockAverage p (fun r => W r * f r) q -
+      W q * conditionalBlockAverage p f q =
+      ∑ z, p q.1 z * (W (q.1, z) - W q) * f (q.1, z) := by
+  simp only [conditionalBlockAverage, Finset.mul_sum, ← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro z _
+  ring
+
+/-- Retained-coordinate potentials commute exactly with the conditional average. -/
+theorem conditionalBlockAverage_retained_potential (p : X → Y → Real)
+    (c : X → Real) (f : X × Y → Real) (q : X × Y) :
+    conditionalBlockAverage p (fun r => c r.1 * f r) q =
+      c q.1 * conditionalBlockAverage p f q := by
+  simp only [conditionalBlockAverage, Finset.mul_sum]
+  apply Finset.sum_congr rfl
+  intro z _
+  ring
+
+/-- Arbitrarily large retained-only terms cancel before any mixing estimate. -/
+theorem conditionalBlockAverage_commutator_add_retained (p : X → Y → Real)
+    (W f : X × Y → Real) (c : X → Real) (q : X × Y) :
+    conditionalBlockAverage p (fun r => (W r + c r.1) * f r) q -
+      (W q + c q.1) * conditionalBlockAverage p f q =
+    conditionalBlockAverage p (fun r => W r * f r) q -
+      W q * conditionalBlockAverage p f q := by
+  rw [conditionalBlockAverage_commutator, conditionalBlockAverage_commutator]
+  apply Finset.sum_congr rfl
+  intro z _
+  simp only
+  ring
+
+/-- A pointwise oscillation bound, with normalized nonnegative conditional weights.
+This is a pointwise estimate, not an asserted physical operator norm estimate. -/
+theorem conditionalBlockAverage_commutator_bound (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (W f : X × Y → Real) (q : X × Y) (d F : Real) (hd : 0 ≤ d)
+    (hW : ∀ z, |W (q.1, z) - W q| ≤ d)
+    (hf : ∀ z, |f (q.1, z)| ≤ F) :
+    |conditionalBlockAverage p (fun r => W r * f r) q -
+      W q * conditionalBlockAverage p f q| ≤ d * F := by
+  rw [conditionalBlockAverage_commutator]
+  calc
+    _ ≤ ∑ z, |p q.1 z * (W (q.1, z) - W q) * f (q.1, z)| :=
+      Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ z, p q.1 z * (d * F) := by
+      apply Finset.sum_le_sum
+      intro z _
+      rw [abs_mul, abs_mul, abs_of_nonneg (hp q.1 z), mul_assoc]
+      exact mul_le_mul_of_nonneg_left
+        (mul_le_mul (hW z) (hf z) (abs_nonneg _) hd) (hp q.1 z)
+    _ = d * F := by rw [← Finset.sum_mul, hpn q.1, one_mul]
+
+end ConditionalAverage
 end BlockHamiltonian
 end RussoYM
