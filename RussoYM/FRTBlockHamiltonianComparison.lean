@@ -3,6 +3,7 @@ import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Abel
+import Mathlib.Tactic.NormNum
 import Mathlib.Logic.Function.DependsOn
 
 /-!
@@ -621,6 +622,60 @@ theorem conditionalBlockAverage_local_degree_energy_loss
     (interaction_sum_oscillation_le_local_degree V block touch D hDegree x
       delta hdelta hInactive hActive) hu hv
 end LocalInteractions
+
+/-- Moving a retained coordinate also changes its conditional weights. This is
+the exact reference-dynamics commutator, separate from potential oscillation. -/
+theorem conditionalBlockAverage_reference_shift_commutator
+    (p : X → Y → Real) (sigma : X → X) (f : X × Y → Real) (x : X) (y : Y) :
+    conditionalBlockAverage p (fun r => f (sigma r.1, r.2)) (x, y) -
+      conditionalBlockAverage p f (sigma x, y) =
+      ∑ z, (p x z - p (sigma x) z) * f (sigma x, z) := by
+  simp only [conditionalBlockAverage, ← Finset.sum_sub_distrib]
+  apply Finset.sum_congr rfl
+  intro z _
+  ring
+
+/-- Commutation with all retained-coordinate shifts of this form is equivalent
+to invariance of the conditional rows along that shift. Positivity and row
+normalization alone do not provide this condition. -/
+theorem conditionalBlockAverage_reference_shift_commutes_iff
+    (p : X → Y → Real) (sigma : X → X) :
+    (∀ f : X × Y → Real, ∀ x y,
+      conditionalBlockAverage p (fun r => f (sigma r.1, r.2)) (x, y) =
+        conditionalBlockAverage p f (sigma x, y)) ↔
+      ∀ x z, p x z = p (sigma x) z := by
+  classical
+  constructor
+  · intro h x z
+    have hz := h (fun r => if r.2 = z then 1 else 0) x z
+    simpa [conditionalBlockAverage] using hz
+  · intro h f x y
+    simp only [conditionalBlockAverage]
+    apply Finset.sum_congr rfl
+    intro z _
+    rw [h x z]
+
+/-- Strictly positive conditional rows with genuine retained-coordinate dependence. -/
+noncomputable def dependentBoolRows (x y : Bool) : Real := if x = y then 3 / 4 else 1 / 4
+
+theorem dependentBoolRows_positive (x y : Bool) : 0 < dependentBoolRows x y := by
+  cases x <;> cases y <;> norm_num [dependentBoolRows]
+
+theorem dependentBoolRows_normalized (x : Bool) :
+    (∑ y, dependentBoolRows x y) = 1 := by
+  cases x <;> norm_num [dependentBoolRows, Fintype.sum_bool]
+
+/-- Explicit positive, normalized counterexample to automatic reference
+commutation. It does not assert failure for a particular Yang-Mills model;
+it rules out inferring commutation merely from stochastic conditional averaging. -/
+theorem dependentBoolRows_reference_not_commuting :
+    ¬ (∀ f : Bool × Bool → Real, ∀ x y,
+      conditionalBlockAverage dependentBoolRows (fun r => f (!r.1, r.2)) (x, y) =
+        conditionalBlockAverage dependentBoolRows f (!x, y)) := by
+  intro h
+  have hr := (conditionalBlockAverage_reference_shift_commutes_iff
+    dependentBoolRows (fun x => !x)).mp h false false
+  norm_num [dependentBoolRows] at hr
 end ConditionalAverage
 
 section CoordinateLocality
