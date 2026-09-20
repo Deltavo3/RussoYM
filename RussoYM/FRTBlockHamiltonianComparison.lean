@@ -514,6 +514,61 @@ theorem conditionalBlockAverage_operator_energy_lower (p : X → Y → Real)
   rw [hn, he]
   have hab := neg_abs_le (∑ y, p x y * u (x, y) * (W (x, y) * v (x, y)))
   nlinarith only [hU, hV, ha, hb, hl, hab]
+
+/-! Local interaction support. An interaction outside the selected active set
+must be constant along the discarded coordinate. No lattice geometry or
+volume-independent bound on the active set is supplied by these lemmas. -/
+section LocalInteractions
+variable {I : Type*} [Fintype I]
+
+omit [Fintype Y] in
+/-- Only active interactions contribute to a within-fiber potential difference. -/
+theorem interaction_sum_difference_eq_active (V : I → X × Y → Real)
+    (active : Finset I) (x : X)
+    (hInactive : ∀ i, i ∉ active → ∀ y z, V i (x, z) = V i (x, y))
+    (y z : Y) :
+    (∑ i, V i (x, z)) - (∑ i, V i (x, y)) =
+      ∑ i ∈ active, (V i (x, z) - V i (x, y)) := by
+  rw [← Finset.sum_sub_distrib]
+  symm
+  apply Finset.sum_subset (Finset.subset_univ active)
+  intro i _ hi
+  exact sub_eq_zero.mpr (hInactive i hi y z)
+
+omit [Fintype Y] in
+/-- Total oscillation is bounded by the sum of active interaction oscillations;
+the number and size of inactive terms do not enter this estimate. -/
+theorem interaction_sum_oscillation_le_active (V : I → X × Y → Real)
+    (active : Finset I) (x : X) (d : I → Real)
+    (hInactive : ∀ i, i ∉ active → ∀ y z, V i (x, z) = V i (x, y))
+    (hActive : ∀ i ∈ active, ∀ y z, |V i (x, z) - V i (x, y)| ≤ d i)
+    (y z : Y) :
+    |(∑ i, V i (x, z)) - (∑ i, V i (x, y))| ≤ ∑ i ∈ active, d i := by
+  rw [interaction_sum_difference_eq_active V active x hInactive y z]
+  exact (Finset.abs_sum_le_sum_abs _ _).trans
+    (Finset.sum_le_sum fun i hi => hActive i hi y z)
+
+/-- Local-support version of the cross-energy loss bound. A regulator-uniform
+conclusion still requires a uniform bound on the active oscillation sum. -/
+theorem conditionalBlockAverage_local_interaction_energy_loss
+    (p : X → Y → Real) (hp : ∀ x z, 0 ≤ p x z)
+    (hpn : ∀ x, ∑ z, p x z = 1)
+    (V : I → X × Y → Real) (active : Finset I) (d : I → Real)
+    (u v : X × Y → Real) (x : X)
+    (hd : ∀ i ∈ active, 0 ≤ d i)
+    (hInactive : ∀ i, i ∉ active → ∀ y z, V i (x, z) = V i (x, y))
+    (hActive : ∀ i ∈ active, ∀ y z, |V i (x, z) - V i (x, y)| ≤ d i)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    2 * |∑ y, p x y * u (x, y) * ((∑ i, V i (x, y)) * v (x, y))| ≤
+      (∑ i ∈ active, d i) * ((∑ y, p x y * u (x, y) ^ 2) +
+        ∑ y, p x y * v (x, y) ^ 2) := by
+  exact conditionalBlockAverage_cross_energy_loss p hp hpn
+    (fun q => ∑ i, V i q) u v x (∑ i ∈ active, d i)
+    (Finset.sum_nonneg hd)
+    (interaction_sum_oscillation_le_active V active x d hInactive hActive) hu hv
+
+end LocalInteractions
 end ConditionalAverage
 end BlockHamiltonian
 end RussoYM
