@@ -8,8 +8,13 @@ import Mathlib.Logic.Function.DependsOn
 import Mathlib.LinearAlgebra.UnitaryGroup
 import Mathlib.LinearAlgebra.Matrix.Trace
 import Mathlib.Tactic.Group
+import Mathlib.Topology.Instances.Matrix
+import Mathlib.Topology.Algebra.Star.Unitary
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.Tactic.FunProp
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.WithDensity
+import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Analysis.SpecialFunctions.Exp
 
 /-!
@@ -997,6 +1002,90 @@ theorem gibbsWeight_integrable_of_nonneg (W : A → Real)
   exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (hNonneg z))
 end GibbsNormalization
 
+
+
+section SpecialUnitaryTopology
+variable {N : Type*} [Fintype N] [DecidableEq N]
+
+/-- The special-unitary matrix set is closed by its defining equations. -/
+theorem specialUnitary_isClosed :
+    IsClosed (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex)) := by
+  change IsClosed ((unitary (Matrix N N Complex) : Set (Matrix N N Complex)) ∩
+    {M | Matrix.det M = 1})
+  exact isClosed_unitary.inter (isClosed_eq continuous_id.matrix_det continuous_const)
+
+open scoped Matrix.Norms.Elementwise in
+/-- Compactness of the actual special-unitary group, from closedness and the
+unitary entry bounds in finite-dimensional matrix space. -/
+theorem specialUnitary_compactSpace :
+    CompactSpace (Matrix.specialUnitaryGroup N Complex) := by
+  letI : ProperSpace (Matrix N N Complex) := FiniteDimensional.proper Complex _
+  apply isCompact_iff_compactSpace.mp
+  apply (isCompact_closedBall (0 : Matrix N N Complex) 1).of_isClosed_subset
+    specialUnitary_isClosed
+  intro U hU
+  rw [Metric.mem_closedBall, dist_zero_right]
+  exact entrywise_sup_norm_bound_of_unitary hU.1
+
+/-- Matrix multiplication and conjugate-transpose inversion give the required
+topological group structure for Haar measure. -/
+theorem specialUnitary_isTopologicalGroup :
+    IsTopologicalGroup (Matrix.specialUnitaryGroup N Complex) := by
+  letI : ContinuousInv (Matrix.specialUnitaryGroup N Complex) :=
+    ⟨continuous_induced_rng.mpr continuous_subtype_val.star⟩
+  exact { }
+
+end SpecialUnitaryTopology
+section WilsonContinuity
+variable {N L P : Type*} [Fintype N] [DecidableEq N]
+
+/-- Continuity follows from the explicit matrix product and trace formula;
+inverse special-unitary matrices are conjugate transposes. -/
+theorem wilsonPlaquette_continuous (beta : Real) (edges : Fin 4 → L) :
+    Continuous (wilsonPlaquette (N := N) beta edges) := by
+  change Continuous (fun U : L → Matrix.specialUnitaryGroup N Complex =>
+    beta * (1 - (Matrix.trace
+      ((U (edges 0)).val * (U (edges 1)).val *
+        star (U (edges 2)).val * star (U (edges 3)).val)).re / Fintype.card N))
+  fun_prop
+
+theorem finiteWilsonMagneticPotential_continuous [Fintype P]
+    (beta : Real) (plaquettes : P → Fin 4 → L) :
+    Continuous (finiteWilsonMagneticPotential (N := N) beta plaquettes) := by
+  exact continuous_finset_sum _ (fun p _ => wilsonPlaquette_continuous beta (plaquettes p))
+
+/-- Block replacement is jointly continuous in exterior and interior link data. -/
+theorem blockConfiguration_joint_continuous [DecidableEq L] (block : Finset L) :
+    Continuous (fun q : (L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex) =>
+      blockConfiguration block q.1 q.2) := by
+  apply continuous_pi
+  intro j
+  by_cases hj : j ∈ block
+  · simpa only [blockConfiguration, if_pos hj] using (continuous_apply j).comp continuous_snd
+  · simpa only [blockConfiguration, if_neg hj] using (continuous_apply j).comp continuous_fst
+
+/-- The concrete block action is jointly continuous, including its dependence
+on the exterior configuration that parametrizes conditional resampling. -/
+theorem wilsonBlockAction_joint_continuous [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L) :
+    Continuous (fun q : (L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex) =>
+      finiteWilsonMagneticPotential beta plaquettes (blockConfiguration block q.1 q.2)) :=
+  (finiteWilsonMagneticPotential_continuous beta plaquettes).comp
+    (blockConfiguration_joint_continuous block)
+
+theorem wilsonBlockAction_measurable [Fintype P] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    Measurable (fun inside => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside inside)) :=
+  ((wilsonBlockAction_joint_continuous beta plaquettes block).comp
+    (continuous_const.prodMk continuous_id)).measurable
+
+end WilsonContinuity
 section WilsonGibbs
 open MeasureTheory
 variable {N L P : Type*} [Fintype N] [DecidableEq N] [Nonempty N]
@@ -1054,6 +1143,58 @@ theorem wilsonBlockGibbs_density_bounds (beta : Real) (hbeta : 0 ≤ beta)
   exact finiteWilsonMagneticPotential_block_oscillation beta hbeta plaquettes
     block D hDegree outside z y
 
+/-- Under the standard Borel measurable structure, the previously explicit
+measurability premise is discharged for the actual Wilson block formula. -/
+theorem wilsonBlockGibbs_isProbability_borel
+    [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    IsProbabilityMeasure (wilsonBlockGibbsMeasure mu beta plaquettes block outside) :=
+  wilsonBlockGibbs_isProbability mu beta hbeta plaquettes block outside
+    (wilsonBlockAction_measurable beta plaquettes block outside)
 end WilsonGibbs
+
+section WilsonHaar
+open MeasureTheory TopologicalSpace
+variable {N L P : Type*} [Fintype N] [DecidableEq N]
+variable [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+  [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)]
+
+/-- Normalized Haar reference on the actual finite-link special-unitary
+configuration group, constructed using its proved compact group structure. -/
+noncomputable def wilsonHaarReference : Measure (L → Matrix.specialUnitaryGroup N Complex) := by
+  letI := specialUnitary_compactSpace (N := N)
+  letI := specialUnitary_isTopologicalGroup (N := N)
+  exact Measure.haarMeasure
+    (⟨⟨Set.univ, isCompact_univ⟩, by simp⟩ :
+      PositiveCompacts (L → Matrix.specialUnitaryGroup N Complex))
+
+theorem wilsonHaarReference_isProbability :
+    IsProbabilityMeasure (wilsonHaarReference (N := N) (L := L)) := by
+  letI := specialUnitary_compactSpace (N := N)
+  letI := specialUnitary_isTopologicalGroup (N := N)
+  constructor
+  exact Measure.haarMeasure_self
+
+theorem wilsonHaarReference_isHaar :
+    Measure.IsHaarMeasure (wilsonHaarReference (N := N) (L := L)) := by
+  letI := specialUnitary_compactSpace (N := N)
+  letI := specialUnitary_isTopologicalGroup (N := N)
+  unfold wilsonHaarReference
+  infer_instance
+
+/-- Wilson conditional resampling is now a probability measure for the
+constructed Haar reference, with no measurability or normalization assumptions
+on the action supplied by the caller. This is not a physical-time kernel. -/
+theorem wilsonBlockGibbs_haar_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    IsProbabilityMeasure (wilsonBlockGibbsMeasure wilsonHaarReference
+      beta plaquettes block outside) := by
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  exact wilsonBlockGibbs_isProbability_borel wilsonHaarReference beta hbeta
+    plaquettes block outside
+
+end WilsonHaar
 end BlockHamiltonian
 end RussoYM
