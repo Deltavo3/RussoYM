@@ -327,6 +327,90 @@ theorem conditionalBlockAverage_commutator_fiber_energy_bound
         (conditionalBlockAverage_commutator_sq_bound p hp hpn W f (x, y) d hd
           (hW y)) (hp x y)
     _ = _ := by rw [← Finset.sum_mul, hpn x, one_mul]
+
+/-- Conditional averaging is symmetric for its own fiber weights. -/
+theorem conditionalBlockAverage_weighted_symmetry (p : X → Y → Real)
+    (u v : X × Y → Real) (x : X) :
+    (∑ y, p x y * conditionalBlockAverage p u (x, y) * v (x, y)) =
+      ∑ y, p x y * u (x, y) * conditionalBlockAverage p v (x, y) := by
+  simp only [conditionalBlockAverage]
+  calc
+    _ = (∑ z, p x z * u (x, z)) * ∑ y, p x y * v (x, y) := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro y _
+      ring
+    _ = _ := by rw [Finset.sum_mul]
+
+/-- The retained/discarded interaction cross term equals the weighted pairing
+with the explicit conditional commutator. -/
+theorem conditionalBlockAverage_cross_eq_commutator (p : X → Y → Real)
+    (W u v : X × Y → Real) (x : X)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    (∑ y, p x y * u (x, y) * (W (x, y) * v (x, y))) =
+      ∑ y, p x y * u (x, y) *
+        (conditionalBlockAverage p (fun r => W r * v r) (x, y) -
+          W (x, y) * conditionalBlockAverage p v (x, y)) := by
+  simp only [hv, mul_zero, sub_zero]
+  have h := conditionalBlockAverage_weighted_symmetry p u (fun r => W r * v r) x
+  simpa only [hu] using h
+
+/-- Squared weighted cross-term bound for retained and discarded functions.
+The mixing constant uses only within-fiber potential oscillation. -/
+theorem conditionalBlockAverage_cross_sq_bound (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (W u v : X × Y → Real) (x : X) (d : Real) (hd : 0 ≤ d)
+    (hW : ∀ y z, |W (x, z) - W (x, y)| ≤ d)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    (∑ y, p x y * u (x, y) * (W (x, y) * v (x, y))) ^ 2 ≤
+      d ^ 2 * (∑ y, p x y * u (x, y) ^ 2) *
+        (∑ y, p x y * v (x, y) ^ 2) := by
+  rw [conditionalBlockAverage_cross_eq_commutator p W u v x hu hv]
+  let c : Y → Real := fun y =>
+    conditionalBlockAverage p (fun r => W r * v r) (x, y) -
+      W (x, y) * conditionalBlockAverage p v (x, y)
+  have hcs : (∑ y, p x y * u (x, y) * c y) ^ 2 ≤
+      (∑ y, p x y * u (x, y) ^ 2) * ∑ y, p x y * c y ^ 2 :=
+    Finset.sum_sq_le_sum_mul_sum_of_sq_eq_mul Finset.univ
+      (fun y _ => mul_nonneg (hp x y) (sq_nonneg _))
+      (fun y _ => mul_nonneg (hp x y) (sq_nonneg _))
+      (fun y _ => by ring)
+  have hb := conditionalBlockAverage_commutator_fiber_energy_bound p hp hpn W v x d hd hW
+  have hn : 0 ≤ ∑ y, p x y * u (x, y) ^ 2 :=
+    Finset.sum_nonneg fun y _ => mul_nonneg (hp x y) (sq_nonneg _)
+  calc
+    _ ≤ (∑ y, p x y * u (x, y) ^ 2) * ∑ y, p x y * c y ^ 2 := hcs
+    _ ≤ (∑ y, p x y * u (x, y) ^ 2) *
+        (d ^ 2 * ∑ y, p x y * v (x, y) ^ 2) :=
+      mul_le_mul_of_nonneg_left hb hn
+    _ = _ := by ring
+/-- The explicit cross term costs at most the oscillation times the sum of
+sector squared norms, in the form needed for quadratic energy comparison. -/
+theorem conditionalBlockAverage_cross_energy_loss (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (W u v : X × Y → Real) (x : X) (d : Real) (hd : 0 ≤ d)
+    (hW : ∀ y z, |W (x, z) - W (x, y)| ≤ d)
+    (hu : ∀ y, conditionalBlockAverage p u (x, y) = u (x, y))
+    (hv : ∀ y, conditionalBlockAverage p v (x, y) = 0) :
+    2 * |∑ y, p x y * u (x, y) * (W (x, y) * v (x, y))| ≤
+      d * ((∑ y, p x y * u (x, y) ^ 2) +
+        ∑ y, p x y * v (x, y) ^ 2) := by
+  let A := ∑ y, p x y * u (x, y) ^ 2
+  let B := ∑ y, p x y * v (x, y) ^ 2
+  let t := ∑ y, p x y * u (x, y) * (W (x, y) * v (x, y))
+  have hA : 0 ≤ A :=
+    Finset.sum_nonneg fun y _ => mul_nonneg (hp x y) (sq_nonneg _)
+  have hB : 0 ≤ B :=
+    Finset.sum_nonneg fun y _ => mul_nonneg (hp x y) (sq_nonneg _)
+  have ht : t ^ 2 ≤ d ^ 2 * A * B :=
+    conditionalBlockAverage_cross_sq_bound p hp hpn W u v x d hd hW hu hv
+  have hsq : (2 * |t|) ^ 2 ≤ (d * (A + B)) ^ 2 := by
+    nlinarith only [ht, sq_abs t, mul_nonneg (sq_nonneg d) (sq_nonneg (A - B))]
+  have hn : 0 ≤ d * (A + B) := mul_nonneg hd (add_nonneg hA hB)
+  change 2 * |t| ≤ d * (A + B)
+  nlinarith only [hsq, hn, abs_nonneg t]
 end ConditionalAverage
 end BlockHamiltonian
 end RussoYM
