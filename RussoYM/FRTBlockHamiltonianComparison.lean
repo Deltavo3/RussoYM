@@ -261,6 +261,72 @@ theorem conditionalBlockAverage_commutator_bound (p : X → Y → Real)
         (mul_le_mul (hW z) (hf z) (abs_nonneg _) hd) (hp q.1 z)
     _ = d * F := by rw [← Finset.sum_mul, hpn q.1, one_mul]
 
+/-- Weighted square Jensen inequality for a normalized finite conditional row. -/
+theorem conditionalBlockAverage_sq_le (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (f : X × Y → Real) (q : X × Y) :
+    (conditionalBlockAverage p f q) ^ 2 ≤
+      conditionalBlockAverage p (fun r => f r ^ 2) q := by
+  have h : (∑ z, p q.1 z * f (q.1, z)) ^ 2 ≤
+      (∑ z, p q.1 z) * ∑ z, p q.1 z * f (q.1, z) ^ 2 :=
+    Finset.sum_sq_le_sum_mul_sum_of_sq_eq_mul Finset.univ
+      (fun z _ => hp q.1 z)
+      (fun z _ => mul_nonneg (hp q.1 z) (sq_nonneg _))
+      (fun z _ => by ring)
+  simpa [conditionalBlockAverage, hpn] using h
+
+/-- Squared commutator control by a weighted second moment, without requiring
+a uniform bound on the input function. -/
+theorem conditionalBlockAverage_commutator_sq_bound (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (W f : X × Y → Real) (q : X × Y) (d : Real) (hd : 0 ≤ d)
+    (hW : ∀ z, |W (q.1, z) - W q| ≤ d) :
+    (conditionalBlockAverage p (fun r => W r * f r) q -
+      W q * conditionalBlockAverage p f q) ^ 2 ≤
+      d ^ 2 * conditionalBlockAverage p (fun r => f r ^ 2) q := by
+  rw [conditionalBlockAverage_commutator]
+  have hj := conditionalBlockAverage_sq_le p hp hpn
+    (fun r => (W r - W q) * f r) q
+  simp only [conditionalBlockAverage] at hj ⊢
+  calc
+    _ = (∑ z, p q.1 z * ((W (q.1, z) - W q) * f (q.1, z))) ^ 2 := by
+      simp only [mul_assoc]
+    _ ≤ ∑ z, p q.1 z * ((W (q.1, z) - W q) * f (q.1, z)) ^ 2 := hj
+    _ ≤ ∑ z, p q.1 z * (d ^ 2 * f (q.1, z) ^ 2) := by
+      apply Finset.sum_le_sum
+      intro z _
+      apply mul_le_mul_of_nonneg_left _ (hp q.1 z)
+      rw [mul_pow]
+      have hs : (W (q.1, z) - W q) ^ 2 ≤ d ^ 2 := by
+        have ha := hW z
+        have hab := abs_nonneg (W (q.1, z) - W q)
+        nlinarith [sq_abs (W (q.1, z) - W q)]
+      exact mul_le_mul_of_nonneg_right hs (sq_nonneg _)
+    _ = _ := by
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro z _
+      ring
+
+/-- Weighted squared-norm control on each conditional fiber. The same
+conditional probability weights appear in both norms. This remains a finite
+model estimate, not an identification with the physical Yang-Mills operator. -/
+theorem conditionalBlockAverage_commutator_fiber_energy_bound
+    (p : X → Y → Real)
+    (hp : ∀ x z, 0 ≤ p x z) (hpn : ∀ x, ∑ z, p x z = 1)
+    (W f : X × Y → Real) (x : X) (d : Real) (hd : 0 ≤ d)
+    (hW : ∀ y z, |W (x, z) - W (x, y)| ≤ d) :
+    (∑ y, p x y * (conditionalBlockAverage p (fun r => W r * f r) (x, y) -
+      W (x, y) * conditionalBlockAverage p f (x, y)) ^ 2) ≤
+      d ^ 2 * ∑ z, p x z * f (x, z) ^ 2 := by
+  calc
+    _ ≤ ∑ y, p x y * (d ^ 2 * ∑ z, p x z * f (x, z) ^ 2) := by
+      apply Finset.sum_le_sum
+      intro y _
+      exact mul_le_mul_of_nonneg_left
+        (conditionalBlockAverage_commutator_sq_bound p hp hpn W f (x, y) d hd
+          (hW y)) (hp x y)
+    _ = _ := by rw [← Finset.sum_mul, hpn x, one_mul]
 end ConditionalAverage
 end BlockHamiltonian
 end RussoYM
