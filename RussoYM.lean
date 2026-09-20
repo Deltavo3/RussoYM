@@ -148,3 +148,4 @@ import RussoYM.ClayFiniteProbabilityWeightTarget
 import RussoYM.ClayFiniteSumProbabilityTarget
 import RussoYM.ClayFiniteDoeblinPoincareActual
 import RussoYM.FRTGroundStateTransform
+import RussoYM.FRTBlockHamiltonianComparison
