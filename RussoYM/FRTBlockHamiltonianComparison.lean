@@ -821,6 +821,88 @@ noncomputable def finiteWilsonMagneticPotential [Fintype P]
     (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
   ∑ p, wilsonPlaquette beta (plaquettes p) U
 
+/-- Unitarity fixes the squared length of every row. -/
+theorem specialUnitary_row_normSq_sum
+    (U : Matrix.specialUnitaryGroup N Complex) (i : N) :
+    (∑ j, Complex.normSq (U.val i j)) = 1 := by
+  have hm : U.val * star U.val = (1 : Matrix N N Complex) := U.property.1.2
+  have hr := congrArg (fun M : Matrix N N Complex => (M i i).re) hm
+  simpa [Matrix.mul_apply, Matrix.star_apply, Complex.mul_re,
+    Complex.normSq_apply] using hr
+
+/-- Every diagonal real part lies in the unit interval in absolute value. -/
+theorem specialUnitary_diagonal_re_abs_le_one
+    (U : Matrix.specialUnitaryGroup N Complex) (i : N) :
+    |(U.val i i).re| ≤ 1 := by
+  have hn := Finset.single_le_sum
+    (fun j (_ : j ∈ Finset.univ) => Complex.normSq_nonneg (U.val i j))
+    (Finset.mem_univ i)
+  rw [specialUnitary_row_normSq_sum U i] at hn
+  rw [Complex.normSq_apply] at hn
+  apply abs_le.mpr
+  constructor <;> nlinarith only [hn, sq_nonneg (U.val i i).im]
+
+/-- Explicit trace bound, derived from unitarity rather than assumed. -/
+theorem specialUnitary_trace_re_abs_le_card
+    (U : Matrix.specialUnitaryGroup N Complex) :
+    |(Matrix.trace U.val).re| ≤ (Fintype.card N : Real) := by
+  change |Complex.reAddGroupHom (∑ i, U.val i i)| ≤ _
+  rw [map_sum]
+  calc
+    _ ≤ ∑ i, |(U.val i i).re| := Finset.abs_sum_le_sum_abs _ _
+    _ ≤ ∑ _i : N, (1 : Real) :=
+      Finset.sum_le_sum fun i _ => specialUnitary_diagonal_re_abs_le_one U i
+    _ = _ := by simp
+
+/-- For nonnegative coefficient beta, the normalized Wilson term lies in [0,2 beta]. -/
+theorem wilsonMagneticTerm_bounds [Nonempty N] (beta : Real) (hbeta : 0 ≤ beta)
+    (U : Matrix.specialUnitaryGroup N Complex) :
+    0 ≤ wilsonMagneticTerm beta U ∧ wilsonMagneticTerm beta U ≤ 2 * beta := by
+  have hN : (0 : Real) < Fintype.card N := by exact_mod_cast Fintype.card_pos
+  have ht := abs_le.mp (specialUnitary_trace_re_abs_le_card U)
+  have hlo : -1 ≤ (Matrix.trace U.val).re / Fintype.card N :=
+    (le_div_iff₀ hN).mpr (by simpa using ht.1)
+  have hhi : (Matrix.trace U.val).re / Fintype.card N ≤ 1 :=
+    (div_le_iff₀ hN).mpr (by simpa using ht.2)
+  unfold wilsonMagneticTerm
+  constructor
+  · exact mul_nonneg hbeta (sub_nonneg.mpr hhi)
+  · nlinarith only [mul_le_mul_of_nonneg_left (show
+      1 - (Matrix.trace U.val).re / Fintype.card N ≤ 2 by linarith only [hlo]) hbeta]
+
+/-- An explicit oscillation constant for each normalized Wilson plaquette. -/
+theorem wilsonMagneticTerm_oscillation [Nonempty N] (beta : Real) (hbeta : 0 ≤ beta)
+    (U V : Matrix.specialUnitaryGroup N Complex) :
+    |wilsonMagneticTerm beta U - wilsonMagneticTerm beta V| ≤ 2 * beta := by
+  obtain ⟨hU0, hU1⟩ := wilsonMagneticTerm_bounds beta hbeta U
+  obtain ⟨hV0, hV1⟩ := wilsonMagneticTerm_bounds beta hbeta V
+  exact abs_le.mpr ⟨by linarith only [hU0, hV1], by linarith only [hV0, hU1]⟩
+/-- Explicit magnetic block oscillation bound for special-unitary Wilson links.
+For beta >= 0 it is 2 beta times block size times the supplied plaquette
+incidence bound. No finite-state approximation to the compact gauge group is used. -/
+theorem finiteWilsonMagneticPotential_block_oscillation
+    [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside inside₁ inside₂ : L → Matrix.specialUnitaryGroup N Complex) :
+    |finiteWilsonMagneticPotential beta plaquettes
+        (blockConfiguration block outside inside₂) -
+      finiteWilsonMagneticPotential beta plaquettes
+        (blockConfiguration block outside inside₁)| ≤
+      (block.card : Real) * D * (2 * beta) := by
+  classical
+  apply interaction_oscillation_from_coordinate_support block
+    (fun p => Finset.univ.image (plaquettes p))
+    (fun p => wilsonPlaquette beta (plaquettes p))
+  · intro p
+    simpa only [Finset.coe_image, Finset.coe_univ, Set.image_univ] using
+      wilsonPlaquette_dependsOn (N := N) beta (plaquettes p)
+  · exact hDegree
+  · exact mul_nonneg (by norm_num) hbeta
+  · intro p _ y z
+    exact wilsonMagneticTerm_oscillation beta hbeta _ _
 end WilsonPlaquette
 end BlockHamiltonian
 end RussoYM
