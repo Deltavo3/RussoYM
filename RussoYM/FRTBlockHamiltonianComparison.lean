@@ -1599,6 +1599,66 @@ theorem wilsonBlockKernel_gibbs_invariant [Nonempty N] [Finite L]
   have h := wilsonBlockKernel_detailedBalance beta hbeta plaquettes block
     (fun q => f q.2) (hf.comp measurable_snd)
   simpa using h
+
+/-- Explicit comparison of Wilson block resampling against Haar block
+resampling for every nonnegative observable. The constant depends on block
+size and local plaquette incidence, not total lattice volume. -/
+theorem wilsonBlockUpdate_haar_comparison [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → ENNReal) (hf : Measurable f) :
+    ENNReal.ofReal (Real.exp (-((block.card : Real) * D * (2 * beta)))) *
+        (∫⁻ z, f (blockConfiguration block outside z) ∂wilsonHaarReference) ≤
+      (∫⁻ y, f y ∂wilsonBlockUpdateMeasure beta plaquettes block outside) ∧
+    (∫⁻ y, f y ∂wilsonBlockUpdateMeasure beta plaquettes block outside) ≤
+      ENNReal.ofReal (Real.exp ((block.card : Real) * D * (2 * beta))) *
+        (∫⁻ z, f (blockConfiguration block outside z) ∂wilsonHaarReference) := by
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hfm : Measurable (fun z => f (blockConfiguration block outside z)) := hf.comp hm
+  have hb := wilsonBlockGibbs_density_bounds wilsonHaarReference beta hbeta plaquettes
+    block D hDegree outside
+  rw [wilsonBlockUpdate_lintegral beta plaquettes block outside f hf]
+  constructor
+  · rw [← lintegral_const_mul _ hfm]
+    apply lintegral_mono
+    intro z
+    exact mul_le_mul_left (ENNReal.ofReal_le_ofReal
+      (hb z (wilsonBlockAction_measurable beta plaquettes block outside)).1) _
+  · rw [← lintegral_const_mul _ hfm]
+    apply lintegral_mono
+    intro z
+    exact mul_le_mul_left (ENNReal.ofReal_le_ofReal
+      (hb z (wilsonBlockAction_measurable beta plaquettes block outside)).2) _
+
+/-- The same local constants compare squared jumps of an observable, the
+integrand entering the reversible block-resampling Dirichlet form.
+This is not yet a comparison with the differential electric Casimir energy. -/
+theorem wilsonBlockUpdate_squared_jump_comparison [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) (hf : Measurable f) :
+    ENNReal.ofReal (Real.exp (-((block.card : Real) * D * (2 * beta)))) *
+        (∫⁻ z, ENNReal.ofReal ((f outside - f (blockConfiguration block outside z)) ^ 2)
+          ∂wilsonHaarReference) ≤
+      (∫⁻ y, ENNReal.ofReal ((f outside - f y) ^ 2)
+        ∂wilsonBlockUpdateMeasure beta plaquettes block outside) ∧
+    (∫⁻ y, ENNReal.ofReal ((f outside - f y) ^ 2)
+        ∂wilsonBlockUpdateMeasure beta plaquettes block outside) ≤
+      ENNReal.ofReal (Real.exp ((block.card : Real) * D * (2 * beta))) *
+        (∫⁻ z, ENNReal.ofReal ((f outside - f (blockConfiguration block outside z)) ^ 2)
+          ∂wilsonHaarReference) :=
+  wilsonBlockUpdate_haar_comparison beta hbeta plaquettes block D hDegree outside
+    (fun y => ENNReal.ofReal ((f outside - f y) ^ 2))
+    ((measurable_const.sub hf).pow_const 2).ennreal_ofReal
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
