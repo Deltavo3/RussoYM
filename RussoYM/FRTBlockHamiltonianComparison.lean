@@ -1,3 +1,4 @@
+import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Defs
 import Mathlib.Analysis.InnerProductSpace.Basic
@@ -1305,6 +1306,146 @@ theorem wilsonBlockKernel_isMarkov [Nonempty N] [Finite L]
     (plaquettes : P → Fin 4 → L) (block : Finset L) :
     ProbabilityTheory.IsMarkovKernel (wilsonBlockKernel (N := N) beta plaquettes block) :=
   ⟨fun outside => wilsonBlockUpdate_isProbability beta hbeta plaquettes block outside⟩
+
+/-- Exchange the selected links between two configurations. This involution
+is the change of variables underlying conditional Gibbs detailed balance. -/
+def blockExchange {J G : Type*} [DecidableEq J] (block : Finset J)
+    (q : (J → G) × (J → G)) : (J → G) × (J → G) :=
+  (blockConfiguration block q.1 q.2, blockConfiguration block q.2 q.1)
+
+theorem blockExchange_involutive {J G : Type*} [DecidableEq J] (block : Finset J) :
+    Function.Involutive (blockExchange (G := G) block) := by
+  intro q
+  apply Prod.ext <;> funext j <;>
+    by_cases hj : j ∈ block <;> simp [blockExchange, blockConfiguration, hj]
+
+def blockExchangeHom {J G : Type*} [DecidableEq J] [Group G] (block : Finset J) :
+    ((J → G) × (J → G)) →* ((J → G) × (J → G)) where
+  toFun := blockExchange block
+  map_one' := by
+    apply Prod.ext <;> funext j <;>
+      by_cases hj : j ∈ block <;> simp [blockExchange, blockConfiguration, hj]
+  map_mul' q r := by
+    apply Prod.ext <;> funext j <;>
+      by_cases hj : j ∈ block <;> simp [blockExchange, blockConfiguration, hj]
+
+/-- Exchanging a block between two independent Haar configurations preserves
+their joint reference measure; no product-coordinate independence is assumed. -/
+theorem wilsonBlockExchange_measurePreserving [Finite L] [DecidableEq L]
+    (block : Finset L) :
+    MeasurePreserving (blockExchange block)
+      ((wilsonHaarReference (N := N) (L := L)).prod wilsonHaarReference)
+      (wilsonHaarReference.prod wilsonHaarReference) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  letI := specialUnitary_compactSpace (N := N)
+  letI := specialUnitary_isTopologicalGroup (N := N)
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  letI := wilsonHaarReference_isHaar (N := N) (L := L)
+  letI : MeasurableMul (L → Matrix.specialUnitaryGroup N Complex) :=
+    ⟨fun c => (continuous_const_mul c).measurable,
+      fun c => (continuous_mul_const c).measurable⟩
+  have hc : Continuous (blockExchangeHom (G := Matrix.specialUnitaryGroup N Complex) block) :=
+    (blockConfiguration_joint_continuous block).prodMk
+      ((blockConfiguration_joint_continuous block).comp continuous_swap)
+  exact MonoidHom.measurePreserving hc (blockExchange_involutive block).surjective rfl
+
+/-- Replacing links in the block leaves every subsequent block replacement
+unchanged. Thus the conditional action depends only on exterior links. -/
+theorem blockConfiguration_replace_twice {J G : Type*} [DecidableEq J]
+    (block : Finset J) (outside inside z : J → G) :
+    blockConfiguration block (blockConfiguration block outside inside) z =
+      blockConfiguration block outside z := by
+  funext j
+  by_cases hj : j ∈ block <;> simp [blockConfiguration, hj]
+
+theorem wilsonBlockPartition_replace [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside inside : L → Matrix.specialUnitaryGroup N Complex) :
+    gibbsPartition wilsonHaarReference (fun z => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block (blockConfiguration block outside inside) z)) =
+    gibbsPartition wilsonHaarReference (fun z => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block outside z)) := by
+  simp only [blockConfiguration_replace_twice]
+
+/-- The equilibrium two-configuration weight is invariant under block
+exchange. Together with Haar exchange invariance this supplies the concrete
+change of variables for detailed balance, rather than assuming reversibility. -/
+theorem wilsonBlockExchange_weight [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (q : (L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex)) :
+    Real.exp (-finiteWilsonMagneticPotential beta plaquettes (blockExchange block q).1) *
+      gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block (blockExchange block q).1 z)) (blockExchange block q).2 =
+    Real.exp (-finiteWilsonMagneticPotential beta plaquettes q.1) *
+      gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block q.1 z)) q.2 := by
+  have hswap := congrArg Prod.fst (blockExchange_involutive block q)
+  change blockConfiguration block (blockExchange block q).1 (blockExchange block q).2 = q.1
+    at hswap
+  unfold gibbsDensity
+  dsimp only
+  rw [hswap]
+  change _ * (_ / gibbsPartition wilsonHaarReference
+    (fun z => finiteWilsonMagneticPotential beta plaquettes
+      (blockConfiguration block (blockConfiguration block q.1 q.2) z))) = _
+  rw [wilsonBlockPartition_replace]
+  dsimp only [blockExchange]
+  ring
+
+/-- Integrated exchange identity for arbitrary nonnegative measurable
+observables of the old and updated configurations. This is the unnormalized
+detailed-balance identity obtained from the explicit Wilson density. -/
+theorem wilsonBlockExchange_integral [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (F : ((L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex)) → ENNReal)
+    (hF : Measurable F) :
+    (∫⁻ q, ENNReal.ofReal
+      (Real.exp (-finiteWilsonMagneticPotential beta plaquettes q.1) *
+        gibbsDensity wilsonHaarReference
+          (fun z => finiteWilsonMagneticPotential beta plaquettes
+            (blockConfiguration block q.1 z)) q.2) *
+      F (q.1, blockConfiguration block q.1 q.2)
+      ∂((wilsonHaarReference (N := N) (L := L)).prod wilsonHaarReference)) =
+    ∫⁻ q, ENNReal.ofReal
+      (Real.exp (-finiteWilsonMagneticPotential beta plaquettes q.1) *
+        gibbsDensity wilsonHaarReference
+          (fun z => finiteWilsonMagneticPotential beta plaquettes
+            (blockConfiguration block q.1 z)) q.2) *
+      F (blockConfiguration block q.1 q.2, q.1)
+      ∂((wilsonHaarReference (N := N) (L := L)).prod wilsonHaarReference) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  have ha := (finiteWilsonMagneticPotential_continuous (N := N) beta plaquettes).measurable
+  have hw := (ha.comp measurable_fst).neg.exp.mul
+      (wilsonBlockDensity_joint_measurable (N := N) beta plaquettes block)
+  have hf := hF.comp (measurable_fst.prodMk
+    (blockConfiguration_joint_continuous (N := N) block).measurable)
+  have he := (wilsonBlockExchange_measurePreserving (N := N) block).lintegral_comp
+    (hw.ennreal_ofReal.mul hf)
+  simp only [Function.comp_apply] at he
+  rw [← he]
+  apply lintegral_congr
+  intro q
+  rw [wilsonBlockExchange_weight]
+  have hswap := congrArg Prod.fst (blockExchange_involutive block q)
+  change blockConfiguration block (blockExchange block q).1 (blockExchange block q).2 = q.1
+    at hswap
+  rw [hswap]
+  rfl
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
