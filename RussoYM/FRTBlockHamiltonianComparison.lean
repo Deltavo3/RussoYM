@@ -1,3 +1,4 @@
+import Mathlib.Probability.Kernel.MeasurableLIntegral
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Defs
@@ -1446,6 +1447,76 @@ theorem wilsonBlockExchange_integral [Nonempty N] [Finite L]
     at hswap
   rw [hswap]
   rfl
+
+/-- Integrating the concrete block update is exactly conditional-density
+integration followed by replacement of the selected coordinates. -/
+theorem wilsonBlockUpdate_lintegral [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → ENNReal) (hf : Measurable f) :
+    (∫⁻ U, f U ∂wilsonBlockUpdateMeasure beta plaquettes block outside) =
+    ∫⁻ z, ENNReal.ofReal (gibbsDensity wilsonHaarReference
+      (fun z => finiteWilsonMagneticPotential beta plaquettes
+        (blockConfiguration block outside z)) z) *
+      f (blockConfiguration block outside z) ∂wilsonHaarReference := by
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hd : Measurable (gibbsDensity wilsonHaarReference
+      (fun z => finiteWilsonMagneticPotential beta plaquettes
+        (blockConfiguration block outside z))) :=
+    (wilsonBlockAction_measurable beta plaquettes block outside).neg.exp.div_const _
+  rw [wilsonBlockUpdateMeasure, lintegral_map hf hm]
+  unfold wilsonBlockGibbsMeasure gibbsMeasure
+  exact lintegral_withDensity_eq_lintegral_mul _ hd.ennreal_ofReal (hf.comp hm)
+
+/-- The joint equilibrium/update expectation has the explicit product-Haar
+density. This connects the change-of-variables proof to the bundled kernel
+and the normalized full Wilson Gibbs measure. -/
+theorem wilsonBlockKernel_equilibrium_pair_integral [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (F : ((L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex)) → ENNReal)
+    (hF : Measurable F) :
+    (∫⁻ x, ∫⁻ y, F (x, y) ∂wilsonBlockKernel beta plaquettes block x
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) =
+    ∫⁻ q, ENNReal.ofReal
+      (gibbsDensity wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) q.1) *
+      (ENNReal.ofReal (gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block q.1 z)) q.2) *
+        F (q.1, blockConfiguration block q.1 q.2))
+      ∂((wilsonHaarReference (N := N) (L := L)).prod wilsonHaarReference) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  letI := wilsonBlockKernel_isMarkov (N := N) beta hbeta plaquettes block
+  have hd : Measurable (gibbsDensity wilsonHaarReference
+      (finiteWilsonMagneticPotential (N := N) beta plaquettes)) :=
+    (finiteWilsonMagneticPotential_continuous beta plaquettes).measurable.neg.exp.div_const _
+  have hi := hF.lintegral_kernel_prod_right'
+    (κ := wilsonBlockKernel (N := N) beta plaquettes block)
+  have hj := (wilsonBlockDensity_joint_measurable (N := N) beta plaquettes block).ennreal_ofReal.mul
+    (hF.comp (measurable_fst.prodMk
+      (blockConfiguration_joint_continuous (N := N) block).measurable))
+  rw [gibbsMeasure, lintegral_withDensity_eq_lintegral_mul _ hd.ennreal_ofReal hi]
+  have hp := lintegral_prod _ ((hd.ennreal_ofReal.comp measurable_fst).mul hj).aemeasurable
+    (μ := wilsonHaarReference) (ν := wilsonHaarReference)
+  simp only [Function.comp_apply] at hp
+  rw [hp]
+  apply lintegral_congr
+  intro x
+  change ENNReal.ofReal (gibbsDensity _ _ x) *
+    (∫⁻ y, F (x, y) ∂wilsonBlockUpdateMeasure beta plaquettes block x) = _
+  rw [wilsonBlockUpdate_lintegral beta plaquettes block x (fun y => F (x, y))
+    (hF.comp (measurable_const.prodMk measurable_id))]
+  exact (lintegral_const_mul _ (hj.comp (measurable_const.prodMk measurable_id))).symm
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
