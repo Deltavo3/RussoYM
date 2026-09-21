@@ -1517,6 +1517,88 @@ theorem wilsonBlockKernel_equilibrium_pair_integral [Nonempty N] [Finite L]
   rw [wilsonBlockUpdate_lintegral beta plaquettes block x (fun y => F (x, y))
     (hF.comp (measurable_const.prodMk measurable_id))]
   exact (lintegral_const_mul _ (hj.comp (measurable_const.prodMk measurable_id))).symm
+
+/-- Normalizing the full Gibbs density preserves the block-exchange identity. -/
+theorem wilsonBlockExchange_normalized_weight [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (q : (L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex)) :
+    gibbsDensity wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)
+        (blockExchange block q).1 *
+      gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block (blockExchange block q).1 z)) (blockExchange block q).2 =
+    gibbsDensity wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) q.1 *
+      gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block q.1 z)) q.2 := by
+  have h := congrArg
+    (fun t : Real => t / gibbsPartition (wilsonHaarReference (N := N))
+      (finiteWilsonMagneticPotential beta plaquettes))
+    (wilsonBlockExchange_weight beta plaquettes block q)
+  simp only [gibbsDensity] at *
+  simpa only [div_mul_eq_mul_div] using h
+
+/-- Detailed balance for the constructed kernel and normalized full Wilson
+Gibbs measure, tested against every nonnegative measurable pair observable. -/
+theorem wilsonBlockKernel_detailedBalance [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (F : ((L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex)) → ENNReal)
+    (hF : Measurable F) :
+    (∫⁻ x, ∫⁻ y, F (x, y) ∂wilsonBlockKernel beta plaquettes block x
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) =
+    ∫⁻ x, ∫⁻ y, F (y, x) ∂wilsonBlockKernel beta plaquettes block x
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  rw [wilsonBlockKernel_equilibrium_pair_integral beta hbeta plaquettes block F hF]
+  have hs := wilsonBlockKernel_equilibrium_pair_integral beta hbeta plaquettes block
+    (fun q => F q.swap) (hF.comp measurable_swap)
+  simp only [Prod.swap_prod_mk] at hs
+  rw [hs]
+  have hg : Measurable (gibbsDensity wilsonHaarReference
+      (finiteWilsonMagneticPotential (N := N) beta plaquettes)) :=
+    (finiteWilsonMagneticPotential_continuous beta plaquettes).measurable.neg.exp.div_const _
+  have hd := (wilsonBlockDensity_joint_measurable (N := N) beta plaquettes block).ennreal_ofReal
+  have hf := hF.comp (measurable_fst.prodMk
+    (blockConfiguration_joint_continuous (N := N) block).measurable)
+  have hm := (hg.ennreal_ofReal.comp measurable_fst).mul (hd.mul hf)
+  have he := (wilsonBlockExchange_measurePreserving (N := N) block).lintegral_comp hm
+  simp only [Function.comp_apply] at he
+  rw [← he]
+  apply lintegral_congr
+  intro q
+  have hnonneg (x : L → Matrix.specialUnitaryGroup N Complex) :
+      0 ≤ gibbsDensity wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) x :=
+    div_nonneg (Real.exp_pos _).le (integral_nonneg fun _ => (Real.exp_pos _).le)
+  rw [← mul_assoc, ← ENNReal.ofReal_mul (hnonneg _),
+    wilsonBlockExchange_normalized_weight, ENNReal.ofReal_mul (hnonneg _), mul_assoc]
+  have hswap := congrArg Prod.fst (blockExchange_involutive block q)
+  change blockConfiguration block (blockExchange block q).1 (blockExchange block q).2 = q.1
+    at hswap
+  rw [hswap]
+  rfl
+
+/-- The normalized full Wilson Gibbs measure is invariant under the actual
+block-update kernel, expressed for all nonnegative measurable observables. -/
+theorem wilsonBlockKernel_gibbs_invariant [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → ENNReal) (hf : Measurable f) :
+    (∫⁻ x, ∫⁻ y, f y ∂wilsonBlockKernel beta plaquettes block x
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) =
+    ∫⁻ x, f x
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) := by
+  letI := wilsonBlockKernel_isMarkov (N := N) beta hbeta plaquettes block
+  have h := wilsonBlockKernel_detailedBalance beta hbeta plaquettes block
+    (fun q => f q.2) (hf.comp measurable_snd)
+  simpa using h
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
