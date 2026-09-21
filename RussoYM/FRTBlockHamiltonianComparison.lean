@@ -1,3 +1,5 @@
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.Probability.Kernel.Defs
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.Normed.Operator.Basic
 import Mathlib.Tactic.Linarith
@@ -1195,6 +1197,114 @@ theorem wilsonBlockGibbs_haar_isProbability [Nonempty N] [Fintype P] [DecidableE
   exact wilsonBlockGibbs_isProbability_borel wilsonHaarReference beta hbeta
     plaquettes block outside
 
+
+/-- Actual block update: sample the Wilson conditional measure, then replace
+only the selected links. Measurability in the exterior parameter, needed to
+bundle this family as a Markov kernel, is not asserted here. -/
+noncomputable def wilsonBlockUpdateMeasure [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    Measure (L → Matrix.specialUnitaryGroup N Complex) :=
+  (wilsonBlockGibbsMeasure wilsonHaarReference beta plaquettes block outside).map
+    (blockConfiguration block outside)
+
+theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    IsProbabilityMeasure (wilsonBlockUpdateMeasure beta plaquettes block outside) := by
+  letI := wilsonBlockGibbs_haar_isProbability beta hbeta plaquettes block outside
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  constructor
+  rw [wilsonBlockUpdateMeasure, Measure.map_apply hm MeasurableSet.univ]
+  simp
+
+/-- Every link outside the updated block equals its original value with
+probability one under the constructed update measure. -/
+theorem wilsonBlockUpdate_preserves_exterior [Nonempty N] [Fintype P] [DecidableEq L]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (j : L) (hj : j ∉ block) :
+    wilsonBlockUpdateMeasure beta plaquettes block outside {U | U j = outside j} = 1 := by
+  letI := wilsonBlockGibbs_haar_isProbability beta hbeta plaquettes block outside
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hs : MeasurableSet {U : L → Matrix.specialUnitaryGroup N Complex | U j = outside j} :=
+    (isClosed_eq (continuous_apply j) continuous_const).measurableSet
+  rw [wilsonBlockUpdateMeasure, Measure.map_apply hm hs]
+  have he : (blockConfiguration block outside) ⁻¹' {U | U j = outside j} = Set.univ := by
+    ext U
+    simp [blockConfiguration, hj]
+  rw [he, measure_univ]
+
+/-- Joint measurability of the normalized conditional density, including
+the dependence of its partition function on the exterior configuration. -/
+theorem wilsonBlockDensity_joint_measurable [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) :
+    Measurable (fun q : (L → Matrix.specialUnitaryGroup N Complex) ×
+      (L → Matrix.specialUnitaryGroup N Complex) =>
+      gibbsDensity wilsonHaarReference
+        (fun z => finiteWilsonMagneticPotential beta plaquettes
+          (blockConfiguration block q.1 z)) q.2) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  have hw := (wilsonBlockAction_joint_continuous (N := N) beta plaquettes block).measurable.neg.exp
+  have hz := hw.stronglyMeasurable.integral_prod_right'
+    (ν := wilsonHaarReference (N := N) (L := L))
+  exact hw.div (hz.measurable.comp measurable_fst)
+
+/-- The concrete update probabilities vary measurably with the starting
+configuration. Finite link sets supply the standard product Borel structure. -/
+theorem wilsonBlockUpdate_measurable [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) :
+    Measurable (wilsonBlockUpdateMeasure (N := N) beta plaquettes block) := by
+  letI : SecondCountableTopology (Matrix N N Complex) := by
+    change SecondCountableTopology (N → N → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup N Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup N Complex : Set (Matrix N N Complex))
+  letI := wilsonHaarReference_isProbability (N := N) (L := L)
+  apply Measure.measurable_of_measurable_coe
+  intro s hs
+  have hm := (blockConfiguration_joint_continuous (N := N)
+    block).measurable
+  have hd := (wilsonBlockDensity_joint_measurable (N := N) beta plaquettes block).ennreal_ofReal
+  have hi := (hd.indicator (hm hs)).lintegral_prod_right'
+    (ν := wilsonHaarReference (N := N) (L := L))
+  convert hi using 1
+  ext outside
+  have ho : Measurable (blockConfiguration block outside) :=
+    hm.comp (measurable_const.prodMk measurable_id)
+  rw [wilsonBlockUpdateMeasure, Measure.map_apply ho hs]
+  change (wilsonHaarReference.withDensity _) _ = _
+  rw [withDensity_apply _ (ho hs), ← lintegral_indicator (ho hs)]
+  rfl
+
+/-- Wilson equilibrium block resampling as an actual measurable kernel.
+Identification with physical Hamiltonian evolution is a separate obligation. -/
+noncomputable def wilsonBlockKernel [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) :
+    ProbabilityTheory.Kernel (L → Matrix.specialUnitaryGroup N Complex)
+      (L → Matrix.specialUnitaryGroup N Complex) where
+  toFun := wilsonBlockUpdateMeasure beta plaquettes block
+  measurable' := wilsonBlockUpdate_measurable beta plaquettes block
+
+theorem wilsonBlockKernel_isMarkov [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) :
+    ProbabilityTheory.IsMarkovKernel (wilsonBlockKernel (N := N) beta plaquettes block) :=
+  ⟨fun outside => wilsonBlockUpdate_isProbability beta hbeta plaquettes block outside⟩
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
