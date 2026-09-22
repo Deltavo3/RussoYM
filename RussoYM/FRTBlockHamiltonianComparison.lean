@@ -1,3 +1,4 @@
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Probability.Kernel.MeasurableLIntegral
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.MeasureTheory.Integral.Prod
@@ -1659,6 +1660,105 @@ theorem wilsonBlockUpdate_squared_jump_comparison [Nonempty N] [Finite L]
   wilsonBlockUpdate_haar_comparison beta hbeta plaquettes block D hDegree outside
     (fun y => ENNReal.ofReal ((f outside - f y) ^ 2))
     ((measurable_const.sub hf).pow_const 2).ennreal_ofReal
+
+/-- Radial differential expression in the trace coordinate x = cos(omega/2):
+-kappa ((1-x^2) f'' - 3 x f') + beta (1-x) f.
+This is the class-function expression suggested by Eq. (79) of
+https://doi.org/10.1103/PhysRevD.109.074501, absorbing the positive electric
+prefactor into kappa. Its geometric identification with the SU(2) Casimir
+and the self-adjoint domain are NOT formalized by this definition. -/
+noncomputable def wilsonRadialExpression (kappa beta : Real) (f : Real → Real) (x : Real) :
+    Real :=
+  -kappa * ((1 - x ^ 2) * deriv (deriv f) x - 3 * x * deriv f x) +
+    beta * (1 - x) * f x
+
+/-- Exact residual on an exponential trial amplitude. The square root of
+the Wilson density is proportional to exp((beta/2) x). The residual must be
+controlled in any ground-state-transform comparison with physical energy. -/
+theorem wilsonRadialExpression_exp (kappa beta a x : Real) :
+    wilsonRadialExpression kappa beta (fun t => Real.exp (a * t)) x =
+      (beta + (3 * kappa * a - beta) * x - kappa * a ^ 2 * (1 - x ^ 2)) *
+        Real.exp (a * x) := by
+  have hd (t : Real) :
+      HasDerivAt (fun u => Real.exp (a * u)) (a * Real.exp (a * t)) t := by
+    convert ((hasDerivAt_id t).const_mul a).exp using 1; simp [mul_comm]
+  have h1 : deriv (fun t => Real.exp (a * t)) = fun t => a * Real.exp (a * t) :=
+    funext fun t => (hd t).deriv
+  have h2 : deriv (deriv (fun t => Real.exp (a * t))) x = a ^ 2 * Real.exp (a * x) := by
+    rw [h1]
+    convert ((hd x).const_mul a).deriv using 1; ring
+  unfold wilsonRadialExpression
+  rw [h2, h1]
+  ring
+
+/-- With positive electric coefficient, a nonconstant exponential amplitude
+is not an eigenfunction of this radial expression, even in the interior.
+This checks the differential expression only, not its geometric realization. -/
+theorem wilsonRadialExpression_exp_not_eigen (kappa beta a : Real)
+    (hk : 0 < kappa) (ha : a ≠ 0) :
+    ¬ ∃ E : Real, ∀ x ∈ Set.Ioo (-1 : Real) 1,
+      wilsonRadialExpression kappa beta (fun t => Real.exp (a * t)) x =
+        E * Real.exp (a * x) := by
+  rintro ⟨E, hE⟩
+  have hp (x : Real) (hx : x ∈ Set.Ioo (-1 : Real) 1) :
+      beta + (3 * kappa * a - beta) * x - kappa * a ^ 2 * (1 - x ^ 2) = E := by
+    have h := hE x hx
+    rw [wilsonRadialExpression_exp] at h
+    exact mul_right_cancel₀ (ne_of_gt (Real.exp_pos _)) h
+  have h0 := hp 0 (by constructor <;> norm_num)
+  have hplus := hp (1 / 2) (by constructor <;> norm_num)
+  have hminus := hp (-1 / 2) (by constructor <;> norm_num)
+  have hpos := mul_pos hk (sq_pos_of_ne_zero ha)
+  nlinarith only [h0, hplus, hminus, hpos]
+
+/-- Exact exponential transformation of the radial differential expression.
+The derivative premises specify ordinary C2 test data; no energy comparison,
+eigenfunction identity, or spectral gap is assumed. The residual potential
+remains explicit and must be included in a later quadratic-form comparison. -/
+theorem wilsonRadialExpression_exp_transform (kappa beta a x : Real)
+    (f f1 f2 : Real → Real)
+    (hf : ∀ t, HasDerivAt f (f1 t) t)
+    (hf1 : HasDerivAt f1 (f2 x) x) :
+    wilsonRadialExpression kappa beta (fun t => Real.exp (a * t) * f t) x =
+      Real.exp (a * x) *
+        (-kappa * ((1 - x ^ 2) * f2 x +
+            (2 * a * (1 - x ^ 2) - 3 * x) * f1 x) +
+          (beta + (3 * kappa * a - beta) * x -
+            kappa * a ^ 2 * (1 - x ^ 2)) * f x) := by
+  have he (t : Real) :
+      HasDerivAt (fun u => Real.exp (a * u)) (a * Real.exp (a * t)) t := by
+    convert ((hasDerivAt_id t).const_mul a).exp using 1; simp [mul_comm]
+  have hd : deriv (fun t => Real.exp (a * t) * f t) =
+      fun t => a * Real.exp (a * t) * f t + Real.exp (a * t) * f1 t :=
+    funext fun t => ((he t).mul (hf t)).deriv
+  have hdd : deriv (deriv (fun t => Real.exp (a * t) * f t)) x =
+      a ^ 2 * Real.exp (a * x) * f x +
+        2 * a * Real.exp (a * x) * f1 x + Real.exp (a * x) * f2 x := by
+    rw [hd]
+    convert ((((he x).const_mul a).mul (hf x)).add ((he x).mul hf1)).deriv using 1
+    ring
+  unfold wilsonRadialExpression
+  rw [hdd, hd]
+  ring
+
+/-- Explicit lower and upper bounds for the residual potential on the trace
+coordinate interval. The electric coefficient is nonnegative; no restriction
+on the magnetic coefficient or exponential tilt is needed for this estimate. -/
+theorem wilsonRadial_residual_bounds (kappa beta a x : Real)
+    (hk : 0 ≤ kappa) (hx : x ∈ Set.Icc (-1 : Real) 1) :
+    beta - |3 * kappa * a - beta| - kappa * a ^ 2 ≤
+      beta + (3 * kappa * a - beta) * x - kappa * a ^ 2 * (1 - x ^ 2) ∧
+    beta + (3 * kappa * a - beta) * x - kappa * a ^ 2 * (1 - x ^ 2) ≤
+      beta + |3 * kappa * a - beta| := by
+  have hxabs : |x| ≤ 1 := abs_le.mpr hx
+  have hlin : |(3 * kappa * a - beta) * x| ≤ |3 * kappa * a - beta| := by
+    rw [abs_mul]
+    nlinarith only [hxabs, abs_nonneg (3 * kappa * a - beta)]
+  have hlinlo := (abs_le.mp hlin).1
+  have hlinhi := (abs_le.mp hlin).2
+  have hx2 : x ^ 2 ≤ 1 := by nlinarith [hx.1, hx.2]
+  have hka : 0 ≤ kappa * a ^ 2 := mul_nonneg hk (sq_nonneg a)
+  constructor <;> nlinarith [sq_nonneg x]
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
