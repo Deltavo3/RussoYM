@@ -1,3 +1,5 @@
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Probability.Kernel.MeasurableLIntegral
 import Mathlib.MeasureTheory.Measure.Haar.Unique
@@ -1759,6 +1761,99 @@ theorem wilsonRadial_residual_bounds (kappa beta a x : Real)
   have hx2 : x ^ 2 ≤ 1 := by nlinarith [hx.1, hx.2]
   have hka : 0 ≤ kappa * a ^ 2 := mul_nonneg hk (sq_nonneg a)
   constructor <;> nlinarith [sq_nonneg x]
+
+/-- Unnormalized radial Haar density after the exponential tilt. -/
+noncomputable def wilsonRadialWeight (a x : Real) : Real :=
+  Real.exp (2 * a * x) * Real.sqrt (1 - x ^ 2)
+
+/-- Diffusion coefficient times the tilted radial Haar density. -/
+noncomputable def wilsonRadialFluxWeight (a x : Real) : Real :=
+  (1 - x ^ 2) * wilsonRadialWeight a x
+
+/-- The derivative of the explicit Haar-weighted flux supplies precisely
+the first-order coefficient of the transformed radial expression. -/
+theorem wilsonRadialFluxWeight_hasDerivAt (a x : Real)
+    (hx : x ∈ Set.Ioo (-1 : Real) 1) :
+    HasDerivAt (wilsonRadialFluxWeight a)
+      (wilsonRadialWeight a x * (2 * a * (1 - x ^ 2) - 3 * x)) x := by
+  have hqpos : 0 < 1 - x ^ 2 := by nlinarith [hx.1, hx.2]
+  have hq : HasDerivAt (fun t : Real => 1 - t ^ 2) (-2 * x) x := by
+    convert (hasDerivAt_const x (1 : Real)).sub ((hasDerivAt_id x).pow 2) using 1; simp
+  have hs := hq.sqrt (ne_of_gt hqpos)
+  have he : HasDerivAt (fun t : Real => Real.exp (2 * a * t))
+      (2 * a * Real.exp (2 * a * x)) x := by
+    convert ((hasDerivAt_id x).const_mul (2 * a)).exp using 1; simp [mul_comm]
+  have hp := hq.mul (he.mul hs)
+  have hspos := Real.sqrt_pos.mpr hqpos
+  have hsq := Real.sq_sqrt (le_of_lt hqpos)
+  convert hp using 1
+  dsimp [wilsonRadialWeight]
+  field_simp [ne_of_gt hspos]
+  rw [hsq]
+  ring
+
+/-- Local quadratic-form identity with the full Haar-weighted boundary flux.
+Integration and endpoint/domain conditions remain separate obligations. -/
+theorem wilsonRadial_weighted_energy_identity (kappa beta a x : Real)
+    (f f1 f2 : Real → Real) (hx : x ∈ Set.Ioo (-1 : Real) 1)
+    (hf : ∀ t, HasDerivAt f (f1 t) t) (hf1 : HasDerivAt f1 (f2 x) x) :
+    Real.sqrt (1 - x ^ 2) * (Real.exp (a * x) * f x) *
+        wilsonRadialExpression kappa beta (fun t => Real.exp (a * t) * f t) x =
+      kappa * wilsonRadialFluxWeight a x * (f1 x) ^ 2 +
+        (beta + (3 * kappa * a - beta) * x - kappa * a ^ 2 * (1 - x ^ 2)) *
+          wilsonRadialWeight a x * (f x) ^ 2 -
+        kappa * deriv (fun t => wilsonRadialFluxWeight a t * f t * f1 t) x := by
+  have hb := (((wilsonRadialFluxWeight_hasDerivAt a x hx).mul (hf x)).mul hf1).deriv
+  change deriv (fun t => wilsonRadialFluxWeight a t * f t * f1 t) x = _ at hb
+  simp only [Pi.mul_apply] at hb
+  rw [hb, wilsonRadialExpression_exp_transform kappa beta a x f f1 f2 hf hf1]
+  have he : Real.exp (a * x) ^ 2 = Real.exp (2 * a * x) := by
+    rw [pow_two, ← Real.exp_add]
+    congr 1
+    ring
+  unfold wilsonRadialFluxWeight wilsonRadialWeight
+  rw [← he]
+  ring
+
+/-- Integrated radial energy identity on an interior interval. Integrability
+and the interval's inclusion in (-1,1) are explicit. No boundary condition
+is imposed: the complete endpoint flux appears in the conclusion. -/
+theorem wilsonRadial_interval_energy (kappa beta a l r : Real)
+    (f f1 f2 : Real → Real)
+    (hinterval : Set.uIcc l r ⊆ Set.Ioo (-1 : Real) 1)
+    (hf : ∀ t, HasDerivAt f (f1 t) t)
+    (hf1 : ∀ t ∈ Set.uIcc l r, HasDerivAt f1 (f2 t) t)
+    (hkin : IntervalIntegrable (fun t => wilsonRadialFluxWeight a t * (f1 t) ^ 2)
+      volume l r)
+    (hpot : IntervalIntegrable (fun t =>
+      (beta + (3 * kappa * a - beta) * t - kappa * a ^ 2 * (1 - t ^ 2)) *
+        wilsonRadialWeight a t * (f t) ^ 2) volume l r)
+    (hboundary : IntervalIntegrable
+      (deriv (fun t => wilsonRadialFluxWeight a t * f t * f1 t)) volume l r) :
+    (∫ t in l..r, Real.sqrt (1 - t ^ 2) * (Real.exp (a * t) * f t) *
+      wilsonRadialExpression kappa beta (fun x => Real.exp (a * x) * f x) t) =
+      kappa * (∫ t in l..r, wilsonRadialFluxWeight a t * (f1 t) ^ 2) +
+        (∫ t in l..r,
+          (beta + (3 * kappa * a - beta) * t - kappa * a ^ 2 * (1 - t ^ 2)) *
+            wilsonRadialWeight a t * (f t) ^ 2) -
+        kappa * (wilsonRadialFluxWeight a r * f r * f1 r -
+          wilsonRadialFluxWeight a l * f l * f1 l) := by
+  have hdiff : ∀ t ∈ Set.uIcc l r,
+      DifferentiableAt Real (fun x => wilsonRadialFluxWeight a x * f x * f1 x) t := by
+    intro t ht
+    exact (((wilsonRadialFluxWeight_hasDerivAt a t (hinterval ht)).mul (hf t)).mul
+      (hf1 t ht)).differentiableAt
+  have hFTC := intervalIntegral.integral_deriv_eq_sub hdiff hboundary
+  have hEq := intervalIntegral.integral_congr (μ := volume) (a := l) (b := r)
+    (fun t ht => wilsonRadial_weighted_energy_identity kappa beta a t f f1 f2
+      (hinterval ht) hf (hf1 t ht))
+  rw [hEq]
+  have hkint : IntervalIntegrable
+      (fun t => kappa * wilsonRadialFluxWeight a t * (f1 t) ^ 2) volume l r := by
+    simpa only [mul_assoc] using hkin.const_mul kappa
+  rw [intervalIntegral.integral_sub (hkint.add hpot) (hboundary.const_mul kappa),
+    intervalIntegral.integral_add hkint hpot]
+  simp_rw [mul_assoc kappa, intervalIntegral.integral_const_mul, hFTC]
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
