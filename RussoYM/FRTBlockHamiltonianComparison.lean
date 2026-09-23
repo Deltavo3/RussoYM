@@ -1854,6 +1854,48 @@ theorem wilsonRadial_interval_energy (kappa beta a l r : Real)
   rw [intervalIntegral.integral_sub (hkint.add hpot) (hboundary.const_mul kappa),
     intervalIntegral.integral_add hkint hpot]
   simp_rw [mul_assoc kappa, intervalIntegral.integral_const_mul, hFTC]
+
+/-- Explicit lower bound for the radial energy on an interior interval.
+The residual is bounded from its formula, rather than assumed coercive.
+The endpoint flux remains present; no physical ground state is identified. -/
+theorem wilsonRadial_interval_energy_lower (kappa beta a l r : Real)
+    (f f1 f2 : Real → Real) (hk : 0 ≤ kappa) (hlr : l ≤ r)
+    (hinterval : Set.uIcc l r ⊆ Set.Ioo (-1 : Real) 1)
+    (hf : ∀ t, HasDerivAt f (f1 t) t)
+    (hf1 : ∀ t ∈ Set.uIcc l r, HasDerivAt f1 (f2 t) t)
+    (hkin : IntervalIntegrable (fun t => wilsonRadialFluxWeight a t * (f1 t) ^ 2)
+      volume l r)
+    (hnorm : IntervalIntegrable (fun t => wilsonRadialWeight a t * (f t) ^ 2)
+      volume l r)
+    (hpot : IntervalIntegrable (fun t =>
+      (beta + (3 * kappa * a - beta) * t - kappa * a ^ 2 * (1 - t ^ 2)) *
+        wilsonRadialWeight a t * (f t) ^ 2) volume l r)
+    (hboundary : IntervalIntegrable
+      (deriv (fun t => wilsonRadialFluxWeight a t * f t * f1 t)) volume l r) :
+    kappa * (∫ t in l..r, wilsonRadialFluxWeight a t * (f1 t) ^ 2) +
+        (beta - |3 * kappa * a - beta| - kappa * a ^ 2) *
+          (∫ t in l..r, wilsonRadialWeight a t * (f t) ^ 2) -
+        kappa * (wilsonRadialFluxWeight a r * f r * f1 r -
+          wilsonRadialFluxWeight a l * f l * f1 l) ≤
+      (∫ t in l..r, Real.sqrt (1 - t ^ 2) * (Real.exp (a * t) * f t) *
+        wilsonRadialExpression kappa beta (fun x => Real.exp (a * x) * f x) t) := by
+  rw [wilsonRadial_interval_energy kappa beta a l r f f1 f2
+    hinterval hf hf1 hkin hpot hboundary]
+  apply sub_le_sub_right
+  apply add_le_add_right
+  rw [← intervalIntegral.integral_const_mul]
+  apply intervalIntegral.integral_mono_on hlr
+    (hnorm.const_mul (beta - |3 * kappa * a - beta| - kappa * a ^ 2)) hpot
+  intro t ht
+  have ht' : t ∈ Set.uIcc l r := by
+    simpa only [Set.uIcc_of_le hlr] using ht
+  have htinner := hinterval ht'
+  have hres := (wilsonRadial_residual_bounds kappa beta a t hk
+    ⟨le_of_lt htinner.1, le_of_lt htinner.2⟩).1
+  have hw : 0 ≤ wilsonRadialWeight a t * (f t) ^ 2 :=
+    mul_nonneg (mul_nonneg (le_of_lt (Real.exp_pos _)) (Real.sqrt_nonneg _))
+      (sq_nonneg _)
+  simpa only [mul_assoc] using mul_le_mul_of_nonneg_right hres hw
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
