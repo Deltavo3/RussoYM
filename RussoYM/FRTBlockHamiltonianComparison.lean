@@ -1434,6 +1434,61 @@ theorem wilsonBlockElectricEnergyDensity_discarded
   rw [wilsonBlockDiscarded_linkLeftTranslate_deriv beta plaquettes block f U j
     (directions a).curve 0 hj]
 
+/-- Active-block electric quadratic form integrated against the normalized
+finite-volume Wilson Gibbs measure. Completeness and normalization of the
+supplied direction family remain explicit prerequisites for identifying this
+form with the full electric Casimir. -/
+noncomputable def wilsonBlockElectricQuadraticForm
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L] (kappa beta : Real)
+    (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) : Real :=
+  ∫ U, wilsonBlockElectricEnergyDensity kappa directions block f U
+    ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)
+
+/-- The integrated active-block electric form is nonnegative when its
+coefficient is nonnegative. -/
+theorem wilsonBlockElectricQuadraticForm_nonneg
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa)
+    (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) :
+    0 ≤ wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block f := by
+  unfold wilsonBlockElectricQuadraticForm
+  exact integral_nonneg fun U =>
+    wilsonBlockElectricEnergyDensity_nonneg kappa hkappa directions block f U
+
+/-- The retained conditional expectation has zero integrated electric form on
+the links eliminated by the block update. -/
+theorem wilsonBlockElectricQuadraticForm_average_zero
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) :
+    wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block
+      (wilsonBlockAverage beta plaquettes block f) = 0 := by
+  unfold wilsonBlockElectricQuadraticForm
+  rw [integral_congr_ae (Filter.Eventually.of_forall fun U =>
+    wilsonBlockElectricEnergyDensity_average_zero kappa beta directions
+      plaquettes block f U)]
+  simp
+
+/-- Exact integrated discarded-mode identity: the complete active-block
+electric quadratic form is carried by the discarded component. -/
+theorem wilsonBlockElectricQuadraticForm_discarded
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) :
+    wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block
+        (wilsonBlockDiscarded beta plaquettes block f) =
+      wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block f := by
+  unfold wilsonBlockElectricQuadraticForm
+  exact integral_congr_ae (Filter.Eventually.of_forall fun U =>
+    wilsonBlockElectricEnergyDensity_discarded kappa beta directions
+      plaquettes block f U)
+
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
     (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
