@@ -712,6 +712,25 @@ theorem blockConfiguration_replace_outside (block : Finset J)
   funext j
   by_cases hj : j ∈ block <;> simp [blockConfiguration, hj]
 
+/-- Left multiplication of one link, the elementary curve used by lattice
+electric directional derivatives. -/
+def linkLeftTranslate [Group G] (j : J) (g : G) (U : J → G) : J → G :=
+  Function.update U j (g * U j)
+
+/-- Translating a link in the active block changes no exterior coordinate, so
+block replacement reconstructs the translated configuration exactly. -/
+theorem blockConfiguration_linkLeftTranslate [Group G] (block : Finset J)
+    (U : J → G) (j : J) (g : G) (hj : j ∈ block) :
+    blockConfiguration block U (linkLeftTranslate j g U) =
+      linkLeftTranslate j g U := by
+  funext k
+  by_cases hk : k ∈ block
+  · simp [blockConfiguration, hk]
+  · have hkj : k ≠ j := by
+      intro h
+      exact hk (h ▸ hj)
+    simp [blockConfiguration, linkLeftTranslate, hk, hkj]
+
 /-- An interaction supported outside the block is unchanged by block replacement. -/
 theorem blockConfiguration_interaction_unchanged (block support : Finset J)
     (V : (J → G) → Real) (hLocal : DependsOn V (support : Set J))
@@ -1237,6 +1256,99 @@ theorem wilsonBlockUpdate_replace [Fintype P] [DecidableEq L]
     funext next
     exact blockConfiguration_replace_outside block outside inside next
   rw [hc]
+
+/-- Conditional expectation for the explicit Wilson block update. The real
+integral is defined for every observable; later energy statements must still
+provide the relevant integrability hypotheses. -/
+noncomputable def wilsonBlockAverage [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  ∫ inside, f inside ∂wilsonBlockUpdateMeasure beta plaquettes block outside
+
+/-- The retained block average depends only on exterior links. -/
+theorem wilsonBlockAverage_replace [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (outside inside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockAverage beta plaquettes block f
+        (blockConfiguration block outside inside) =
+      wilsonBlockAverage beta plaquettes block f outside := by
+  unfold wilsonBlockAverage
+  rw [wilsonBlockUpdate_replace beta plaquettes block outside inside]
+
+/-- Every left translation of an active link leaves the retained block
+average unchanged. This is an exact property of the constructed kernel. -/
+theorem wilsonBlockAverage_linkLeftTranslate [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) (j : L)
+    (g : Matrix.specialUnitaryGroup N Complex) (hj : j ∈ block) :
+    wilsonBlockAverage beta plaquettes block f (linkLeftTranslate j g U) =
+      wilsonBlockAverage beta plaquettes block f U := by
+  rw [← blockConfiguration_linkLeftTranslate block U j g hj]
+  exact wilsonBlockAverage_replace beta plaquettes block f U _
+
+/-- The discarded component associated with the explicit conditional
+projection. -/
+noncomputable def wilsonBlockDiscarded [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  f U - wilsonBlockAverage beta plaquettes block f U
+
+/-- Exact retained/discarded decomposition for a block observable. -/
+theorem wilsonBlockAverage_add_discarded [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockAverage beta plaquettes block f U +
+      wilsonBlockDiscarded beta plaquettes block f U = f U := by
+  unfold wilsonBlockDiscarded
+  ring
+
+/-- Along any one-parameter family of left translations of an active link,
+the retained component has zero directional derivative. -/
+theorem wilsonBlockAverage_linkLeftTranslate_deriv_zero [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) (j : L)
+    (curve : Real → Matrix.specialUnitaryGroup N Complex) (t : Real)
+    (hj : j ∈ block) :
+    deriv (fun s => wilsonBlockAverage beta plaquettes block f
+      (linkLeftTranslate j (curve s) U)) t = 0 := by
+  have hconst :
+      (fun s => wilsonBlockAverage beta plaquettes block f
+        (linkLeftTranslate j (curve s) U)) =
+      (fun _ => wilsonBlockAverage beta plaquettes block f U) := by
+    funext s
+    exact wilsonBlockAverage_linkLeftTranslate beta plaquettes block f U j
+      (curve s) hj
+  rw [hconst, deriv_const]
+
+/-- Active-link electric derivatives are carried entirely by the discarded
+component: subtracting the retained block average does not change them. -/
+theorem wilsonBlockDiscarded_linkLeftTranslate_deriv [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) (j : L)
+    (curve : Real → Matrix.specialUnitaryGroup N Complex) (t : Real)
+    (hj : j ∈ block) :
+    deriv (fun s => wilsonBlockDiscarded beta plaquettes block f
+      (linkLeftTranslate j (curve s) U)) t =
+      deriv (fun s => f (linkLeftTranslate j (curve s) U)) t := by
+  have hfun :
+      (fun s => f (linkLeftTranslate j (curve s) U) -
+        wilsonBlockAverage beta plaquettes block f
+          (linkLeftTranslate j (curve s) U)) =
+      (fun s => f (linkLeftTranslate j (curve s) U) -
+        wilsonBlockAverage beta plaquettes block f U) := by
+    funext s
+    rw [wilsonBlockAverage_linkLeftTranslate beta plaquettes block f U j
+      (curve s) hj]
+  unfold wilsonBlockDiscarded
+  rw [hfun]
+  exact deriv_sub_const _
 
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
