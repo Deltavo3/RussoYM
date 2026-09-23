@@ -1350,6 +1350,90 @@ theorem wilsonBlockDiscarded_linkLeftTranslate_deriv [Fintype P] [DecidableEq L]
   rw [hfun]
   exact deriv_sub_const _
 
+/-- A continuous one-parameter subgroup of `SU(N)`, used to specify one
+electric direction. A physical Casimir requires a finite orthonormal basis of
+such directions; that basis and its normalization are not asserted here. -/
+structure WilsonElectricDirection where
+  curve : Real → Matrix.specialUnitaryGroup N Complex
+  curve_zero : curve 0 = 1
+  curve_add : ∀ s t, curve (s + t) = curve s * curve t
+  continuous_curve : Continuous curve
+
+/-- Directional derivative obtained by left-translating one lattice link along
+an explicitly supplied one-parameter subgroup. -/
+noncomputable def wilsonElectricDirectionalDerivative [DecidableEq L]
+    (direction : WilsonElectricDirection (N := N)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  deriv (fun t => f (linkLeftTranslate j (direction.curve t) U)) 0
+
+/-- Finite active-block electric energy density for a supplied finite family
+of `SU(N)` directions. It becomes the usual lattice electric form only after
+the directions are proved to be a correctly normalized complete Lie basis. -/
+noncomputable def wilsonBlockElectricEnergyDensity
+    {A : Type*} [Fintype A] [DecidableEq L] (kappa : Real)
+    (directions : A → WilsonElectricDirection (N := N)) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) : Real :=
+  kappa * ∑ j ∈ block, ∑ a,
+    (wilsonElectricDirectionalDerivative (directions a) j f U) ^ 2
+
+omit [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+  [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)] in
+/-- The finite directional electric density is nonnegative for nonnegative
+electric coefficient. -/
+theorem wilsonBlockElectricEnergyDensity_nonneg
+    {A : Type*} [Fintype A] [DecidableEq L] (kappa : Real) (hkappa : 0 ≤ kappa)
+    (directions : A → WilsonElectricDirection (N := N)) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) :
+    0 ≤ wilsonBlockElectricEnergyDensity kappa directions block f U := by
+  unfold wilsonBlockElectricEnergyDensity
+  exact mul_nonneg hkappa (Finset.sum_nonneg fun _ _ =>
+    Finset.sum_nonneg fun _ _ => sq_nonneg _)
+
+/-- The retained conditional expectation has zero electric energy in every
+direction attached to a link in the active block. -/
+theorem wilsonBlockElectricEnergyDensity_average_zero
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockElectricEnergyDensity kappa directions block
+      (wilsonBlockAverage beta plaquettes block f) U = 0 := by
+  unfold wilsonBlockElectricEnergyDensity
+  apply mul_eq_zero_of_right
+  apply Finset.sum_eq_zero
+  intro j hj
+  apply Finset.sum_eq_zero
+  intro a _
+  unfold wilsonElectricDirectionalDerivative
+  rw [wilsonBlockAverage_linkLeftTranslate_deriv_zero beta plaquettes block f U j
+    (directions a).curve 0 hj]
+  norm_num
+
+/-- The discarded component carries exactly the full active-block electric
+energy, with no loss and no assumed comparison constant. -/
+theorem wilsonBlockElectricEnergyDensity_discarded
+    {A : Type*} [Fintype A] [Fintype P] [DecidableEq L]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockElectricEnergyDensity kappa directions block
+        (wilsonBlockDiscarded beta plaquettes block f) U =
+      wilsonBlockElectricEnergyDensity kappa directions block f U := by
+  unfold wilsonBlockElectricEnergyDensity
+  congr 1
+  apply Finset.sum_congr rfl
+  intro j hj
+  apply Finset.sum_congr rfl
+  intro a _
+  unfold wilsonElectricDirectionalDerivative
+  rw [wilsonBlockDiscarded_linkLeftTranslate_deriv beta plaquettes block f U j
+    (directions a).curve 0 hj]
+
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
     (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
