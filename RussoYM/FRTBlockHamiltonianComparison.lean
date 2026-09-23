@@ -703,6 +703,15 @@ variable {J G K : Type*} [DecidableEq J]
 def blockConfiguration (block : Finset J) (outside inside : J → G) : J → G :=
   fun j => if j ∈ block then inside j else outside j
 
+/-- Replacing the exterior by a configuration that differs only inside the
+same block has no effect on the next block replacement. -/
+theorem blockConfiguration_replace_outside (block : Finset J)
+    (outside inside next : J → G) :
+    blockConfiguration block (blockConfiguration block outside inside) next =
+      blockConfiguration block outside next := by
+  funext j
+  by_cases hj : j ∈ block <;> simp [blockConfiguration, hj]
+
 /-- An interaction supported outside the block is unchanged by block replacement. -/
 theorem blockConfiguration_interaction_unchanged (block support : Finset J)
     (V : (J → G) → Real) (hLocal : DependsOn V (support : Set J))
@@ -1213,6 +1222,22 @@ noncomputable def wilsonBlockUpdateMeasure [Fintype P] [DecidableEq L]
   (wilsonBlockGibbsMeasure wilsonHaarReference beta plaquettes block outside).map
     (blockConfiguration block outside)
 
+/-- A second update of the same block depends only on the unchanged exterior.
+Thus every configuration produced by a block replacement has exactly the same
+conditional update law as the original exterior configuration. -/
+theorem wilsonBlockUpdate_replace [Fintype P] [DecidableEq L]
+    (beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside inside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockUpdateMeasure beta plaquettes block
+        (blockConfiguration block outside inside) =
+      wilsonBlockUpdateMeasure beta plaquettes block outside := by
+  unfold wilsonBlockUpdateMeasure wilsonBlockGibbsMeasure
+  have hc : blockConfiguration block (blockConfiguration block outside inside) =
+      blockConfiguration block outside := by
+    funext next
+    exact blockConfiguration_replace_outside block outside inside next
+  rw [hc]
+
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
     (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
@@ -1473,6 +1498,34 @@ theorem wilsonBlockUpdate_lintegral [Nonempty N] [Finite L]
   rw [wilsonBlockUpdateMeasure, lintegral_map hf hm]
   unfold wilsonBlockGibbsMeasure gibbsMeasure
   exact lintegral_withDensity_eq_lintegral_mul _ hd.ennreal_ofReal (hf.comp hm)
+
+/-- Applying the same Wilson block kernel twice is the same as applying it
+once, tested against every nonnegative measurable observable. This is the
+continuous-state conditional-projection identity for the explicit kernel. -/
+theorem wilsonBlockKernel_lintegral_idempotent [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → ENNReal) (hf : Measurable f) :
+    (∫⁻ y, ∫⁻ z, f z ∂wilsonBlockKernel beta plaquettes block y
+        ∂wilsonBlockKernel beta plaquettes block outside) =
+      ∫⁻ z, f z ∂wilsonBlockKernel beta plaquettes block outside := by
+  letI := wilsonBlockKernel_isMarkov (N := N) beta hbeta plaquettes block
+  have hi : Measurable (fun y =>
+      ∫⁻ z, f z ∂wilsonBlockKernel (N := N) beta plaquettes block y) :=
+    hf.lintegral_kernel
+  change Measurable (fun y =>
+    ∫⁻ z, f z ∂wilsonBlockUpdateMeasure beta plaquettes block y) at hi
+  change (∫⁻ y, ∫⁻ z, f z ∂wilsonBlockUpdateMeasure beta plaquettes block y
+      ∂wilsonBlockUpdateMeasure beta plaquettes block outside) =
+    ∫⁻ z, f z ∂wilsonBlockUpdateMeasure beta plaquettes block outside
+  rw [wilsonBlockUpdate_lintegral beta plaquettes block outside _ hi]
+  simp_rw [wilsonBlockUpdate_replace beta plaquettes block outside]
+  rw [← wilsonBlockUpdate_lintegral beta plaquettes block outside
+    (fun _ => ∫⁻ z, f z ∂wilsonBlockUpdateMeasure beta plaquettes block outside)
+    measurable_const]
+  letI := wilsonBlockUpdate_isProbability beta hbeta plaquettes block outside
+  simp
 
 /-- The joint equilibrium/update expectation has the explicit product-Haar
 density. This connects the change-of-variables proof to the bundled kernel
