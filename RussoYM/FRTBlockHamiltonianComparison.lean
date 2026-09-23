@@ -1489,6 +1489,118 @@ theorem wilsonBlockElectricQuadraticForm_discarded
     wilsonBlockElectricEnergyDensity_discarded kappa beta directions
       plaquettes block f U)
 
+omit [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)] in
+/-- The electric density on a selected block is bounded by the density summed
+over every link of a finite lattice. -/
+theorem wilsonBlockElectricEnergyDensity_le_full
+    {A : Type*} [Fintype A] [Fintype L] [DecidableEq L]
+    (kappa : Real) (hkappa : 0 ≤ kappa)
+    (directions : A → WilsonElectricDirection (N := N)) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockElectricEnergyDensity kappa directions block f U ≤
+      wilsonBlockElectricEnergyDensity kappa directions Finset.univ f U := by
+  unfold wilsonBlockElectricEnergyDensity
+  apply mul_le_mul_of_nonneg_left _ hkappa
+  apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ block)
+  intro j _ _
+  exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+
+/-- Electric quadratic form summed over every link of the finite lattice. -/
+noncomputable def wilsonFullElectricQuadraticForm
+    {A : Type*} [Fintype A] [Fintype L] [DecidableEq L] [Fintype P]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) : Real :=
+  wilsonBlockElectricQuadraticForm kappa beta directions plaquettes Finset.univ f
+
+/-- Wilson magnetic multiplication quadratic form in the normalized Gibbs
+measure determined by the same finite-lattice action. -/
+noncomputable def wilsonMagneticQuadraticForm
+    [Fintype P] (beta : Real) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) : Real :=
+  ∫ U, finiteWilsonMagneticPotential beta plaquettes U * (f U) ^ 2
+    ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)
+
+/-- Finite-lattice directional Hamiltonian quadratic form: full directional
+electric energy plus the concrete Wilson magnetic multiplication energy. Its
+identification with the standard Yang--Mills Hamiltonian still requires the
+direction family to be a normalized complete Lie-algebra basis. -/
+noncomputable def wilsonDirectionalHamiltonianQuadraticForm
+    {A : Type*} [Fintype A] [Fintype L] [DecidableEq L] [Fintype P]
+    (kappa beta : Real) (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) : Real :=
+  wilsonFullElectricQuadraticForm kappa beta directions plaquettes f +
+    wilsonMagneticQuadraticForm beta plaquettes f
+
+/-- For nonnegative Wilson coupling, the magnetic quadratic form is
+nonnegative directly from the Wilson trace bound. -/
+theorem wilsonMagneticQuadraticForm_nonneg [Nonempty N] [Fintype P]
+    (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) :
+    0 ≤ wilsonMagneticQuadraticForm beta plaquettes f := by
+  unfold wilsonMagneticQuadraticForm
+  apply integral_nonneg
+  intro U
+  exact mul_nonneg
+    (Finset.sum_nonneg fun p _ => (wilsonMagneticTerm_bounds beta hbeta _).1)
+    (sq_nonneg _)
+
+/-- Under explicit integrability of the two directional densities, the
+selected-block electric form is bounded by the full finite-lattice electric
+form. The comparison constant is exactly one. -/
+theorem wilsonBlockElectricQuadraticForm_le_full
+    {A : Type*} [Fintype A] [Fintype L] [DecidableEq L] [Fintype P]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa)
+    (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (hBlock : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa directions block f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)))
+    (hFull : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa directions Finset.univ f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes))) :
+    wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block f ≤
+      wilsonFullElectricQuadraticForm kappa beta directions plaquettes f := by
+  unfold wilsonBlockElectricQuadraticForm wilsonFullElectricQuadraticForm
+  exact integral_mono hBlock hFull fun U =>
+    wilsonBlockElectricEnergyDensity_le_full kappa hkappa directions block f U
+
+/-- Quantitative finite-lattice discarded-mode comparison. For every block,
+its discarded electric form is bounded with constant one by the full
+directional Wilson Hamiltonian. No spectral gap or desired comparison is an
+input; only nonnegative couplings and the displayed integrability conditions
+are used. Physical Casimir identification remains the basis-normalization
+obligation stated in `wilsonDirectionalHamiltonianQuadraticForm`. -/
+theorem wilsonBlockDiscardedElectric_le_directionalHamiltonian
+    {A : Type*} [Fintype A] [Fintype L] [DecidableEq L] [Fintype P] [Nonempty N]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa) (hbeta : 0 ≤ beta)
+    (directions : A → WilsonElectricDirection (N := N))
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (hBlock : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa directions block f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)))
+    (hFull : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa directions Finset.univ f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes))) :
+    wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block
+        (wilsonBlockDiscarded beta plaquettes block f) ≤
+      wilsonDirectionalHamiltonianQuadraticForm kappa beta directions plaquettes f := by
+  rw [wilsonBlockElectricQuadraticForm_discarded]
+  calc
+    wilsonBlockElectricQuadraticForm kappa beta directions plaquettes block f ≤
+        wilsonFullElectricQuadraticForm kappa beta directions plaquettes f :=
+      wilsonBlockElectricQuadraticForm_le_full kappa beta hkappa directions
+        plaquettes block f hBlock hFull
+    _ ≤ wilsonFullElectricQuadraticForm kappa beta directions plaquettes f +
+        wilsonMagneticQuadraticForm beta plaquettes f :=
+      le_add_of_nonneg_right (wilsonMagneticQuadraticForm_nonneg beta hbeta plaquettes f)
+    _ = wilsonDirectionalHamiltonianQuadraticForm kappa beta directions plaquettes f := rfl
+
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
     (block : Finset L) (outside : L → Matrix.specialUnitaryGroup N Complex) :
