@@ -23,16 +23,18 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.WithDensity
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Analysis.SpecialFunctions.Exp
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 
 /-!
 # Block / Hamiltonian comparison: actual operator estimates
 
-This file develops estimates for a retained/discarded orthogonal decomposition.
-The projection, operator, lower bounds, and cross-term bound are explicit.
-These are standard operator estimates being formalized as infrastructure, not
-claimed as a new Yang-Mills theorem. The gauge-specific construction and estimates
-remain to be supplied. Everywhere-defined real linear maps are used here; an
-unbounded physical Hamiltonian additionally requires a suitable domain treatment.
+This file develops estimates for a retained/discarded decomposition, then
+constructs a finite-volume Wilson block kernel and its Gibbs measure. For
+`SU(2)`, the three explicit Pauli directions are proved orthonormal and complete,
+and the discarded active-block electric energy is compared to the corresponding
+finite Wilson Hamiltonian form. This remains a finite-regulator result; a
+continuum limit and the domain theory of the unbounded physical Hamiltonian are
+separate obligations.
 -/
 
 namespace RussoYM
@@ -1555,6 +1557,83 @@ theorem su2PauliGenerator_orthonormal (a b : Fin 3) :
     norm_num [su2GeneratorInner, su2PauliGenerator,
       Matrix.trace_fin_two, Matrix.mul_apply]
 
+/-- Every skew-Hermitian trace-zero `2 × 2` matrix is reconstructed from
+three real Pauli coordinates. Together with
+`su2PauliGenerator_orthonormal`, this proves that the three displayed
+generators are a complete normalized basis of the standard matrix model of
+`su(2)`; completeness is derived entrywise rather than assumed. -/
+theorem su2PauliGenerator_complete
+    (X : Matrix (Fin 2) (Fin 2) Complex)
+    (hskew : star X = -X) (htrace : Matrix.trace X = 0) :
+    X = fun i j => ∑ a : Fin 3,
+      ((![((X 0 1).im), ((X 0 1).re), ((X 0 0).im)] a : Real) : Complex) *
+        su2PauliGenerator a i j := by
+  have h00 := congrFun (congrFun hskew (0 : Fin 2)) (0 : Fin 2)
+  have h01 := congrFun (congrFun hskew (0 : Fin 2)) (1 : Fin 2)
+  have h10 := congrFun (congrFun hskew (1 : Fin 2)) (0 : Fin 2)
+  have h11 := congrFun (congrFun hskew (1 : Fin 2)) (1 : Fin 2)
+  simp only [star, Matrix.conjTranspose_apply, Matrix.neg_apply] at h00 h01 h10 h11
+  have htr : X 0 0 + X 1 1 = 0 := by
+    simpa [Matrix.trace_fin_two] using htrace
+  have h00re : (X 0 0).re = 0 := by
+    have h := congrArg Complex.re h00
+    norm_num at h
+    linarith
+  have h10re : (X 1 0).re = -(X 0 1).re := by
+    have h := congrArg Complex.re h10
+    norm_num at h
+    linarith
+  have h10im : (X 1 0).im = (X 0 1).im := by
+    have h := congrArg Complex.im h10
+    norm_num at h
+    linarith
+  have h11re : (X 1 1).re = 0 := by
+    have h := congrArg Complex.re htr
+    norm_num at h
+    linarith
+  have h11im : (X 1 1).im = -(X 0 0).im := by
+    have h := congrArg Complex.im htr
+    norm_num at h
+    linarith
+  ext i j
+  fin_cases i <;> fin_cases j
+  all_goals simp only [Fin.sum_univ_three, su2PauliGenerator]
+  all_goals apply Complex.ext <;> norm_num
+  all_goals simp [h00re, h10re, h10im, h11re, h11im]
+
+/-- The concrete Pauli curves have the declared infinitesimal generators at
+the identity. This links the orthonormal complete matrix basis to the actual
+one-parameter subgroups used by the electric directional derivatives. -/
+theorem su2PauliCurve_entry_deriv (a : Fin 3) (i j : Fin 2) :
+    deriv (fun t => (((su2PauliElectricDirections a).curve t :
+      Matrix.specialUnitaryGroup (Fin 2) Complex) :
+        Matrix (Fin 2) (Fin 2) Complex) i j) 0 =
+      su2PauliGenerator a i j := by
+  have hcos : HasDerivAt (fun t : Real => (Real.cos t : Complex)) 0 0 := by
+    convert (Real.hasDerivAt_cos 0).ofReal_comp using 1 <;> norm_num
+  have hsin : HasDerivAt (fun t : Real => (Real.sin t : Complex)) 1 0 := by
+    convert (Real.hasDerivAt_sin 0).ofReal_comp using 1 <;> norm_num
+  have hisin : HasDerivAt (fun t : Real => Complex.I * (Real.sin t : Complex))
+      Complex.I 0 := by
+    convert hsin.const_mul Complex.I using 1 <;> norm_num
+  have hplus : HasDerivAt (fun t : Real =>
+      (Real.cos t : Complex) + Complex.I * (Real.sin t : Complex)) Complex.I 0 := by
+    convert hcos.add hisin using 1 <;> norm_num
+  have hminus : HasDerivAt (fun t : Real =>
+      (Real.cos t : Complex) - Complex.I * (Real.sin t : Complex)) (-Complex.I) 0 := by
+    convert hcos.sub hisin using 1 <;> norm_num
+  fin_cases a <;> fin_cases i <;> fin_cases j
+  all_goals
+    simp [su2PauliElectricDirections, su2PauliXCurve, su2PauliYCurve,
+      su2PauliZCurve, su2PauliXMatrix, su2PauliYMatrix, su2PauliZMatrix,
+      su2PauliGenerator]
+  all_goals first
+    | simpa using hcos.deriv
+    | simpa using hsin.deriv
+    | simpa using hisin.deriv
+    | simpa using hplus.deriv
+    | simpa using hminus.deriv
+
 /-- Directional derivative obtained by left-translating one lattice link along
 an explicitly supplied one-parameter subgroup. -/
 noncomputable def wilsonElectricDirectionalDerivative [DecidableEq L]
@@ -1731,6 +1810,32 @@ noncomputable def wilsonDirectionalHamiltonianQuadraticForm
   wilsonFullElectricQuadraticForm kappa beta directions plaquettes f +
     wilsonMagneticQuadraticForm beta plaquettes f
 
+/-- The active-block electric Casimir form for finite `SU(2)` lattice gauge
+theory in the normalized Pauli basis. The basis is orthonormal and complete by
+`su2PauliGenerator_orthonormal` and `su2PauliGenerator_complete`, and its
+curves have those generators by `su2PauliCurve_entry_deriv`. -/
+noncomputable def su2WilsonBlockElectricQuadraticForm
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) : Real :=
+  wilsonBlockElectricQuadraticForm kappa beta su2PauliElectricDirections
+    plaquettes block f
+
+/-- The actual finite-regulator `SU(2)` Wilson Hamiltonian quadratic form in
+the explicit normalized Pauli convention: the full electric Casimir form plus
+the Wilson magnetic multiplication form. The positive coefficient `kappa`
+records the chosen electric normalization and regulator dependence. -/
+noncomputable def su2WilsonHamiltonianQuadraticForm
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) : Real :=
+  wilsonDirectionalHamiltonianQuadraticForm kappa beta
+    su2PauliElectricDirections plaquettes f
+
 /-- For nonnegative Wilson coupling, the magnetic quadratic form is
 nonnegative directly from the Wilson trace bound. -/
 theorem wilsonMagneticQuadraticForm_nonneg [Nonempty N] [Fintype P]
@@ -1796,6 +1901,29 @@ theorem wilsonBlockDiscardedElectric_le_directionalHamiltonian
         wilsonMagneticQuadraticForm beta plaquettes f :=
       le_add_of_nonneg_right (wilsonMagneticQuadraticForm_nonneg beta hbeta plaquettes f)
     _ = wilsonDirectionalHamiltonianQuadraticForm kappa beta directions plaquettes f := rfl
+
+/-- Specialization of the discarded-mode estimate to the complete normalized
+Pauli basis. The comparison constant is exactly one, valid on every finite
+lattice and every finite block for `kappa ≥ 0` and `beta ≥ 0`, subject only to
+the displayed integrability conditions. -/
+theorem wilsonBlockDiscardedElectric_le_su2Hamiltonian
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hBlock : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections block f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)))
+    (hFull : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections Finset.univ f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes))) :
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
+        (wilsonBlockDiscarded beta plaquettes block f) ≤
+      su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  exact wilsonBlockDiscardedElectric_le_directionalHamiltonian
+    kappa beta hkappa hbeta su2PauliElectricDirections plaquettes block f hBlock hFull
 
 theorem wilsonBlockUpdate_isProbability [Nonempty N] [Fintype P] [DecidableEq L]
     (beta : Real) (hbeta : 0 ≤ beta) (plaquettes : P → Fin 4 → L)
@@ -1894,6 +2022,59 @@ theorem wilsonBlockKernel_isMarkov [Nonempty N] [Finite L]
     (plaquettes : P → Fin 4 → L) (block : Finset L) :
     ProbabilityTheory.IsMarkovKernel (wilsonBlockKernel (N := N) beta plaquettes block) :=
   ⟨fun outside => wilsonBlockUpdate_isProbability beta hbeta plaquettes block outside⟩
+
+/-- The previously constructed conditional average is exactly the action of
+the measurable Wilson block kernel. This records the coarse-graining map and
+the kernel in one statement rather than leaving their connection implicit in
+their definitions. -/
+theorem wilsonBlockAverage_eq_kernel_integral [Nonempty N] [Finite L]
+    [Fintype P] [DecidableEq L] (beta : Real) (plaquettes : P → Fin 4 → L)
+    (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockAverage beta plaquettes block f outside =
+      ∫ inside, f inside ∂wilsonBlockKernel beta plaquettes block outside := by
+  rfl
+
+/-- Finite-regulator `SU(2)` block-kernel/Hamiltonian comparison. The retained
+part is the explicit Wilson-kernel average and has zero electric energy on the
+updated block. The discarded part carries exactly the original active-block
+electric energy, and this energy is bounded by the full normalized-Pauli
+Wilson Hamiltonian with comparison constant one. The validity range is every
+finite link and plaquette set, `kappa ≥ 0`, `beta ≥ 0`, and the two displayed
+integrability conditions. -/
+theorem su2WilsonBlockKernel_energy_comparison
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hBlock : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections block f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)))
+    (hFull : Integrable (fun U =>
+      wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections Finset.univ f U)
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes))) :
+    (∀ outside, wilsonBlockAverage beta plaquettes block f outside =
+      ∫ inside, f inside ∂wilsonBlockKernel beta plaquettes block outside) ∧
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
+        (wilsonBlockAverage beta plaquettes block f) = 0 ∧
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
+        (wilsonBlockDiscarded beta plaquettes block f) =
+      su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f ∧
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
+        (wilsonBlockDiscarded beta plaquettes block f) ≤
+      su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro outside
+    exact wilsonBlockAverage_eq_kernel_integral beta plaquettes block f outside
+  · exact wilsonBlockElectricQuadraticForm_average_zero kappa beta
+      su2PauliElectricDirections plaquettes block f
+  · exact wilsonBlockElectricQuadraticForm_discarded kappa beta
+      su2PauliElectricDirections plaquettes block f
+  · exact wilsonBlockDiscardedElectric_le_su2Hamiltonian
+      kappa beta hkappa hbeta plaquettes block f hBlock hFull
 
 /-- Exchange the selected links between two configurations. This involution
 is the change of variables underlying conditional Gibbs detailed balance. -/
