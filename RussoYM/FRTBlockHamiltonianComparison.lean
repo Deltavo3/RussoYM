@@ -2058,6 +2058,8 @@ theorem su2WilsonBlockKernel_energy_comparison
       (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes))) :
     (∀ outside, wilsonBlockAverage beta plaquettes block f outside =
       ∫ inside, f inside ∂wilsonBlockKernel beta plaquettes block outside) ∧
+    (∀ U, wilsonBlockAverage beta plaquettes block f U +
+      wilsonBlockDiscarded beta plaquettes block f U = f U) ∧
     su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
         (wilsonBlockAverage beta plaquettes block f) = 0 ∧
     su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
@@ -2066,9 +2068,11 @@ theorem su2WilsonBlockKernel_energy_comparison
     su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block
         (wilsonBlockDiscarded beta plaquettes block f) ≤
       su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro outside
     exact wilsonBlockAverage_eq_kernel_integral beta plaquettes block f outside
+  · intro U
+    exact wilsonBlockAverage_add_discarded beta plaquettes block f U
   · exact wilsonBlockElectricQuadraticForm_average_zero kappa beta
       su2PauliElectricDirections plaquettes block f
   · exact wilsonBlockElectricQuadraticForm_discarded kappa beta
