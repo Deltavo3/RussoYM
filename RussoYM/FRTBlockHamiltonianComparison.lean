@@ -4339,3 +4339,61 @@ theorem su2WilsonCentered_eq_zero_of_card_eq_zero
 
 end SU2GlobalPoincare
 end RussoYM.BlockHamiltonian
+
+
+namespace RussoYM.BlockHamiltonian
+open MeasureTheory
+
+/-- At a fixed finite SU(2) Wilson lattice, vanishing full Pauli electric
+quadratic energy forces a smooth observable to equal its Gibbs mean almost
+everywhere. The incidence bound is discharged automatically by the finite
+plaquette count. This makes no assertion about the physical Hamiltonian's
+ground-state eigenspace. -/
+theorem su2WilsonFullElectric_zero_ae_constant
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f))
+    (hzero : wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections
+      plaquettes f = 0) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    ∀ᵐ U ∂μ, f U = ∫ V, f V ∂μ := by
+  let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+    (finiteWilsonMagneticPotential beta plaquettes)
+  let D := Fintype.card P
+  have hDegree : ∀ j : L,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D := by
+    intro j
+    exact Finset.card_filter_le Finset.univ _
+  by_cases hn : Fintype.card L = 0
+  · apply Filter.Eventually.of_forall
+    intro U
+    exact sub_eq_zero.mp (su2WilsonCentered_eq_zero_of_card_eq_zero hn beta plaquettes f U)
+  · have hnpos : 0 < Fintype.card L := Nat.pos_of_ne_zero hn
+    let c := kappa / (6 * Real.pi ^ 2 * (Fintype.card L : Real) *
+      Real.exp (4 * beta * (Fintype.card L : Real) * D))
+    obtain ⟨hc, hcoerc⟩ := su2WilsonGlobal_centered_coercivity
+      kappa beta hkappa hbeta hnpos plaquettes D hDegree f hf hDiff hDcont
+    obtain ⟨g, hg, hnorm, _, _⟩ := su2WilsonGlobal_l2_hamiltonian_comparison
+      kappa beta hkappa hbeta plaquettes D hDegree f hf hDiff hDcont
+    rw [← hnorm, hzero] at hcoerc
+    have hSq : ‖g‖ ^ 2 ≤ 0 := by
+      apply (mul_le_mul_iff_of_pos_left hc).mp
+      simpa only [mul_zero] using hcoerc
+    have hg0 : g = 0 := by
+      apply norm_eq_zero.mp
+      nlinarith [norm_nonneg g]
+    have hg0ae : (⇑g =ᵐ[μ] fun _ => (0 : Real)) := by
+      rw [hg0]
+      exact Lp.coeFn_zero Real 2 μ
+    filter_upwards [hg, hg0ae] with U hU hU0
+    linarith
+
+end RussoYM.BlockHamiltonian
