@@ -1,7 +1,12 @@
+import RussoYM.FRTGroundStateTransform
+import Mathlib.Analysis.SpecialFunctions.Complex.Arg
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse
+import Mathlib.LinearAlgebra.Matrix.Adjugate
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 import Mathlib.Analysis.SpecialFunctions.Sqrt
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Probability.Kernel.MeasurableLIntegral
+import Mathlib.Probability.Kernel.MeasurableIntegral
 import Mathlib.MeasureTheory.Measure.Haar.Unique
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Defs
@@ -24,6 +29,7 @@ import Mathlib.MeasureTheory.Measure.WithDensity
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Analysis.SpecialFunctions.Exp
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+import Mathlib.Probability.Moments.Variance
 
 /-!
 # Block / Hamiltonian comparison: actual operator estimates
@@ -2400,6 +2406,193 @@ theorem wilsonBlockKernel_gibbs_invariant [Nonempty N] [Finite L]
     (fun q => f q.2) (hf.comp measurable_snd)
   simpa using h
 
+/-- The squared fluctuation about the Wilson block average is the conditional
+second moment minus the square of the conditional first moment. This identity
+requires square integrability on the selected kernel row; it contains no
+Poincaré or spectral-gap hypothesis. -/
+theorem su2WilsonBlockKernel_pointwise_variance_identity
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (hf : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside)) :
+    (∫ y, (f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) =
+      (∫ y, (f y) ^ 2 ∂wilsonBlockKernel beta plaquettes block outside) -
+        (wilsonBlockAverage beta plaquettes block f outside) ^ 2 := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hvariance := (ProbabilityTheory.variance_eq_integral hf.aemeasurable).symm.trans
+    (ProbabilityTheory.variance_eq_sub hf)
+  simpa only [wilsonBlockAverage_eq_kernel_integral] using hvariance
+
+/-- The actual discarded observable, whose centering is evaluated at the
+sampled configuration, has the same kernel-row square integral as centering
+at the exterior configuration. The replacement law is what makes this true. -/
+theorem su2WilsonBlockKernel_discarded_row_variance
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (hf : Measurable f)
+    (hLp : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside)) :
+    (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) =
+      (∫ y, (f y) ^ 2 ∂wilsonBlockKernel beta plaquettes block outside) -
+        (wilsonBlockAverage beta plaquettes block f outside) ^ 2 := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hAvg : Measurable (wilsonBlockAverage beta plaquettes block f) := by
+    exact (hf.stronglyMeasurable.integral_kernel
+      (κ := wilsonBlockKernel beta plaquettes block)).measurable
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hdisc : AEStronglyMeasurable
+      (fun y => (wilsonBlockDiscarded beta plaquettes block f y) ^ 2)
+      (wilsonBlockUpdateMeasure beta plaquettes block outside) := by
+    unfold wilsonBlockDiscarded
+    fun_prop
+  have hfixed : AEStronglyMeasurable
+      (fun y => (f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2)
+      (wilsonBlockUpdateMeasure beta plaquettes block outside) := by
+    fun_prop
+  have hcenter :
+      (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside) =
+      ∫ y, (f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside := by
+    change (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+        ∂wilsonBlockUpdateMeasure beta plaquettes block outside) =
+      ∫ y, (f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2
+        ∂wilsonBlockUpdateMeasure beta plaquettes block outside
+    unfold wilsonBlockUpdateMeasure
+    rw [integral_map hm.aemeasurable hdisc, integral_map hm.aemeasurable hfixed]
+    simp only [wilsonBlockDiscarded, wilsonBlockAverage_replace]
+  rw [hcenter]
+  exact su2WilsonBlockKernel_pointwise_variance_identity beta hbeta plaquettes block f
+    outside hLp
+
+/-- Conditional variance is at most the squared jump from any chosen exterior
+configuration. This is the minimum-mean property of variance, now connected to
+the explicit Wilson discarded observable. -/
+theorem su2WilsonBlockKernel_discarded_row_le_squared_jump
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (hf : Measurable f)
+    (hLp : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside)) :
+    (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      ∫ y, (f outside - f y) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hrow :
+      (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside) =
+      ProbabilityTheory.variance f (wilsonBlockKernel beta plaquettes block outside) := by
+    rw [su2WilsonBlockKernel_discarded_row_variance beta hbeta plaquettes block f
+      outside hf hLp]
+    simpa only [wilsonBlockAverage_eq_kernel_integral] using
+      (ProbabilityTheory.variance_eq_sub hLp).symm
+  rw [hrow]
+  have hmeas : Measurable (fun y => f y - f outside) := hf.sub measurable_const
+  have hvariance := ProbabilityTheory.variance_le_expectation_sq
+    (hmeas.aestronglyMeasurable (μ :=
+      wilsonBlockKernel beta plaquettes block outside))
+  rw [ProbabilityTheory.variance_sub_const hLp.aestronglyMeasurable (f outside)]
+    at hvariance
+  convert hvariance using 1
+  congr 1
+  funext y
+  dsimp
+  ring
+
+/-- A conditional mean minimizes the squared error among all constant
+centers on its Wilson kernel row. The center is arbitrary, which is needed
+to choose the Haar mean in the density-transfer argument. -/
+theorem su2WilsonBlockKernel_discarded_row_le_centered_sq
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (c : Real) (hf : Measurable f)
+    (hLp : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside)) :
+    (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      ∫ y, (f y - c) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hrow :
+      (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside) =
+      ProbabilityTheory.variance f (wilsonBlockKernel beta plaquettes block outside) := by
+    rw [su2WilsonBlockKernel_discarded_row_variance beta hbeta plaquettes block f
+      outside hf hLp]
+    simpa only [wilsonBlockAverage_eq_kernel_integral] using
+      (ProbabilityTheory.variance_eq_sub hLp).symm
+  rw [hrow]
+  have hm : Measurable (fun y => f y - c) := hf.sub measurable_const
+  have hvariance := ProbabilityTheory.variance_le_expectation_sq
+    (hm.aestronglyMeasurable (μ := wilsonBlockKernel beta plaquettes block outside))
+  rw [ProbabilityTheory.variance_sub_const hLp.aestronglyMeasurable c]
+    at hvariance
+  simpa only [Pi.pow_apply] using hvariance
+
+/-- The Gibbs-integrated squared discarded mode equals the integrated
+conditional squared fluctuation. Both sides are extended nonnegative
+integrals, so no unproved global `L²` bound is hidden in the statement. -/
+theorem su2WilsonBlockKernel_discarded_l2_eq_integrated_variance
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Measurable f) :
+    (∫⁻ x, ENNReal.ofReal ((wilsonBlockDiscarded beta plaquettes block f x) ^ 2)
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) =
+    ∫⁻ x, (∫⁻ y, ENNReal.ofReal
+      ((f y - wilsonBlockAverage beta plaquettes block f x) ^ 2)
+      ∂wilsonBlockKernel beta plaquettes block x)
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hAvg : Measurable (wilsonBlockAverage beta plaquettes block f) := by
+    exact (hf.stronglyMeasurable.integral_kernel
+      (κ := wilsonBlockKernel beta plaquettes block)).measurable
+  have hdisc : Measurable (fun y =>
+      ENNReal.ofReal ((wilsonBlockDiscarded beta plaquettes block f y) ^ 2)) := by
+    unfold wilsonBlockDiscarded
+    fun_prop
+  have hinv := wilsonBlockKernel_gibbs_invariant beta hbeta plaquettes block _ hdisc
+  rw [← hinv]
+  apply lintegral_congr
+  intro outside
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hfixed : Measurable (fun y => ENNReal.ofReal
+      ((f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2)) := by
+    fun_prop
+  change (∫⁻ y, ENNReal.ofReal ((wilsonBlockDiscarded beta plaquettes block f y) ^ 2)
+      ∂wilsonBlockUpdateMeasure beta plaquettes block outside) =
+    ∫⁻ y, ENNReal.ofReal ((f y - wilsonBlockAverage beta plaquettes block f outside) ^ 2)
+      ∂wilsonBlockUpdateMeasure beta plaquettes block outside
+  unfold wilsonBlockUpdateMeasure
+  rw [lintegral_map hdisc hm, lintegral_map hfixed hm]
+  simp only [wilsonBlockDiscarded, wilsonBlockAverage_replace]
+
 /-- Explicit comparison of Wilson block resampling against Haar block
 resampling for every nonnegative observable. The constant depends on block
 size and local plaquette incidence, not total lattice volume. -/
@@ -2459,6 +2652,115 @@ theorem wilsonBlockUpdate_squared_jump_comparison [Nonempty N] [Finite L]
   wilsonBlockUpdate_haar_comparison beta hbeta plaquettes block D hDegree outside
     (fun y => ENNReal.ofReal ((f outside - f y) ^ 2))
     ((measurable_const.sub hf).pow_const 2).ennreal_ofReal
+
+/-- The conditional discarded variance is controlled by an explicit
+Wilson-to-Haar squared-jump comparison. This still requires a separate Haar
+Poincaré estimate to reach the differential electric form. -/
+theorem su2WilsonBlockKernel_discarded_row_le_haar_jump
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (hf : Measurable f)
+    (hLp : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside)) :
+    ENNReal.ofReal (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      ENNReal.ofReal (Real.exp ((block.card : Real) * D * (2 * beta))) *
+        (∫⁻ z, ENNReal.ofReal
+          ((f outside - f (blockConfiguration block outside z)) ^ 2)
+          ∂wilsonHaarReference) := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hDiff : MemLp (fun y => f outside - f y) 2
+      (wilsonBlockKernel beta plaquettes block outside) := by
+    exact (memLp_const (μ := wilsonBlockKernel beta plaquettes block outside)
+      (p := 2) (f outside)).sub hLp
+  have hJumpInt : Integrable (fun y => (f outside - f y) ^ 2)
+      (wilsonBlockKernel beta plaquettes block outside) := hDiff.integrable_sq
+  calc
+    _ ≤ ENNReal.ofReal (∫ y, (f outside - f y) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside) :=
+      ENNReal.ofReal_le_ofReal
+        (su2WilsonBlockKernel_discarded_row_le_squared_jump beta hbeta
+          plaquettes block f outside hf hLp)
+    _ = ∫⁻ y, ENNReal.ofReal ((f outside - f y) ^ 2)
+        ∂wilsonBlockKernel beta plaquettes block outside :=
+      ofReal_integral_eq_lintegral_ofReal hJumpInt
+        (Filter.Eventually.of_forall fun y => sq_nonneg _)
+    _ ≤ _ := (wilsonBlockUpdate_squared_jump_comparison beta hbeta plaquettes block
+      D hDegree outside f hf).2
+
+/-- The local density bounds transfer the Wilson conditional variance to
+Haar variance on the active block, with an explicit factor depending only
+on block size, incidence degree, and beta. The Haar Poincaré inequality
+needed to bound this variance by derivatives is a separate theorem. -/
+theorem su2WilsonBlockKernel_discarded_row_le_haar_variance
+    [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (hf : Measurable f)
+    (hWilsonLp : MemLp f 2 (wilsonBlockKernel beta plaquettes block outside))
+    (hHaarLp : MemLp (fun z => f (blockConfiguration block outside z)) 2
+      (wilsonHaarReference (N := Fin 2) (L := L))) :
+    ENNReal.ofReal (∫ y, (wilsonBlockDiscarded beta plaquettes block f y) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      ENNReal.ofReal (Real.exp ((block.card : Real) * D * (2 * beta))) *
+        ENNReal.ofReal (ProbabilityTheory.variance
+          (fun z => f (blockConfiguration block outside z))
+          (wilsonHaarReference (N := Fin 2) (L := L))) := by
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  let g := fun z => f (blockConfiguration block outside z)
+  let c := ∫ z, g z ∂wilsonHaarReference (N := Fin 2) (L := L)
+  have hm : Measurable (blockConfiguration block outside) :=
+    ((blockConfiguration_joint_continuous block).comp
+      (continuous_const.prodMk continuous_id)).measurable
+  have hg : Measurable g := hf.comp hm
+  have hWilsonDiff : MemLp (fun y => f y - c) 2
+      (wilsonBlockKernel beta plaquettes block outside) := by
+    exact hWilsonLp.sub (memLp_const c)
+  have hHaarDiff : MemLp (fun z => g z - c) 2
+      (wilsonHaarReference (N := Fin 2) (L := L)) := by
+    exact hHaarLp.sub (memLp_const c)
+  have hWilsonInt : Integrable (fun y => (f y - c) ^ 2)
+      (wilsonBlockKernel beta plaquettes block outside) := hWilsonDiff.integrable_sq
+  have hHaarInt : Integrable (fun z => (g z - c) ^ 2)
+      (wilsonHaarReference (N := Fin 2) (L := L)) := hHaarDiff.integrable_sq
+  have hHaarVariance : ProbabilityTheory.variance g
+      (wilsonHaarReference (N := Fin 2) (L := L)) =
+      ∫ z, (g z - c) ^ 2 ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+    simpa only [c] using ProbabilityTheory.variance_eq_integral hg.aemeasurable
+  have hcenteredMeas : Measurable (fun y => ENNReal.ofReal ((f y - c) ^ 2)) := by
+    fun_prop
+  have hDensity := (wilsonBlockUpdate_haar_comparison beta hbeta plaquettes block
+    D hDegree outside (fun y => ENNReal.ofReal ((f y - c) ^ 2)) hcenteredMeas).2
+  calc
+    _ ≤ ENNReal.ofReal (∫ y, (f y - c) ^ 2
+        ∂wilsonBlockKernel beta plaquettes block outside) :=
+      ENNReal.ofReal_le_ofReal
+        (su2WilsonBlockKernel_discarded_row_le_centered_sq beta hbeta
+          plaquettes block f outside c hf hWilsonLp)
+    _ = ∫⁻ y, ENNReal.ofReal ((f y - c) ^ 2)
+        ∂wilsonBlockKernel beta plaquettes block outside :=
+      ofReal_integral_eq_lintegral_ofReal hWilsonInt
+        (Filter.Eventually.of_forall fun y => sq_nonneg _)
+    _ ≤ ENNReal.ofReal (Real.exp ((block.card : Real) * D * (2 * beta))) *
+        (∫⁻ z, ENNReal.ofReal ((g z - c) ^ 2)
+          ∂wilsonHaarReference (N := Fin 2) (L := L)) := by
+      simpa only [g] using hDensity
+    _ = _ := by
+      rw [← ofReal_integral_eq_lintegral_ofReal hHaarInt
+        (Filter.Eventually.of_forall fun z => sq_nonneg _), ← hHaarVariance]
 
 /-- Radial differential expression in the trace coordinate x = cos(omega/2):
 -kappa ((1-x^2) f'' - 3 x f') + beta (1-x) f.
@@ -2696,3 +2998,1125 @@ theorem wilsonRadial_interval_energy_lower (kappa beta a l r : Real)
 end WilsonHaar
 end BlockHamiltonian
 end RussoYM
+
+
+open scoped ComplexConjugate
+open MeasureTheory
+namespace RussoYM.BlockHamiltonian
+
+theorem su2_matrix_standard_form (U : Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    U.val = !![U.val 0 0, U.val 0 1; -conj (U.val 0 1), conj (U.val 0 0)] := by
+  have hU := Matrix.mem_specialUnitaryGroup_iff.mp U.property
+  have hleft : star U.val * U.val = 1 := Matrix.mem_unitaryGroup_iff'.mp hU.1
+  have hadj : U.val * Matrix.adjugate U.val = 1 := by
+    rw [Matrix.mul_adjugate, hU.2]
+    simp
+  have hs : star U.val = Matrix.adjugate U.val := by
+    calc
+      star U.val = star U.val * (U.val * Matrix.adjugate U.val) := by rw [hadj, mul_one]
+      _ = Matrix.adjugate U.val := by rw [← mul_assoc, hleft, one_mul]
+  have h00 := congrArg (fun M : Matrix (Fin 2) (Fin 2) Complex => M 0 0) hs
+  have h10 := congrArg (fun M : Matrix (Fin 2) (Fin 2) Complex => M 1 0) hs
+  simp [Matrix.adjugate_fin_two] at h00 h10
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp
+  · simpa using congrArg Neg.neg h10.symm
+  · exact h00.symm
+
+theorem su2_first_row_norm_sq (U : Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    ‖U.val 0 0‖ ^ 2 + ‖U.val 0 1‖ ^ 2 = 1 := by
+  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp U.property).2
+  rw [su2_matrix_standard_form U, Matrix.det_fin_two] at hd
+  simp only [Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.cons_val_fin_one] at hd
+  rw [mul_neg, sub_neg_eq_add, Complex.mul_conj, Complex.mul_conj] at hd
+  have hr := congrArg Complex.re hd
+  simp only [Complex.add_re, Complex.ofReal_re, Complex.one_re] at hr
+  simpa only [Complex.normSq_eq_norm_sq] using hr
+
+theorem su2_eq_of_first_row (U V : Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (h0 : U.val 0 0 = V.val 0 0) (h1 : U.val 0 1 = V.val 0 1) : U = V := by
+  apply Subtype.ext
+  rw [su2_matrix_standard_form U, su2_matrix_standard_form V, h0, h1]
+
+theorem su2PauliZYZ_first_diag (a b c : Real) :
+    ((su2PauliZCurve a * su2PauliYCurve b) * su2PauliZCurve c).val 0 0 =
+      (Real.cos b : Complex) *
+        ((Real.cos (a + c) : Complex) + Complex.I * Real.sin (a + c)) := by
+  change ((su2PauliZMatrix a * su2PauliYMatrix b) * su2PauliZMatrix c) 0 0 = _
+  apply Complex.ext <;>
+    norm_num [su2PauliZMatrix, su2PauliYMatrix, Matrix.mul_apply,
+      Real.cos_add, Real.sin_add] <;> ring
+
+theorem su2PauliZYZ_first_offdiag (a b c : Real) :
+    ((su2PauliZCurve a * su2PauliYCurve b) * su2PauliZCurve c).val 0 1 =
+      (Real.sin b : Complex) *
+        ((Real.cos (a - c) : Complex) + Complex.I * Real.sin (a - c)) := by
+  change ((su2PauliZMatrix a * su2PauliYMatrix b) * su2PauliZMatrix c) 0 1 = _
+  apply Complex.ext <;>
+    norm_num [su2PauliZMatrix, su2PauliYMatrix, Matrix.mul_apply,
+      Real.cos_sub, Real.sin_sub] <;> ring
+
+/-- Every SU(2) matrix has a Z-Y-Z decomposition using the already normalized
+Pauli curves, with all three parameters bounded in absolute value by pi.
+This is a geometric input for a direct Haar Poincaré proof, not a gap bound. -/
+theorem su2_exists_bounded_pauli_zyz
+    (U : Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    ∃ a b c : Real, |a| ≤ Real.pi ∧ |b| ≤ Real.pi ∧ |c| ≤ Real.pi ∧
+      U = (su2PauliZCurve a * su2PauliYCurve b) * su2PauliZCurve c := by
+  let a := ((U.val 0 0).arg + (U.val 0 1).arg) / 2
+  let b := Real.arccos ‖U.val 0 0‖
+  let c := ((U.val 0 0).arg - (U.val 0 1).arg) / 2
+  have hn := su2_first_row_norm_sq U
+  have haNorm : ‖U.val 0 0‖ ≤ 1 := by
+    nlinarith [sq_nonneg ‖U.val 0 1‖, norm_nonneg (U.val 0 0)]
+  have hcos : Real.cos b = ‖U.val 0 0‖ :=
+    Real.cos_arccos (by linarith [norm_nonneg (U.val 0 0)]) haNorm
+  have hsin : Real.sin b = ‖U.val 0 1‖ := by
+    dsimp [b]
+    rw [Real.sin_arccos, show 1 - ‖U.val 0 0‖ ^ 2 = ‖U.val 0 1‖ ^ 2 by linarith,
+      Real.sqrt_sq (norm_nonneg _)]
+  have harg0 := Complex.arg_mem_Ioc (U.val 0 0)
+  have harg1 := Complex.arg_mem_Ioc (U.val 0 1)
+  have ha : |a| ≤ Real.pi := by
+    rw [abs_le]
+    dsimp [a]
+    constructor <;> linarith [harg0.1, harg0.2, harg1.1, harg1.2]
+  have hc : |c| ≤ Real.pi := by
+    rw [abs_le]
+    dsimp [c]
+    constructor <;> linarith [harg0.1, harg0.2, harg1.1, harg1.2]
+  have hb : |b| ≤ Real.pi := by
+    rw [abs_of_nonneg (Real.arccos_nonneg _)]
+    exact Real.arccos_le_pi _
+  refine ⟨a, b, c, ha, hb, hc, ?_⟩
+  symm
+  apply su2_eq_of_first_row
+  · rw [su2PauliZYZ_first_diag, hcos,
+      show a + c = (U.val 0 0).arg by dsimp [a, c]; ring]
+    simpa only [← Complex.ofReal_cos, ← Complex.ofReal_sin, mul_comm Complex.I] using
+      Complex.norm_mul_cos_add_sin_mul_I (U.val 0 0)
+  · rw [su2PauliZYZ_first_offdiag, hsin,
+      show a - c = (U.val 0 1).arg by dsimp [a, c]; ring]
+    simpa only [← Complex.ofReal_cos, ← Complex.ofReal_sin, mul_comm Complex.I] using
+      Complex.norm_mul_cos_add_sin_mul_I (U.val 0 1)
+
+theorem linkLeftTranslate_one {J G : Type*} [DecidableEq J] [Group G]
+    (j : J) (U : J → G) : linkLeftTranslate j 1 U = U := by
+  simp [linkLeftTranslate]
+
+theorem linkLeftTranslate_mul {J G : Type*} [DecidableEq J] [Group G]
+    (j : J) (g h : G) (U : J → G) :
+    linkLeftTranslate j g (linkLeftTranslate j h U) = linkLeftTranslate j (g * h) U := by
+  funext k
+  by_cases hk : k = j <;> simp [linkLeftTranslate, hk, mul_assoc]
+
+theorem wilsonElectricDirectionalDerivative_hasDerivAt
+    {L : Type*} [DecidableEq L]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hDiff : ∀ V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j (d.curve s) V)) 0)
+    (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex) (t : Real) :
+    HasDerivAt (fun s => f (linkLeftTranslate j (d.curve s) U))
+      (wilsonElectricDirectionalDerivative d j f (linkLeftTranslate j (d.curve t) U)) t := by
+  have hz := (hDiff (linkLeftTranslate j (d.curve t) U)).hasDerivAt
+  have ht : HasDerivAt (fun s : Real => s - t) 1 t := by
+    simpa using (hasDerivAt_id t).sub_const t
+  have hc := hz.comp_of_eq t ht (sub_self t).symm
+  have heq : (fun s => f (linkLeftTranslate j (d.curve (s - t))
+      (linkLeftTranslate j (d.curve t) U))) =
+      (fun s => f (linkLeftTranslate j (d.curve s) U)) := by
+    funext s
+    rw [linkLeftTranslate_mul, ← d.curve_add, sub_add_cancel]
+  simpa only [Function.comp_def, mul_one, heq, wilsonElectricDirectionalDerivative] using hc
+
+theorem wilsonLink_curve_continuous
+    {L : Type*} [DecidableEq L]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    Continuous (fun t => linkLeftTranslate j (d.curve t) U) := by
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  apply continuous_pi
+  intro k
+  by_cases hk : k = j
+  · subst k
+    simpa [linkLeftTranslate] using
+      d.continuous_curve.mul (continuous_const : Continuous (fun _ : Real => U j))
+  · simpa [linkLeftTranslate, hk] using
+      (continuous_const : Continuous (fun _ : Real => U k))
+
+/-- A finite increment along one electric direction is bounded by its
+one-dimensional derivative energy. The assumptions are directional C1
+regularity, not a spectral or coercivity assumption. -/
+theorem wilsonLink_increment_sq_le
+    {L : Type*} [DecidableEq L]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hDiff : ∀ V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j (d.curve s) V)) 0)
+    (hDcont : Continuous (wilsonElectricDirectionalDerivative d j f))
+    (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (a b : Real) (hab : a ≤ b) :
+    (f (linkLeftTranslate j (d.curve b) U) -
+        f (linkLeftTranslate j (d.curve a) U)) ^ 2 ≤
+      (b - a) * (∫ s in a..b,
+        (wilsonElectricDirectionalDerivative d j f
+          (linkLeftTranslate j (d.curve s) U)) ^ 2) := by
+  have hc := hDcont.comp (wilsonLink_curve_continuous d j U)
+  have hFTC := intervalIntegral.integral_eq_sub_of_hasDerivAt
+    (fun s _ => wilsonElectricDirectionalDerivative_hasDerivAt d j f hDiff U s)
+    (hc.intervalIntegrable a b)
+  have hCS := FRTGroundState.interval_integral_sq_le
+    (fun s => wilsonElectricDirectionalDerivative d j f
+      (linkLeftTranslate j (d.curve s) U)) a b hc hab
+  rwa [hFTC] at hCS
+
+theorem linkLeftTranslate_eq_mul {J G : Type*} [DecidableEq J] [Group G]
+    (j : J) (g : G) (U : J → G) :
+    linkLeftTranslate j g U = (Function.update (1 : J → G) j g) * U := by
+  funext k
+  by_cases hk : k = j
+  · subst k
+    simp [linkLeftTranslate]
+  · simp [linkLeftTranslate, hk]
+
+theorem wilsonLink_joint_continuous
+    {L : Type*} [DecidableEq L]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L) :
+    Continuous (fun q : Real × (L → Matrix.specialUnitaryGroup (Fin 2) Complex) =>
+      linkLeftTranslate j (d.curve q.1) q.2) := by
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  apply continuous_pi
+  intro k
+  by_cases hk : k = j
+  · subst k
+    simpa [linkLeftTranslate] using
+      (d.continuous_curve.comp continuous_fst).mul
+        ((continuous_apply j).comp continuous_snd)
+  · simpa [linkLeftTranslate, hk] using
+      ((continuous_apply k).comp continuous_snd : Continuous
+        (fun q : Real × (L → Matrix.specialUnitaryGroup (Fin 2) Complex) => q.2 k))
+
+theorem wilsonHaar_integral_linkLeftTranslate
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (j : L) (g : Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) :
+    (∫ U, f (linkLeftTranslate j g U)
+      ∂wilsonHaarReference (N := Fin 2) (L := L)) =
+    ∫ U, f U ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  letI := wilsonHaarReference_isHaar (N := Fin 2) (L := L)
+  simp only [linkLeftTranslate_eq_mul]
+  exact integral_mul_left_eq_self f _
+
+theorem wilsonLink_energy_prod_integrable
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (F : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hF : Continuous F) (a b : Real) :
+    Integrable (fun q : Real × (L → Matrix.specialUnitaryGroup (Fin 2) Complex) =>
+      (F (linkLeftTranslate j (d.curve q.1) q.2)) ^ 2)
+      ((volume.restrict (Set.uIoc a b)).prod
+        (wilsonHaarReference (N := Fin 2) (L := L))) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  have hc := (hF.comp (wilsonLink_joint_continuous d j)).pow 2
+  have hi := hc.continuousOn.integrableOn_compact
+    ((isCompact_uIcc : IsCompact (Set.uIcc a b)).prod (isCompact_univ : IsCompact
+      (Set.univ : Set (L → Matrix.specialUnitaryGroup (Fin 2) Complex))))
+    (μ := volume.prod (wilsonHaarReference (N := Fin 2) (L := L)))
+  have hi' := hi.mono_set (Set.prod_mono Set.uIoc_subset_uIcc (Set.Subset.refl _))
+  simpa only [IntegrableOn, ← Measure.prod_restrict, Measure.restrict_univ] using hi'
+
+/-- Haar averaging converts the pathwise derivative estimate into an L2
+translation estimate, without a spectral-gap hypothesis. -/
+theorem wilsonHaar_link_increment_sq_le
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j (d.curve s) V)) 0)
+    (hDcont : Continuous (wilsonElectricDirectionalDerivative d j f))
+    (a b : Real) (hab : a ≤ b) :
+    (∫ U, (f (linkLeftTranslate j (d.curve b) U) -
+        f (linkLeftTranslate j (d.curve a) U)) ^ 2
+      ∂wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      (b - a) ^ 2 * (∫ U, (wilsonElectricDirectionalDerivative d j f U) ^ 2
+        ∂wilsonHaarReference (N := Fin 2) (L := L)) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  let μ := wilsonHaarReference (N := Fin 2) (L := L)
+  let D := wilsonElectricDirectionalDerivative d j f
+  have hc (t : Real) : Continuous (fun U => f (linkLeftTranslate j (d.curve t) U)) :=
+    hf.comp ((wilsonLink_joint_continuous d j).comp (continuous_const.prodMk continuous_id))
+  have hleft := ((hc b).sub (hc a)).pow 2
+  have hprod := wilsonLink_energy_prod_integrable d j D hDcont a b
+  have hright : Integrable (fun U => ∫ s in a..b, (D
+      (linkLeftTranslate j (d.curve s) U)) ^ 2) μ := by
+    simpa only [intervalIntegral.integral_of_le hab, Set.uIoc_of_le hab] using
+      hprod.integral_prod_right
+  have hmono := integral_mono
+    (hleft.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
+    (hright.const_mul (b - a))
+    (fun U => wilsonLink_increment_sq_le d j f hDiff hDcont U a b hab)
+  have hswap := intervalIntegral_integral_swap (μ := μ) (a := a) (b := b)
+    (f := fun s U => (D (linkLeftTranslate j (d.curve s) U)) ^ 2) hprod
+  have hinv : (∫ U, (∫ s in a..b, (D
+      (linkLeftTranslate j (d.curve s) U)) ^ 2) ∂μ) =
+      (b - a) * ∫ U, (D U) ^ 2 ∂μ := by
+    rw [← hswap]
+    dsimp only [μ]
+    simp_rw [wilsonHaar_integral_linkLeftTranslate j _ (fun U => (D U) ^ 2)]
+    simp [intervalIntegral.integral_const, smul_eq_mul]
+  rw [integral_const_mul, hinv] at hmono
+  simpa only [pow_two, mul_assoc] using hmono
+
+theorem wilsonHaar_link_increment_from_zero_sq_le
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j (d.curve s) V)) 0)
+    (hDcont : Continuous (wilsonElectricDirectionalDerivative d j f))
+    (t : Real) :
+    (∫ U, (f (linkLeftTranslate j (d.curve t) U) - f U) ^ 2
+      ∂wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      t ^ 2 * (∫ U, (wilsonElectricDirectionalDerivative d j f U) ^ 2
+        ∂wilsonHaarReference (N := Fin 2) (L := L)) := by
+  rcases le_total 0 t with ht | ht
+  · simpa only [d.curve_zero, linkLeftTranslate_one, sub_zero] using
+      wilsonHaar_link_increment_sq_le d j f hf hDiff hDcont 0 t ht
+  · have h := wilsonHaar_link_increment_sq_le d j f hf hDiff hDcont t 0 ht
+    simp only [d.curve_zero, linkLeftTranslate_one, zero_sub, neg_sq] at h
+    convert h using 1
+    congr 1
+    funext U
+    ring
+
+theorem wilsonLink_continuous
+    {L : Type*} [DecidableEq L] (j : L)
+    (g : Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    Continuous (fun U : L → Matrix.specialUnitaryGroup (Fin 2) Complex =>
+      linkLeftTranslate j g U) := by
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  simp only [linkLeftTranslate_eq_mul]
+  exact continuous_const.mul continuous_id
+
+theorem wilsonHaar_link_three_mul_sq_le
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (j : L) (g h k : Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f) :
+    (∫ U, (f (linkLeftTranslate j ((g * h) * k) U) - f U) ^ 2
+      ∂wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      3 * ((∫ U, (f (linkLeftTranslate j g U) - f U) ^ 2
+        ∂wilsonHaarReference (N := Fin 2) (L := L)) +
+      (∫ U, (f (linkLeftTranslate j h U) - f U) ^ 2
+        ∂wilsonHaarReference (N := Fin 2) (L := L)) +
+      (∫ U, (f (linkLeftTranslate j k U) - f U) ^ 2
+        ∂wilsonHaarReference (N := Fin 2) (L := L))) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  let μ := wilsonHaarReference (N := Fin 2) (L := L)
+  let A := fun U => f (linkLeftTranslate j ((g * h) * k) U) -
+    f (linkLeftTranslate j (h * k) U)
+  let B := fun U => f (linkLeftTranslate j (h * k) U) - f (linkLeftTranslate j k U)
+  let C := fun U => f (linkLeftTranslate j k U) - f U
+  have hcont (q) := hf.comp (wilsonLink_continuous j q)
+  have hA : Integrable (fun U => (A U) ^ 2) μ :=
+    (((hcont _).sub (hcont _)).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hB : Integrable (fun U => (B U) ^ 2) μ :=
+    (((hcont _).sub (hcont _)).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hC : Integrable (fun U => (C U) ^ 2) μ :=
+    (((hcont _).sub hf).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hleft : Integrable (fun U =>
+      (f (linkLeftTranslate j ((g * h) * k) U) - f U) ^ 2) μ :=
+    (((hcont _).sub hf).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hmono := integral_mono hleft (((hA.add hB).add hC).const_mul 3)
+    (fun U => show (f (linkLeftTranslate j ((g * h) * k) U) - f U) ^ 2 ≤
+      3 * ((A U) ^ 2 + (B U) ^ 2 + (C U) ^ 2) from by
+        have hs : f (linkLeftTranslate j ((g * h) * k) U) - f U =
+            A U + B U + C U := by dsimp [A, B, C]; ring
+        rw [hs]
+        nlinarith [sq_nonneg (A U - B U), sq_nonneg (A U - C U),
+          sq_nonneg (B U - C U)])
+  have hAi : (∫ U, (A U) ^ 2 ∂μ) =
+      ∫ U, (f (linkLeftTranslate j g U) - f U) ^ 2 ∂μ := by
+    simpa only [A, linkLeftTranslate_mul, mul_assoc] using
+      wilsonHaar_integral_linkLeftTranslate j (h * k)
+        (fun U => (f (linkLeftTranslate j g U) - f U) ^ 2)
+  have hBi : (∫ U, (B U) ^ 2 ∂μ) =
+      ∫ U, (f (linkLeftTranslate j h U) - f U) ^ 2 ∂μ := by
+    simpa only [B, linkLeftTranslate_mul] using
+      wilsonHaar_integral_linkLeftTranslate j k
+        (fun U => (f (linkLeftTranslate j h U) - f U) ^ 2)
+  have hsum : (∫ U, (A U) ^ 2 + (B U) ^ 2 + (C U) ^ 2 ∂μ) =
+      (∫ U, (A U) ^ 2 ∂μ) + (∫ U, (B U) ^ 2 ∂μ) + (∫ U, (C U) ^ 2 ∂μ) :=
+    (integral_add (f := fun U => (A U) ^ 2 + (B U) ^ 2) (hA.add hB) hC).trans
+      (congrArg (fun x => x + ∫ U, (C U) ^ 2 ∂μ) (integral_add hA hB))
+  have hbound : (∫ U, 3 * ((A U) ^ 2 + (B U) ^ 2 + (C U) ^ 2) ∂μ) =
+      3 * ((∫ U, (A U) ^ 2 ∂μ) + (∫ U, (B U) ^ 2 ∂μ) + (∫ U, (C U) ^ 2 ∂μ)) :=
+    (integral_const_mul 3 _).trans (congrArg (fun x => 3 * x) hsum)
+  exact hmono.trans_eq (hbound.trans (by rw [hAi, hBi]))
+
+/-- A direct, non-optimal SU(2) translation bound with the project's Pauli
+normalization. The constant is derived from three bounded rotations. -/
+theorem su2WilsonHaar_link_translation_sq_le
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (j : L) (g : Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ a : Fin 3,
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    (∫ U, (f (linkLeftTranslate j g U) - f U) ^ 2
+      ∂wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      6 * Real.pi ^ 2 * ∑ a : Fin 3,
+        ∫ U, (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f U) ^ 2
+          ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+  let μ := wilsonHaarReference (N := Fin 2) (L := L)
+  let E := fun a : Fin 3 => ∫ U,
+    (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f U) ^ 2 ∂μ
+  have hE (a : Fin 3) : 0 ≤ E a := integral_nonneg (fun _ => sq_nonneg _)
+  have hrot (a : Fin 3) (t : Real) (ht : |t| ≤ Real.pi) :
+      (∫ U, (f (linkLeftTranslate j ((su2PauliElectricDirections a).curve t) U) - f U) ^ 2
+        ∂μ) ≤ Real.pi ^ 2 * E a := by
+    have hsq : t ^ 2 ≤ Real.pi ^ 2 := by
+      nlinarith [mul_self_le_mul_self (abs_nonneg t) ht, sq_abs t]
+    exact (wilsonHaar_link_increment_from_zero_sq_le
+      (su2PauliElectricDirections a) j f hf (hDiff a) (hDcont a) t).trans
+      (mul_le_mul_of_nonneg_right hsq (hE a))
+  obtain ⟨a, b, c, ha, hb, hc, hg⟩ := su2_exists_bounded_pauli_zyz g
+  have hza := hrot 2 a ha
+  have hyb := hrot 1 b hb
+  have hzc := hrot 2 c hc
+  change (∫ U, (f (linkLeftTranslate j (su2PauliZCurve a) U) - f U) ^ 2 ∂μ) ≤ _ at hza
+  change (∫ U, (f (linkLeftTranslate j (su2PauliYCurve b) U) - f U) ^ 2 ∂μ) ≤ _ at hyb
+  change (∫ U, (f (linkLeftTranslate j (su2PauliZCurve c) U) - f U) ^ 2 ∂μ) ≤ _ at hzc
+  have hthree := wilsonHaar_link_three_mul_sq_le j
+    (su2PauliZCurve a) (su2PauliYCurve b) (su2PauliZCurve c) f hf
+  rw [← hg] at hthree
+  change (∫ U, (f (linkLeftTranslate j g U) - f U) ^ 2 ∂μ) ≤
+    6 * Real.pi ^ 2 * ∑ a : Fin 3, E a
+  rw [Fin.sum_univ_three]
+  nlinarith [mul_nonneg (sq_nonneg Real.pi) (hE 0),
+    mul_nonneg (sq_nonneg Real.pi) (hE 1)]
+
+end RussoYM.BlockHamiltonian
+
+
+open MeasureTheory
+open scoped BigOperators
+namespace RussoYM.BlockHamiltonian
+
+noncomputable def wilsonHaarTranslationSq
+    {L : Type*} [Finite L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (g : L → Matrix.specialUnitaryGroup (Fin 2) Complex) : Real :=
+  ∫ U, (f (g * U) - f U) ^ 2 ∂wilsonHaarReference (N := Fin 2) (L := L)
+
+theorem wilsonHaarTranslationSq_mul_le
+    {L : Type*} [Finite L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (g h : L → Matrix.specialUnitaryGroup (Fin 2) Complex) (n : Real) :
+    n * wilsonHaarTranslationSq f (g * h) ≤
+      (n + 1) * (n * wilsonHaarTranslationSq f g + wilsonHaarTranslationSq f h) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  letI := wilsonHaarReference_isHaar (N := Fin 2) (L := L)
+  let μ := wilsonHaarReference (N := Fin 2) (L := L)
+  let A := fun U => f ((g * h) * U) - f (h * U)
+  let B := fun U => f (h * U) - f U
+  have hc (q : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+      Continuous (fun U => f (q * U)) :=
+    hf.comp (continuous_const.mul continuous_id)
+  have hA : Integrable (fun U => (A U) ^ 2) μ :=
+    (((hc (g * h)).sub (hc h)).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hB : Integrable (fun U => (B U) ^ 2) μ :=
+    (((hc h).sub hf).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hwhole : Integrable (fun U => (f ((g * h) * U) - f U) ^ 2) μ :=
+    (((hc (g * h)).sub hf).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hmono := integral_mono (hwhole.const_mul n)
+    (((hA.const_mul n).add hB).const_mul (n + 1))
+    (fun U => show n * (f ((g * h) * U) - f U) ^ 2 ≤
+      (n + 1) * (n * (A U) ^ 2 + (B U) ^ 2) from by
+        have heq : f ((g * h) * U) - f U = A U + B U := by dsimp [A, B]; ring
+        rw [heq]
+        nlinarith [sq_nonneg (n * A U - B U)])
+  have hAi : (∫ U, (A U) ^ 2 ∂μ) = wilsonHaarTranslationSq f g := by
+    simpa only [A, wilsonHaarTranslationSq, mul_assoc] using
+      (integral_mul_left_eq_self (μ := μ) (fun U => (f (g * U) - f U) ^ 2) h)
+  have hsum : (∫ U, n * (A U) ^ 2 + (B U) ^ 2 ∂μ) =
+      n * wilsonHaarTranslationSq f g + wilsonHaarTranslationSq f h := by
+    calc
+      _ = (∫ U, n * (A U) ^ 2 ∂μ) + (∫ U, (B U) ^ 2 ∂μ) :=
+        integral_add (hA.const_mul n) hB
+      _ = _ := by rw [integral_const_mul, hAi]; rfl
+  have hright : (∫ U, (n + 1) * (n * (A U) ^ 2 + (B U) ^ 2) ∂μ) =
+      (n + 1) * (n * wilsonHaarTranslationSq f g + wilsonHaarTranslationSq f h) :=
+    (integral_const_mul (n + 1) _).trans (congrArg (fun x => (n + 1) * x) hsum)
+  have hleft : (∫ U, n * (f ((g * h) * U) - f U) ^ 2 ∂μ) =
+      n * wilsonHaarTranslationSq f (g * h) := integral_const_mul n _
+  exact hleft.symm.trans_le (hmono.trans_eq hright)
+
+theorem blockConfiguration_empty_eq
+    {L G : Type*} [DecidableEq L] (u v : L → G) :
+    blockConfiguration ∅ u v = u := by
+  funext j
+  simp [blockConfiguration]
+
+theorem blockConfiguration_one_insert_mul
+    {L G : Type*} [DecidableEq L] [Group G]
+    (s : Finset L) (j : L) (hj : j ∉ s) (g : L → G) :
+    blockConfiguration (insert j s) (1 : L → G) g =
+      (Function.update (1 : L → G) j (g j)) * blockConfiguration s (1 : L → G) g := by
+  funext k
+  by_cases hk : k = j
+  · subst k
+    simp [blockConfiguration, hj]
+  · simp [blockConfiguration, hk]
+
+/-- A finite block translation is controlled by its active Pauli energies.
+The factor `block.card` comes from a finite telescoping estimate. -/
+theorem su2WilsonHaar_block_translation_sq_le
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (block : Finset L) (g : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    wilsonHaarTranslationSq f (blockConfiguration block 1 g) ≤
+      6 * Real.pi ^ 2 * (block.card : Real) * ∑ j ∈ block, ∑ a : Fin 3,
+        ∫ U, (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f U) ^ 2
+          ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+  let E := fun j => ∑ a : Fin 3, ∫ U,
+    (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f U) ^ 2
+      ∂wilsonHaarReference (N := Fin 2) (L := L)
+  change wilsonHaarTranslationSq f (blockConfiguration block 1 g) ≤
+    6 * Real.pi ^ 2 * (block.card : Real) * ∑ j ∈ block, E j
+  induction block using Finset.induction_on with
+  | empty => simp [blockConfiguration_empty_eq, wilsonHaarTranslationSq]
+  | @insert j s hjs ih =>
+    have hsingle : wilsonHaarTranslationSq f (Function.update 1 j (g j)) ≤
+        6 * Real.pi ^ 2 * E j := by
+      simpa only [wilsonHaarTranslationSq, ← linkLeftTranslate_eq_mul] using
+        su2WilsonHaar_link_translation_sq_le j (g j) f hf (hDiff j) (hDcont j)
+    rw [blockConfiguration_one_insert_mul s j hjs g]
+    rcases s.eq_empty_or_nonempty with rfl | hs
+    · simpa [blockConfiguration_empty_eq] using hsingle
+    · have hn : 0 < (s.card : Real) := by exact_mod_cast hs.card_pos
+      have hmul := wilsonHaarTranslationSq_mul_le f hf (Function.update 1 j (g j))
+        (blockConfiguration s 1 g) (s.card : Real)
+      have hadd := add_le_add (mul_le_mul_of_nonneg_left hsingle hn.le) ih
+      have hbound := hmul.trans (mul_le_mul_of_nonneg_left hadd (by linarith :
+        0 ≤ (s.card : Real) + 1))
+      apply le_of_mul_le_mul_left (a := (s.card : Real)) ?_ hn
+      refine hbound.trans_eq ?_
+      rw [Finset.card_insert_of_notMem hjs, Finset.sum_insert hjs]
+      push_cast
+      ring
+
+theorem wilsonHaarReference_isMulRightInvariant
+    {L : Type*} [Finite L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)] :
+    Measure.IsMulRightInvariant (wilsonHaarReference (N := Fin 2) (L := L)) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  letI := wilsonHaarReference_isHaar (N := Fin 2) (L := L)
+  constructor
+  intro g
+  letI := Measure.isProbabilityMeasure_map
+    (μ := wilsonHaarReference (N := Fin 2) (L := L))
+    (f := fun U => U * g) (by fun_prop)
+  exact Measure.isHaarMeasure_eq_of_isProbabilityMeasure _ _
+
+/-- Averaging uniform translation estimates bounds Haar variance. This
+lemma is used with the translation bounds proved from Pauli derivatives. -/
+theorem wilsonHaar_variance_le_of_translation_sq_le
+    {L : Type*} [Finite L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (C : Real) (hC : ∀ g, wilsonHaarTranslationSq f g ≤ C) :
+    ProbabilityTheory.variance f (wilsonHaarReference (N := Fin 2) (L := L)) ≤ C := by
+  letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) Complex) := by
+    change SecondCountableTopology (Fin 2 → Fin 2 → Complex)
+    infer_instance
+  letI : SecondCountableTopology (Matrix.specialUnitaryGroup (Fin 2) Complex) :=
+    TopologicalSpace.Subtype.secondCountableTopology
+      (Matrix.specialUnitaryGroup (Fin 2) Complex : Set (Matrix (Fin 2) (Fin 2) Complex))
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := specialUnitary_isTopologicalGroup (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  letI := wilsonHaarReference_isMulRightInvariant (L := L)
+  let μ := wilsonHaarReference (N := Fin 2) (L := L)
+  let F := fun q : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) ×
+      (L → Matrix.specialUnitaryGroup (Fin 2) Complex) =>
+    (f (q.1 * q.2) - f q.2) ^ 2
+  have hc : Continuous F := ((hf.comp (continuous_fst.mul continuous_snd)).sub
+    (hf.comp continuous_snd)).pow 2
+  have hi : Integrable F (μ.prod μ) :=
+    hc.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  have hv (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+      ProbabilityTheory.variance f μ ≤ ∫ g, F (g, U) ∂μ := by
+    have h := ProbabilityTheory.variance_le_expectation_sq
+      ((hf.sub continuous_const).aestronglyMeasurable (μ := μ))
+      (X := fun g => f g - f U)
+    rw [ProbabilityTheory.variance_sub_const hf.aestronglyMeasurable (f U)] at h
+    have heq := integral_mul_right_eq_self (μ := μ) (fun g => (f g - f U) ^ 2) U
+    exact h.trans_eq heq.symm
+  have hlow := integral_mono (integrable_const (ProbabilityTheory.variance f μ))
+    hi.integral_prod_right hv
+  have hhigh := integral_mono hi.integral_prod_left (integrable_const C) hC
+  have hswap := integral_integral_swap (μ := μ) (ν := μ)
+    (f := fun g U => F (g, U)) hi
+  simp only [integral_const, probReal_univ, one_smul] at hlow hhigh
+  exact (hlow.trans_eq hswap.symm).trans hhigh
+
+theorem blockConfiguration_translate_inside
+    {L G : Type*} [DecidableEq L] [Group G]
+    (block : Finset L) (outside V : L → G) (j : L) (g : G) :
+    blockConfiguration block outside (linkLeftTranslate j g V) =
+      if j ∈ block then linkLeftTranslate j g (blockConfiguration block outside V)
+      else blockConfiguration block outside V := by
+  by_cases hj : j ∈ block <;> simp only [hj, if_true, if_false]
+  all_goals
+    funext k
+    by_cases hk : k = j
+    · subst k
+      simp [blockConfiguration, linkLeftTranslate, hj]
+    · by_cases hkb : k ∈ block <;> simp [blockConfiguration, linkLeftTranslate, hk, hkb]
+
+theorem wilsonElectricDirectionalDerivative_blockConfiguration
+    {L : Type*} [DecidableEq L]
+    (block : Finset L) (outside V : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (d : WilsonElectricDirection (N := Fin 2)) (j : L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) :
+    wilsonElectricDirectionalDerivative d j (fun W => f (blockConfiguration block outside W)) V =
+      if j ∈ block then wilsonElectricDirectionalDerivative d j f
+        (blockConfiguration block outside V) else 0 := by
+  by_cases hj : j ∈ block
+  · simp only [wilsonElectricDirectionalDerivative, blockConfiguration_translate_inside,
+      hj, if_true]
+  · simp only [wilsonElectricDirectionalDerivative, blockConfiguration_translate_inside,
+      hj, if_false, deriv_const]
+
+/-- Conditional Haar block Poincaré inequality, proved from bounded Pauli
+paths and Haar invariance. This is a finite-block bound on directionally C1
+observables; no Poincaré or spectral-gap hypothesis is assumed. -/
+theorem su2WilsonHaar_block_poincare
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    ProbabilityTheory.variance (fun V => f (blockConfiguration block outside V))
+      (wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      6 * Real.pi ^ 2 * (block.card : Real) * ∑ j ∈ block, ∑ a : Fin 3,
+        ∫ V, (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f
+          (blockConfiguration block outside V)) ^ 2
+          ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+  let F := fun V => f (blockConfiguration block outside V)
+  have hmap : Continuous (blockConfiguration block outside) :=
+    (blockConfiguration_joint_continuous block).comp (continuous_const.prodMk continuous_id)
+  have hF : Continuous F := hf.comp hmap
+  have hdiffF (j : L) (a : Fin 3) (V : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+      DifferentiableAt Real
+        (fun s => F (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0 := by
+    by_cases hj : j ∈ block
+    · simpa only [F, blockConfiguration_translate_inside, hj, if_true] using
+        hDiff j a (blockConfiguration block outside V)
+    · simpa only [F, blockConfiguration_translate_inside, hj, if_false] using
+        (differentiableAt_const (f (blockConfiguration block outside V)) :
+          DifferentiableAt Real (fun _ : Real => f (blockConfiguration block outside V)) 0)
+  have hcontF (j : L) (a : Fin 3) :
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j F) := by
+    have hder : wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j F =
+        fun V => if j ∈ block then
+          wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f
+            (blockConfiguration block outside V) else 0 := by
+      funext V
+      exact wilsonElectricDirectionalDerivative_blockConfiguration block outside V
+        (su2PauliElectricDirections a) j f
+    rw [hder]
+    by_cases hj : j ∈ block
+    · simpa only [Function.comp_def, hj, if_true] using
+        (hDcont j a).comp hmap
+    · simpa only [hj, if_false] using
+        (continuous_const : Continuous (fun _ : L → Matrix.specialUnitaryGroup (Fin 2) Complex =>
+          (0 : Real)))
+  apply wilsonHaar_variance_le_of_translation_sq_le F hF
+  intro g
+  have heq (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+      F (g * U) = F (blockConfiguration block 1 g * U) := by
+    dsimp only [F]
+    congr 1
+    funext j
+    by_cases hj : j ∈ block <;> simp [blockConfiguration, hj]
+  have hJ : wilsonHaarTranslationSq F g =
+      wilsonHaarTranslationSq F (blockConfiguration block 1 g) := by
+    unfold wilsonHaarTranslationSq
+    simp_rw [heq]
+  rw [hJ]
+  have hbound := su2WilsonHaar_block_translation_sq_le block g F hF hdiffF hcontF
+  refine hbound.trans_eq ?_
+  congr 1
+  apply Finset.sum_congr rfl
+  intro j hj
+  apply Finset.sum_congr rfl
+  intro a _
+  simp only [F, wilsonElectricDirectionalDerivative_blockConfiguration, hj, if_true]
+
+end RussoYM.BlockHamiltonian
+
+
+open MeasureTheory
+open scoped BigOperators
+namespace RussoYM.BlockHamiltonian
+
+/-- Real-integral form of the existing local Wilson/Haar density comparison,
+with integrability obtained from compactness and continuity. -/
+theorem su2WilsonBlockKernel_integral_comparison
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (F : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hF : Continuous F) (hF0 : ∀ U, 0 ≤ F U) :
+    Real.exp (-((block.card : Real) * D * (2 * beta))) *
+        (∫ V, F (blockConfiguration block outside V)
+          ∂wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      (∫ U, F U ∂wilsonBlockKernel beta plaquettes block outside) ∧
+    (∫ U, F U ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      Real.exp ((block.card : Real) * D * (2 * beta)) *
+        (∫ V, F (blockConfiguration block outside V)
+          ∂wilsonHaarReference (N := Fin 2) (L := L)) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hmap : Continuous (blockConfiguration block outside) :=
+    (blockConfiguration_joint_continuous block).comp (continuous_const.prodMk continuous_id)
+  have hIHK : Integrable F (wilsonBlockKernel beta plaquettes block outside) :=
+    hF.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  have hIHH : Integrable (fun V => F (blockConfiguration block outside V))
+      (wilsonHaarReference (N := Fin 2) (L := L)) :=
+    (hF.comp hmap).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  have hK := ofReal_integral_eq_lintegral_ofReal hIHK (Filter.Eventually.of_forall hF0)
+  have hH := ofReal_integral_eq_lintegral_ofReal hIHH
+    (Filter.Eventually.of_forall fun V => hF0 (blockConfiguration block outside V))
+  have hcomp := wilsonBlockUpdate_haar_comparison beta hbeta plaquettes block D hDegree
+    outside (fun U => ENNReal.ofReal (F U)) (by fun_prop)
+  constructor
+  · apply (ENNReal.ofReal_le_ofReal_iff (integral_nonneg hF0)).mp
+    rw [ENNReal.ofReal_mul (le_of_lt (Real.exp_pos _)), hK, hH]
+    exact hcomp.1
+  · apply (ENNReal.ofReal_le_ofReal_iff
+      (mul_nonneg (le_of_lt (Real.exp_pos _))
+        (integral_nonneg fun V => hF0 (blockConfiguration block outside V)))).mp
+    rw [ENNReal.ofReal_mul (le_of_lt (Real.exp_pos _)), hK, hH]
+    exact hcomp.2
+
+theorem su2WilsonBlockElectricEnergyDensity_continuous
+    {L : Type*} [DecidableEq L]
+    (kappa : Real) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    Continuous (wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections block f) := by
+  apply continuous_const.mul
+  apply continuous_finset_sum
+  intro j _
+  apply continuous_finset_sum
+  intro a _
+  exact (hDcont j a).pow 2
+
+theorem su2WilsonHaar_block_poincare_energy
+    {L : Type*} [Finite L] [DecidableEq L]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (block : Finset L) (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    ProbabilityTheory.variance (fun V => f (blockConfiguration block outside V))
+      (wilsonHaarReference (N := Fin 2) (L := L)) ≤
+      (6 * Real.pi ^ 2 * (block.card : Real)) *
+        ∫ V, wilsonBlockElectricEnergyDensity 1 su2PauliElectricDirections block f
+          (blockConfiguration block outside V)
+          ∂wilsonHaarReference (N := Fin 2) (L := L) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  have hmap : Continuous (blockConfiguration block outside) :=
+    (blockConfiguration_joint_continuous block).comp (continuous_const.prodMk continuous_id)
+  have hi (j : L) (a : Fin 3) : Integrable (fun V =>
+      (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f
+        (blockConfiguration block outside V)) ^ 2)
+        (wilsonHaarReference (N := Fin 2) (L := L)) :=
+    (((hDcont j a).comp hmap).pow 2).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have hs (j : L) : Integrable (fun V => ∑ a : Fin 3,
+      (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f
+        (blockConfiguration block outside V)) ^ 2)
+        (wilsonHaarReference (N := Fin 2) (L := L)) :=
+    integrable_finset_sum _ (fun a _ => hi j a)
+  have h := su2WilsonHaar_block_poincare block outside f hf hDiff hDcont
+  simpa only [wilsonBlockElectricEnergyDensity, one_mul,
+    integral_finset_sum block (fun j _ => hs j),
+    integral_finset_sum Finset.univ (fun a _ => hi _ a)] using h
+
+/-- Wilson conditional block Poincaré estimate. Two density comparisons
+give the explicit factor `exp(4 * beta * block.card * D)`. -/
+theorem su2WilsonBlockKernel_poincare
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (outside : L → Matrix.specialUnitaryGroup (Fin 2) Complex)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    (∫ U, (wilsonBlockDiscarded beta plaquettes block f U) ^ 2
+      ∂wilsonBlockKernel beta plaquettes block outside) ≤
+      (6 * Real.pi ^ 2 * (block.card : Real) *
+        Real.exp (4 * beta * (block.card : Real) * D)) *
+      ∫ U, wilsonBlockElectricEnergyDensity 1 su2PauliElectricDirections block f U
+        ∂wilsonBlockKernel beta plaquettes block outside := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  let A := (block.card : Real) * D * (2 * beta)
+  let C := 6 * Real.pi ^ 2 * (block.card : Real)
+  let E := wilsonBlockElectricEnergyDensity 1 su2PauliElectricDirections block f
+  let H := wilsonHaarReference (N := Fin 2) (L := L)
+  let K := wilsonBlockKernel beta plaquettes block outside
+  let F := fun V => f (blockConfiguration block outside V)
+  have hmap : Continuous (blockConfiguration block outside) :=
+    (blockConfiguration_joint_continuous block).comp (continuous_const.prodMk continuous_id)
+  have hC0 : 0 ≤ C := by dsimp [C]; positivity
+  have hEcont : Continuous E := su2WilsonBlockElectricEnergyDensity_continuous 1 block f hDcont
+  have hE0 (U) : 0 ≤ E U :=
+    wilsonBlockElectricEnergyDensity_nonneg 1 (by norm_num) su2PauliElectricDirections block f U
+  have hrow := su2WilsonBlockKernel_discarded_row_le_haar_variance beta hbeta
+    plaquettes block D hDegree f outside hf.measurable
+    (hf.memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
+    ((hf.comp hmap).memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
+  have hrowReal : (∫ U, (wilsonBlockDiscarded beta plaquettes block f U) ^ 2 ∂K) ≤
+      Real.exp A * ProbabilityTheory.variance F H := by
+    apply (ENNReal.ofReal_le_ofReal_iff (mul_nonneg (le_of_lt (Real.exp_pos _))
+      (ProbabilityTheory.variance_nonneg F H))).mp
+    simpa only [ENNReal.ofReal_mul (le_of_lt (Real.exp_pos _))] using hrow
+  have hHaar : ProbabilityTheory.variance F H ≤ C *
+      ∫ V, E (blockConfiguration block outside V) ∂H :=
+    su2WilsonHaar_block_poincare_energy block outside f hf hDiff hDcont
+  have hlow := (su2WilsonBlockKernel_integral_comparison beta hbeta plaquettes block
+    D hDegree outside E hEcont hE0).1
+  have henergy : (∫ V, E (blockConfiguration block outside V) ∂H) ≤
+      Real.exp A * ∫ U, E U ∂K := by
+    calc
+      _ = Real.exp A * (Real.exp (-A) *
+          ∫ V, E (blockConfiguration block outside V) ∂H) := by
+        rw [← mul_assoc, ← Real.exp_add, add_neg_cancel, Real.exp_zero, one_mul]
+      _ ≤ _ := mul_le_mul_of_nonneg_left hlow (le_of_lt (Real.exp_pos A))
+  calc
+    _ ≤ Real.exp A * ProbabilityTheory.variance F H := hrowReal
+    _ ≤ Real.exp A * (C * ∫ V, E (blockConfiguration block outside V) ∂H) :=
+      mul_le_mul_of_nonneg_left hHaar (le_of_lt (Real.exp_pos A))
+    _ ≤ Real.exp A * (C * (Real.exp A * ∫ U, E U ∂K)) :=
+      mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left henergy hC0)
+        (le_of_lt (Real.exp_pos A))
+    _ = _ := by
+      have hexp : Real.exp (4 * beta * (block.card : Real) * D) = Real.exp A * Real.exp A := by
+        rw [← Real.exp_add]
+        congr 1
+        dsimp [A]
+        ring
+      rw [hexp]
+      dsimp only [C, E, K]
+      ring
+
+end RussoYM.BlockHamiltonian
+
+
+
+open MeasureTheory
+open scoped BigOperators
+namespace RussoYM.BlockHamiltonian
+
+/-- Compactness bounds the observable and every conditional average, so the
+discarded part belongs to Lp for any finite measure. -/
+theorem su2WilsonBlockDiscarded_memLp
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (μ : Measure (L → Matrix.specialUnitaryGroup (Fin 2) Complex)) [IsFiniteMeasure μ]
+    (p : ENNReal) : MemLp (wilsonBlockDiscarded beta plaquettes block f) p μ := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  have hAvg : Measurable (wilsonBlockAverage beta plaquettes block f) :=
+    (hf.measurable.stronglyMeasurable.integral_kernel
+      (κ := wilsonBlockKernel beta plaquettes block)).measurable
+  have hm : Measurable (wilsonBlockDiscarded beta plaquettes block f) :=
+    hf.measurable.sub hAvg
+  obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hf.continuousOn
+  have hbound (U) : ‖f U‖ ≤ C := hC U (Set.mem_univ U)
+  apply MemLp.of_bound hm.aestronglyMeasurable (2 * C)
+  apply Filter.Eventually.of_forall
+  intro U
+  have havg : ‖wilsonBlockAverage beta plaquettes block f U‖ ≤ C := by
+    rw [wilsonBlockAverage_eq_kernel_integral]
+    simpa only [probReal_univ, mul_one] using
+      norm_integral_le_of_norm_le_const (μ := wilsonBlockKernel beta plaquettes block U)
+        (Filter.Eventually.of_forall hbound)
+  exact (norm_sub_le (f U) (wilsonBlockAverage beta plaquettes block f U)).trans
+    (by linarith [hbound U])
+
+theorem su2WilsonGibbs_isProbability
+    {L P : Type*} [Finite L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (plaquettes : P → Fin 4 → L) :
+    IsProbabilityMeasure (gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)) := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonHaarReference_isProbability (N := Fin 2) (L := L)
+  exact gibbsMeasure_isProbability _ _
+    ((Real.continuous_exp.comp (finiteWilsonMagneticPotential_continuous beta plaquettes).neg).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _))
+
+theorem su2WilsonBlockDiscarded_l2_le_energy_one
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    (∫ U, (wilsonBlockDiscarded beta plaquettes block f U) ^ 2
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) ≤
+      (6 * Real.pi ^ 2 * (block.card : Real) *
+        Real.exp (4 * beta * (block.card : Real) * D)) *
+      su2WilsonBlockElectricQuadraticForm 1 beta plaquettes block f := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := wilsonBlockKernel_isMarkov (N := Fin 2) beta hbeta plaquettes block
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+    (finiteWilsonMagneticPotential beta plaquettes)
+  let K := wilsonBlockKernel (N := Fin 2) beta plaquettes block
+  let C := 6 * Real.pi ^ 2 * (block.card : Real) * Real.exp (4 * beta * (block.card : Real) * D)
+  let E := wilsonBlockElectricEnergyDensity 1 su2PauliElectricDirections block f
+  let d := wilsonBlockDiscarded beta plaquettes block f
+  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hE : Continuous E := su2WilsonBlockElectricEnergyDensity_continuous 1 block f hDcont
+  have hE0 (U) : 0 ≤ E U :=
+    wilsonBlockElectricEnergyDensity_nonneg 1 (by norm_num) su2PauliElectricDirections block f U
+  have hdm : Measurable d := hf.measurable.sub
+    (hf.measurable.stronglyMeasurable.integral_kernel (κ := K)).measurable
+  have hdm2 : Measurable (fun U => ENNReal.ofReal ((d U) ^ 2)) := by fun_prop
+  have hEm : Measurable (fun U => ENNReal.ofReal (E U)) := by fun_prop
+  have hdi (ν : Measure (L → Matrix.specialUnitaryGroup (Fin 2) Complex)) [IsFiniteMeasure ν] :
+      Integrable (fun U => (d U) ^ 2) ν :=
+    (su2WilsonBlockDiscarded_memLp beta hbeta plaquettes block f hf ν 2).integrable_sq
+  have hEi (ν : Measure (L → Matrix.specialUnitaryGroup (Fin 2) Complex)) [IsFiniteMeasure ν] :
+      Integrable E ν := hE.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  have hrow (outside) : (∫⁻ U, ENNReal.ofReal ((d U) ^ 2) ∂K outside) ≤
+      ENNReal.ofReal C * ∫⁻ U, ENNReal.ofReal (E U) ∂K outside := by
+    rw [← ofReal_integral_eq_lintegral_ofReal (hdi (K outside))
+      (Filter.Eventually.of_forall fun U => sq_nonneg (d U)),
+      ← ofReal_integral_eq_lintegral_ofReal (hEi (K outside))
+        (Filter.Eventually.of_forall hE0), ← ENNReal.ofReal_mul hC]
+    exact ENNReal.ofReal_le_ofReal
+      (su2WilsonBlockKernel_poincare beta hbeta plaquettes block D hDegree outside f hf hDiff hDcont)
+  have hinvD := wilsonBlockKernel_gibbs_invariant beta hbeta plaquettes block _ hdm2
+  have hinvE := wilsonBlockKernel_gibbs_invariant beta hbeta plaquettes block _ hEm
+  have hglobal : (∫⁻ U, ENNReal.ofReal ((d U) ^ 2) ∂μ) ≤
+      ENNReal.ofReal C * ∫⁻ U, ENNReal.ofReal (E U) ∂μ := by
+    calc
+      _ = ∫⁻ outside, ∫⁻ U, ENNReal.ofReal ((d U) ^ 2) ∂K outside ∂μ := hinvD.symm
+      _ ≤ ∫⁻ outside, ENNReal.ofReal C * (∫⁻ U, ENNReal.ofReal (E U) ∂K outside) ∂μ :=
+        lintegral_mono hrow
+      _ = ENNReal.ofReal C * (∫⁻ outside, ∫⁻ U, ENNReal.ofReal (E U) ∂K outside ∂μ) :=
+        lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
+      _ = _ := congrArg (fun x => ENNReal.ofReal C * x) hinvE
+  apply (ENNReal.ofReal_le_ofReal_iff (mul_nonneg hC (integral_nonneg hE0))).mp
+  change ENNReal.ofReal (∫ U, (d U) ^ 2 ∂μ) ≤ ENNReal.ofReal (C * ∫ U, E U ∂μ)
+  rw [ENNReal.ofReal_mul hC,
+    ofReal_integral_eq_lintegral_ofReal (hdi μ) (Filter.Eventually.of_forall fun U => sq_nonneg (d U)),
+    ofReal_integral_eq_lintegral_ofReal (hEi μ) (Filter.Eventually.of_forall hE0)]
+  exact hglobal
+
+
+/-- The electric form depends linearly on its positive normalization. -/
+theorem su2WilsonBlockElectricQuadraticForm_scale
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) :
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f =
+      kappa * su2WilsonBlockElectricQuadraticForm 1 beta plaquettes block f := by
+  simp only [su2WilsonBlockElectricQuadraticForm, wilsonBlockElectricQuadraticForm,
+    wilsonBlockElectricEnergyDensity, one_mul, integral_const_mul]
+
+/-- Integrated discarded-mode Poincare bound with explicit electric normalization.
+No Poincare or spectral-gap hypothesis is assumed. -/
+theorem su2WilsonBlockDiscarded_l2_le_energy
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    (∫ U, (wilsonBlockDiscarded beta plaquettes block f U) ^ 2
+      ∂gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) ≤
+      (6 * Real.pi ^ 2 * (block.card : Real) *
+        Real.exp (4 * beta * (block.card : Real) * D) / kappa) *
+      su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f := by
+  calc
+    _ ≤ (6 * Real.pi ^ 2 * (block.card : Real) *
+        Real.exp (4 * beta * (block.card : Real) * D)) *
+        su2WilsonBlockElectricQuadraticForm 1 beta plaquettes block f :=
+      su2WilsonBlockDiscarded_l2_le_energy_one beta hbeta plaquettes block D hDegree
+        f hf hDiff hDcont
+    _ = _ := by
+      rw [su2WilsonBlockElectricQuadraticForm_scale kappa beta plaquettes block f]
+      field_simp [ne_of_gt hkappa]
+
+/-- Continuous electric derivatives give the integrability needed for the
+constant-one block-to-Hamiltonian comparison. -/
+theorem su2WilsonBlockElectric_le_hamiltonian
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 ≤ kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f ≤
+      su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  have hi (B : Finset L) :
+      Integrable (wilsonBlockElectricEnergyDensity kappa su2PauliElectricDirections B f)
+        (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) :=
+    (su2WilsonBlockElectricEnergyDensity_continuous kappa B f hDcont).integrable_of_hasCompactSupport
+      (HasCompactSupport.of_compactSpace _)
+  have h := wilsonBlockDiscardedElectric_le_su2Hamiltonian kappa beta hkappa hbeta
+    plaquettes block f (hi block) (hi Finset.univ)
+  simpa only [su2WilsonBlockElectricQuadraticForm,
+    wilsonBlockElectricQuadraticForm_discarded] using h
+
+/-- Finite-regulator SU(2) discarded-mode L2 control. The L2 element represents
+exactly f - K_B f almost everywhere under the Wilson Gibbs measure.
+The derived constant is 6*pi^2*|B|*exp(4*beta*|B|*D)/kappa.
+This is a conditional block estimate, not a continuum Yang-Mills mass gap. -/
+theorem su2WilsonBlockKernel_l2_hamiltonian_comparison
+    {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+    [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (block : Finset L) (D : Nat)
+    (hDegree : ∀ j ∈ block,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    let C := 6 * Real.pi ^ 2 * (block.card : Real) *
+      Real.exp (4 * beta * (block.card : Real) * D) / kappa
+    ∃ g : Lp Real 2 μ,
+      (⇑g =ᵐ[μ] wilsonBlockDiscarded beta plaquettes block f) ∧
+      ‖g‖ ^ 2 ≤ C * su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f ∧
+      C * su2WilsonBlockElectricQuadraticForm kappa beta plaquettes block f ≤
+        C * su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+    (finiteWilsonMagneticPotential beta plaquettes)
+  let d := wilsonBlockDiscarded beta plaquettes block f
+  let C := 6 * Real.pi ^ 2 * (block.card : Real) *
+    Real.exp (4 * beta * (block.card : Real) * D) / kappa
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  have hd : MemLp d 2 μ := su2WilsonBlockDiscarded_memLp beta hbeta plaquettes block f hf μ 2
+  have hnorm : ‖hd.toLp d‖ ^ 2 = ∫ U, (d U) ^ 2 ∂μ := by
+    rw [← real_inner_self_eq_norm_sq, L2.inner_def]
+    apply integral_congr_ae
+    filter_upwards [hd.coeFn_toLp] with U hU
+    simp only [hU, real_inner_self_eq_norm_sq, Real.norm_eq_abs, sq_abs]
+  refine ⟨hd.toLp d, hd.coeFn_toLp, ?_, ?_⟩
+  · rw [hnorm]
+    exact su2WilsonBlockDiscarded_l2_le_energy kappa beta hkappa hbeta plaquettes block D
+      hDegree f hf hDiff hDcont
+  · apply mul_le_mul_of_nonneg_left
+      (su2WilsonBlockElectric_le_hamiltonian kappa beta hkappa.le hbeta plaquettes block f hDcont)
+    dsimp [C]
+    positivity
+
+end RussoYM.BlockHamiltonian
