@@ -4120,3 +4120,222 @@ theorem su2WilsonBlockKernel_l2_hamiltonian_comparison
     positivity
 
 end RussoYM.BlockHamiltonian
+
+
+namespace RussoYM.BlockHamiltonian
+open MeasureTheory
+open scoped BigOperators
+
+/-- Updating all coordinates removes every dependence on the exterior. -/
+theorem blockConfiguration_univ {J G : Type*} [Fintype J] [DecidableEq J]
+    (outside inside : J → G) :
+    blockConfiguration Finset.univ outside inside = inside := by
+  funext j
+  simp only [blockConfiguration, Finset.mem_univ, if_true]
+
+section GlobalWilsonMeasure
+variable {N L P : Type*} [Fintype N] [DecidableEq N] [Nonempty N]
+  [Fintype L] [DecidableEq L] [Fintype P]
+  [MeasurableSpace (L → Matrix.specialUnitaryGroup N Complex)]
+  [BorelSpace (L → Matrix.specialUnitaryGroup N Complex)]
+
+/-- Full-block resampling is exactly the normalized global Wilson Gibbs measure. -/
+theorem wilsonBlockUpdateMeasure_univ (beta : Real) (plaquettes : P → Fin 4 → L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockUpdateMeasure beta plaquettes Finset.univ outside =
+      gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) := by
+  have hc : blockConfiguration Finset.univ outside = id := by
+    funext inside
+    exact blockConfiguration_univ outside inside
+  simp only [wilsonBlockUpdateMeasure, wilsonBlockGibbsMeasure, hc, id_eq, Measure.map_id]
+
+/-- Every row of the full-block kernel is the same global Gibbs measure. -/
+theorem wilsonBlockKernel_univ (beta : Real) (plaquettes : P → Fin 4 → L)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockKernel beta plaquettes Finset.univ outside =
+      gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes) :=
+  wilsonBlockUpdateMeasure_univ beta plaquettes outside
+
+/-- The retained part for the full link set is the constant Gibbs mean. -/
+theorem wilsonBlockAverage_univ (beta : Real) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real)
+    (outside : L → Matrix.specialUnitaryGroup N Complex) :
+    wilsonBlockAverage beta plaquettes Finset.univ f outside =
+      ∫ U, f U ∂gibbsMeasure wilsonHaarReference
+        (finiteWilsonMagneticPotential beta plaquettes) := by
+  rw [wilsonBlockAverage, wilsonBlockUpdateMeasure_univ]
+
+/-- The full-block discarded observable is exactly the centered observable. -/
+theorem wilsonBlockDiscarded_univ (beta : Real) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup N Complex) → Real) :
+    wilsonBlockDiscarded beta plaquettes Finset.univ f =
+      fun U => f U - ∫ V, f V ∂gibbsMeasure wilsonHaarReference
+        (finiteWilsonMagneticPotential beta plaquettes) := by
+  funext U
+  rw [wilsonBlockDiscarded, wilsonBlockAverage_univ]
+
+end GlobalWilsonMeasure
+
+section SU2GlobalPoincare
+variable {L P : Type*} [Fintype L] [DecidableEq L] [Fintype P]
+  [MeasurableSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+  [BorelSpace (L → Matrix.specialUnitaryGroup (Fin 2) Complex)]
+
+/-- The whole-block electric form is the existing full electric quadratic form. -/
+theorem su2WilsonBlockElectricQuadraticForm_univ (kappa beta : Real)
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) :
+    su2WilsonBlockElectricQuadraticForm kappa beta plaquettes Finset.univ f =
+      wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f := rfl
+
+/-- The centered observable is genuinely in L2 under the global Wilson measure. -/
+theorem su2WilsonCentered_memLp (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    MemLp (fun U => f U - ∫ V, f V ∂μ) 2 μ := by
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  simpa only [wilsonBlockDiscarded_univ] using
+    su2WilsonBlockDiscarded_memLp beta hbeta plaquettes Finset.univ f hf
+      (gibbsMeasure wilsonHaarReference (finiteWilsonMagneticPotential beta plaquettes)) 2
+
+/-- The Gibbs mean and centered square are genuine integrals, and the centered
+observable belongs to L2. These facts need only continuity on the compact lattice. -/
+theorem su2WilsonGlobal_integrability (beta : Real) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    Integrable f μ ∧ MemLp (fun U => f U - ∫ V, f V ∂μ) 2 μ ∧
+      Integrable (fun U => |f U - ∫ V, f V ∂μ| ^ 2) μ := by
+  letI := specialUnitary_compactSpace (N := Fin 2)
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  have hd := su2WilsonCentered_memLp beta hbeta plaquettes f hf
+  refine ⟨hf.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _), hd, ?_⟩
+  simpa only [sq_abs] using hd.integrable_sq
+
+/-- Global finite-lattice Wilson Poincare inequality with explicit volume dependence.
+It specializes the proved block estimate to every link; no global gap is assumed. -/
+theorem su2WilsonGlobal_poincare
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (D : Nat)
+    (hDegree : ∀ j,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    let C := 6 * Real.pi ^ 2 * (Fintype.card L : Real) *
+      Real.exp (4 * beta * (Fintype.card L : Real) * D) / kappa
+    (∫ U, |f U - ∫ V, f V ∂μ| ^ 2 ∂μ) ≤
+        C * wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f ∧
+      C * wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f ≤
+        C * su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  dsimp only
+  constructor
+  · simpa only [sq_abs, wilsonBlockDiscarded_univ, Finset.card_univ,
+      su2WilsonBlockElectricQuadraticForm_univ] using
+      su2WilsonBlockDiscarded_l2_le_energy kappa beta hkappa hbeta plaquettes Finset.univ D
+        (fun j _ => hDegree j) f hf hDiff hDcont
+  · apply mul_le_mul_of_nonneg_left
+    · simpa only [su2WilsonBlockElectricQuadraticForm_univ] using
+        su2WilsonBlockElectric_le_hamiltonian kappa beta hkappa.le hbeta plaquettes
+          Finset.univ f hDcont
+    · positivity
+
+/-- The centered global observable has an L2 representative with the exact
+variance norm and explicit electric and Hamiltonian bounds. -/
+theorem su2WilsonGlobal_l2_hamiltonian_comparison
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (plaquettes : P → Fin 4 → L) (D : Nat)
+    (hDegree : ∀ j,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    let C := 6 * Real.pi ^ 2 * (Fintype.card L : Real) *
+      Real.exp (4 * beta * (Fintype.card L : Real) * D) / kappa
+    ∃ g : Lp Real 2 μ,
+      (⇑g =ᵐ[μ] fun U => f U - ∫ V, f V ∂μ) ∧
+      ‖g‖ ^ 2 = (∫ U, |f U - ∫ V, f V ∂μ| ^ 2 ∂μ) ∧
+      ‖g‖ ^ 2 ≤
+        C * wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f ∧
+      C * wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f ≤
+        C * su2WilsonHamiltonianQuadraticForm kappa beta plaquettes f := by
+  let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+    (finiteWilsonMagneticPotential beta plaquettes)
+  let d := fun U => f U - ∫ V, f V ∂μ
+  have hd : MemLp d 2 μ := su2WilsonCentered_memLp beta hbeta plaquettes f hf
+  have hnorm : ‖hd.toLp d‖ ^ 2 = ∫ U, |d U| ^ 2 ∂μ := by
+    rw [← real_inner_self_eq_norm_sq, L2.inner_def]
+    apply integral_congr_ae
+    filter_upwards [hd.coeFn_toLp] with U hU
+    simp only [hU, real_inner_self_eq_norm_sq, Real.norm_eq_abs]
+  have hp := su2WilsonGlobal_poincare kappa beta hkappa hbeta plaquettes D hDegree
+    f hf hDiff hDcont
+  refine ⟨hd.toLp d, hd.coeFn_toLp, hnorm, ?_, hp.2⟩
+  rw [hnorm]
+  exact hp.1
+
+/-- A nonempty finite lattice has a strictly positive explicit centered
+electric-form coercivity coefficient. This is not a physical ground-state gap. -/
+theorem su2WilsonGlobal_centered_coercivity
+    (kappa beta : Real) (hkappa : 0 < kappa) (hbeta : 0 ≤ beta)
+    (hn : 0 < Fintype.card L) (plaquettes : P → Fin 4 → L) (D : Nat)
+    (hDegree : ∀ j,
+      (Finset.univ.filter (fun p => j ∈ Finset.univ.image (plaquettes p))).card ≤ D)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real) (hf : Continuous f)
+    (hDiff : ∀ j (a : Fin 3) V, DifferentiableAt Real
+      (fun s => f (linkLeftTranslate j ((su2PauliElectricDirections a).curve s) V)) 0)
+    (hDcont : ∀ j (a : Fin 3),
+      Continuous (wilsonElectricDirectionalDerivative (su2PauliElectricDirections a) j f)) :
+    let μ := gibbsMeasure (wilsonHaarReference (N := Fin 2) (L := L))
+      (finiteWilsonMagneticPotential beta plaquettes)
+    let c := kappa / (6 * Real.pi ^ 2 * (Fintype.card L : Real) *
+      Real.exp (4 * beta * (Fintype.card L : Real) * D))
+    0 < c ∧ c * (∫ U, |f U - ∫ V, f V ∂μ| ^ 2 ∂μ) ≤
+      wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f := by
+  let A := 6 * Real.pi ^ 2 * (Fintype.card L : Real) *
+    Real.exp (4 * beta * (Fintype.card L : Real) * D)
+  have hn' : (0 : Real) < Fintype.card L := Nat.cast_pos.mpr hn
+  have hA : 0 < A := by dsimp [A]; positivity
+  have hc : 0 < kappa / A := div_pos hkappa hA
+  refine ⟨hc, ?_⟩
+  have hp := (su2WilsonGlobal_poincare kappa beta hkappa hbeta plaquettes D hDegree
+    f hf hDiff hDcont).1
+  have h := mul_le_mul_of_nonneg_left hp hc.le
+  have he : kappa / A * (A / kappa *
+      wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f) =
+      wilsonFullElectricQuadraticForm kappa beta su2PauliElectricDirections plaquettes f := by
+    field_simp [ne_of_gt hkappa, ne_of_gt hA]
+  exact he ▸ h
+
+/-- With no links the configuration space is a singleton, so every observable
+equals its Gibbs mean. No positive coefficient or division by the volume is needed. -/
+theorem su2WilsonCentered_eq_zero_of_card_eq_zero
+    (hn : Fintype.card L = 0) (beta : Real) (plaquettes : P → Fin 4 → L)
+    (f : (L → Matrix.specialUnitaryGroup (Fin 2) Complex) → Real)
+    (U : L → Matrix.specialUnitaryGroup (Fin 2) Complex) :
+    f U - ∫ V, f V ∂gibbsMeasure wilsonHaarReference
+      (finiteWilsonMagneticPotential beta plaquettes) = 0 := by
+  letI : IsEmpty L := Fintype.card_eq_zero_iff.mp hn
+  letI := su2WilsonGibbs_isProbability beta plaquettes
+  have hconst : f = fun _ => f U := by
+    funext V
+    congr 1
+    funext j
+    exact isEmptyElim j
+  conv_lhs => arg 2; rw [hconst]
+  simp only [integral_const, probReal_univ, one_smul, sub_self]
+
+
+end SU2GlobalPoincare
+end RussoYM.BlockHamiltonian
